@@ -45,6 +45,11 @@
     "github-trending": "tsx scripts/scan-github-trending.ts",
     "quality-pipeline": "tsx scripts/run-quality-pipeline-intelligence.ts",
     "market-gaps": "tsx scripts/analyze-market-gaps.ts",
+    "reports:organize": "tsx scripts/report-manager.ts organize",
+    "reports:archive": "tsx scripts/report-manager.ts archive",
+    "reports:registry": "tsx scripts/report-manager.ts registry",
+    "reports:stats": "tsx scripts/report-manager.ts stats",
+    "reports:all": "tsx scripts/report-manager.ts all",
     "verify-deploy": "bash scripts/verify-deployments.sh",
     "deploy:firebase": "firebase deploy",
     "deploy:github": "npm run deploy"

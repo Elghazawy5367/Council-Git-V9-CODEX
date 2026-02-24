@@ -1,9 +1,10 @@
 # Council App - Target Niches Configuration
 # Created: February 15, 2026
+# Updated: February 19, 2026
 # Purpose: Multi-niche monitoring for passive income opportunities
 # Profile: Solo non-technical founder, low budget, seeking cash flow
 
-version: "2.0"
+version: "2.1"
 
 # Niche Selection Criteria Applied:
 # - Pain Score: 85+ / 100
@@ -15,119 +16,142 @@ version: "2.0"
 
 niches:
   # =============================================================================
-  # NICHE 1: Maritime Professionals & Operations
+  # NICHE 1: Neurodivergent-Focused Digital Products & Services
   # =============================================================================
-  # Pain: 88/100 | Opportunity: 85/100 | Solo-Fit: 92/100
-  - id: "maritime-professionals"
-    name: "Maritime Professionals & Operations"
+  # Pain: 91/100 | Opportunity: 88/100 | Solo-Fit: 95/100
+  - id: "neurodivergent-digital-products"
+    name: "Neurodivergent-Focused Digital Products & Services"
     
     overview:
-      title: "Maritime Industry Professionals - Operations, Compliance & Career Management"
+      title: "Neurodivergent Adults - ADHD, Autism, Executive Function Support"
       description: |
-        Maritime professionals including seafarers, officers, engineers, port workers, 
-        ship managers, and logistics coordinators dealing with certifications, compliance, 
-        crew management, documentation, and operational challenges. Regulated industry with 
-        recurring compliance needs and career advancement requirements.
-      pain_score: 88
-      opportunity_score: 85
-      solo_founder_fit: 92
-      estimated_market_size: "2M+ maritime professionals globally"
-      growth_trend: "stable"
+        Adults with ADHD, autism, dyslexia, and other neurodivergent conditions seeking 
+        practical tools for executive function, time management, organization, sensory regulation, 
+        communication, and daily life management. Underserved market with high willingness to pay 
+        for solutions that actually work for non-neurotypical brains. Growing self-diagnosis and 
+        late-diagnosis trend creating demand for adult-focused resources.
+      pain_score: 91
+      opportunity_score: 88
+      solo_founder_fit: 95
+      estimated_market_size: "15-20% of global population (1B+), growing awareness"
+      growth_trend: "rapidly growing"
       
     pain_points:
-      primary: "Complex certification and compliance tracking across multiple regulatory frameworks (STCW, flag state, company requirements)"
-      secondary: "Crew scheduling, documentation burden, and inspection preparation consuming excessive time"
-      tertiary: "Career advancement tracking (sea time, required certifications, license upgrades) poorly managed"
+      primary: "Neurotypical productivity systems don't work - traditional planners, to-do lists, and time management methods fail for neurodivergent brains, causing shame and burnout"
+      secondary: "Executive function struggles - task initiation, time blindness, working memory issues, decision paralysis, and emotional regulation challenges"
+      tertiary: "Lack of neurodivergent-specific resources - most tools/templates assume neurotypical processing, no accommodations for sensory needs, dopamine-seeking behavior, or rejection sensitivity"
       
     revenue_opportunities:
-      - model: "Templates & Checklists"
-        price_range: "$49-$149"
+      - model: "Templates & Planners"
+        price_range: "$19-$79"
         examples:
-          - "Maritime Compliance Checklist Library (STCW, ISM, ISPS) - $79-$149"
-          - "Certification Tracking Templates (Excel/Notion) - $49-$79"
-          - "Vessel Inspection Prep Checklists - $49"
-      - model: "Tools & Calculators"
+          - "ADHD-Friendly Daily Planner (Notion/PDF) - $29-$49"
+          - "Visual Task Management Templates (color-coded, dopamine-friendly) - $19-$39"
+          - "Executive Function Checklist Bundle (morning/evening routines) - $39-$79"
+          - "Time Blocking for Time-Blind Brains Template - $29"
+          - "Sensory-Friendly Meal Planning Templates - $19-$29"
+      - model: "Guides & Workbooks"
         price_range: "$29-$97"
         examples:
-          - "Sea Time Calculator (track time towards license upgrades) - $39-$79"
-          - "Crew Schedule Optimizer (spreadsheet) - $29-$49"
-          - "Maritime Document Organizer - $49-$97"
-      - model: "Consulting & Training"
-        price_range: "$297-$997"
+          - "ADHD Time Management Guide (strategies that actually work) - $49-$79"
+          - "Autism Communication Scripts (work, relationships, boundaries) - $39-$69"
+          - "Executive Function Workbook (build skills step-by-step) - $29-$97"
+          - "Sensory Regulation Toolkit Guide - $39-$59"
+      - model: "Coaching & Consulting"
+        price_range: "$97-$497"
         examples:
-          - "Compliance Audit Package (vessel/company audit + recommendations) - $497-$997"
-          - "Career Advancement Consulting (license upgrade roadmap) - $297"
-      - model: "SaaS Tools"
-        price_range: "$29-$79/month"
+          - "ADHD Productivity Audit (analyze patterns, build custom system) - $197-$397"
+          - "Neurodivergent Career Coaching (3 sessions) - $297-$497"
+          - "Executive Function Coaching Session - $97-$147"
+      - model: "Digital Products"
+        price_range: "$9-$49"
         examples:
-          - "Maritime Certification Tracker (alerts, renewals, compliance dashboard) - $49-$79/month"
-          - "Crew Management Dashboard - $39-$69/month"
+          - "Body Doubling Session Recordings (work alongside) - $9-$19"
+          - "Dopamine Menu Generator (instant motivation ideas) - $19-$29"
+          - "Visual Routine Cards (PDF printables) - $9-$19"
+          - "ADHD Email Templates (reduce decision fatigue) - $19-$29"
+      - model: "Membership/Subscription"
+        price_range: "$19-$49/month"
+        examples:
+          - "Monthly ADHD Planner Templates (new designs monthly) - $19-$29/month"
+          - "Neurodivergent Productivity Library (growing resource hub) - $29-$49/month"
           
-    time_to_first_revenue: "14 days"
+    time_to_first_revenue: "7 days"
     first_action_plan:
-      - "Week 1-2: Create 'STCW Compliance Checklist Bundle' → Sell for $79"
-      - "Week 3-4: Build 'Sea Time Calculator' (Excel/Sheets) → Sell for $49"
-      - "Month 2: Offer 'License Upgrade Consulting' sessions → $297/hour"
+      - "Week 1: Create 'ADHD Daily Planner Template' (Notion or PDF) → Sell for $29-$49"
+      - "Week 2: Build 'Visual Task Management Template Bundle' → Sell for $39"
+      - "Week 3-4: Write 'ADHD Time Management Guide' → Sell for $49-$79"
       
     monitoring:
       keywords:
-        - "maritime career"
-        - "seafarer certification"
-        - "stcw"
-        - "license upgrade"
-        - "marine officer"
-        - "deck officer"
-        - "marine engineer"
-        - "chief mate"
-        - "master mariner"
-        - "chief engineer"
-        - "sea time"
-        - "maritime compliance"
-        - "ship management"
-        - "vessel operations"
-        - "crew management"
-        - "maritime logistics"
-        - "port operations"
-        - "fleet management"
-        - "maritime safety"
-        - "vessel documentation"
-        - "crew records"
-        - "maritime inspection"
-        - "shipping compliance"
-        - "merchant marine"
-        - "commercial shipping"
+        - "adhd"
+        - "adhd productivity"
+        - "adhd time management"
+        - "adhd planner"
+        - "adhd organization"
+        - "autism"
+        - "autistic adults"
+        - "executive function"
+        - "executive dysfunction"
+        - "neurodivergent"
+        - "neurodivergence"
+        - "time blindness"
+        - "task initiation"
+        - "working memory"
+        - "adhd strategies"
+        - "adhd tips"
+        - "actually autistic"
+        - "late diagnosed adhd"
+        - "adult adhd"
+        - "adhd burnout"
+        - "sensory processing"
+        - "rejection sensitive dysphoria"
+        - "body doubling"
+        - "dopamine menu"
+        - "adhd routine"
+        - "visual schedule"
+        - "time blocking adhd"
+        - "adhd friendly"
+        - "neurodivergent friendly"
+        - "adhd hacks"
         
       subreddits:
-        - "r/maritime"
-        - "r/navy"
-        - "r/sailing"
-        - "r/MerchantMarine"
-        - "r/seamanship"
-        - "r/shipping"
-        - "r/logistics"
-        - "r/supplychain"
-        - "r/engineering"
-        - "r/Transportation"
+        - "r/ADHD"
+        - "r/ADHDers"
+        - "r/adhdwomen"
+        - "r/ADHDmemes"
+        - "r/autism"
+        - "r/AutisticAdults"
+        - "r/aspergers"
+        - "r/neurodiversity"
+        - "r/productivity"
+        - "r/getdisciplined"
+        - "r/NonZeroDay"
+        - "r/DecidingToBeBetter"
+        - "r/organisation"
+        - "r/ADHD_Programmers"
         
       github_topics:
-        - "maritime"
-        - "shipping"
-        - "marine"
-        - "maritime-navigation"
-        - "vessel"
-        - "logistics"
-        - "fleet-management"
-        - "compliance"
-        - "certification"
+        - "adhd"
+        - "productivity"
+        - "time-management"
+        - "task-management"
+        - "neurodiversity"
+        - "autism"
+        - "accessibility"
+        - "executive-function"
+        - "habit-tracking"
+        - "focus"
         
       github_search_queries:
-        - "maritime management"
-        - "vessel tracking"
-        - "crew management"
-        - "maritime certification"
-        - "fleet operations"
-        - "shipping compliance"
-        - "maritime software"
+        - "adhd productivity tool"
+        - "time management adhd"
+        - "task manager adhd"
+        - "focus timer adhd"
+        - "neurodivergent planner"
+        - "executive function tracker"
+        - "habit tracker adhd"
+        - "pomodoro adhd"
 
   # =============================================================================
   # NICHE 2: Freelancers & Independent Consultants
@@ -573,7 +597,7 @@ execution:
     - phase: 1
       name: "Intelligence Generation"
       status: "in_progress"
-      deliverable: "13 features generating 52+ reports daily"
+      deliverable: "13 features generating 48+ reports daily"
       estimated_duration: "ongoing"
       
     - phase: 2
@@ -605,6 +629,17 @@ notes: |
   - All have fast path to first dollar (7-14 days)
   - All have clear, validated pain points
   - Strategic breadth: Multiple pain points per niche allow data-driven focus
+  
+  Neurodivergent Niche Rationale (replaces Maritime):
+  - Massive underserved market (15-20% of population)
+  - Pain Score: 91/100 (neurotypical tools consistently fail)
+  - High willingness to pay for solutions that actually work
+  - Growing self-diagnosis/late-diagnosis trend (especially ADHD/autism in adults)
+  - Strong online community with active discussion and support
+  - Non-technical deliverables: templates, planners, guides, checklists, workbooks
+  - Fast to first revenue: digital products can launch in 7 days
+  - Multiple revenue models: $9-$497 range from digital downloads to coaching
+  - Clear pain points: executive function, time blindness, sensory needs, communication
   
   Next Steps:
   1. All 13 features operational and generating reports
