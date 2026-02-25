@@ -8,6 +8,7 @@
  * Multi-niche configuration support via config/target-niches.yaml
  */
 
+import * as fs from 'fs';
 import type { NicheConfig } from './types';
 import { loadNicheConfig, getEnabledNiches } from './config-loader';
 

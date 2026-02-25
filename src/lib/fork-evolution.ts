@@ -6,6 +6,8 @@
  */
 
 import { Octokit } from '@octokit/rest';
+import * as fs from 'fs';
+import * as path from 'path';
 import type { NicheConfig } from './types';
 import { loadNicheConfig, getEnabledNiches } from './config-loader';
 
