@@ -1,8 +1,15 @@
-# The Council - AI-Powered Multi-Perspective Decision Engine
+# The Council - AI Orchestration Platform
 
 ## Overview
 
-The Council is a React-based web application that leverages multiple AI models to provide multi-perspective analysis on user queries. It functions as a decision-support tool that consults various AI "experts" simultaneously, each with distinct personas and specialties, then synthesizes their responses into actionable insights. The application features a dark glassmorphism UI design with purple/blue gradients.
+The Council is a React + TypeScript AI orchestration application that queries multiple AI models via OpenRouter and synthesizes their outputs into unified insights. Built as a zero-infrastructure-cost platform for a solo founder, it combines multi-AI synthesis with GitHub intelligence tools for market opportunity discovery.
+
+**Core Capabilities:**
+- Multi-AI model querying through OpenRouter API
+- Synthesis of multiple AI expert perspectives into actionable insights
+- GitHub intelligence extraction (Scout, Goldmine Detector, Mining Drill)
+- Reddit/HackerNews community intelligence for buying intent detection
+- Automated workflows via GitHub Actions ("The Phantom")
 
 ## User Preferences
 
@@ -10,77 +17,89 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
-- **Framework**: React 18 with TypeScript, built using Vite
-- **UI Components**: Shadcn/UI component library built on Radix UI primitives
-- **Styling**: Tailwind CSS with custom design tokens for Council-specific theming
-- **State Management**: Zustand stores for different feature domains (expert-store, control-panel-store, settings-store, memory-store)
-- **Data Fetching**: TanStack React Query for server state management
-- **Routing**: React Router v6 with lazy-loaded pages for code splitting
+### Frontend Stack
+- **Framework:** React 18 with TypeScript 5.8, bundled with Vite 6
+- **UI Components:** Radix UI primitives + shadcn/ui + Tailwind CSS
+- **State Management:** Zustand stores organized by feature
+- **Routing:** React Router v6
+- **Data Fetching:** TanStack React Query for server state
 
 ### Feature-Based Organization
-The codebase follows a hybrid feature-first architecture:
-- `src/features/council/` - Core council functionality (experts, synthesis, history)
-- `src/features/settings/` - Application settings and configuration
-- `src/components/primitives/` - Reusable UI components (Shadcn/UI)
-- `src/lib/` - Shared utilities, types, and configuration
+The codebase follows a feature-first architecture pattern:
+```
+src/
+├── features/
+│   ├── council/          # Core AI orchestration
+│   │   ├── api/          # OpenRouter integration
+│   │   ├── components/   # ExpertCard, SynthesisCard, ControlPanel
+│   │   ├── hooks/        # useExecuteSynthesis, useStreamingSynthesis
+│   │   ├── lib/          # types, synthesis logic, persona library
+│   │   └── store/        # Zustand stores (expert, execution, memory)
+│   ├── settings/         # API key management
+│   └── automation/       # Dashboard components
+├── lib/
+│   ├── scout.ts          # GitHub intelligence extraction
+│   ├── goldmine-detector.ts  # Abandoned project finder
+│   ├── mining-drill.ts   # Pain point extraction from issues
+│   ├── reddit-sniper.ts  # Reddit buying intent detection
+│   └── api-client.ts     # HTTP client with retry/cache
+└── pages/                # Route components
+```
 
-### Intelligence & AI Tooling
-The application now includes an advanced intelligence layer:
-- **Phantom Scout**: GitHub intelligence and Blue Ocean discovery.
-- **Reddit Sniper**: High-intent buying signal detection on subreddits.
-- **Reddit Pain Points**: Market gap analysis via user frustration mapping.
-- **Viral Radar**: Cross-platform trend tracking (Twitter, Reddit, HN).
-- **Twin Mimicry**: Structural pattern matching from elite repositories.
-- **Fork Evolution**: Tracking innovative changes in repository forks.
-- **Stargazer Analysis**: Institutional backing detection.
-- **GitHub Trending**: Real-time topic and language trend analysis.
-- **Market Gap**: Deep AI-powered opportunity identification.
+### State Management Pattern
+Each feature uses Zustand with a consistent pattern - stores are co-located within feature directories and use `zustand/react/shallow` for optimized re-renders.
 
-### Key Architectural Patterns
-1. **Expert System**: Configurable AI experts with unique personas, models, and behavior modes
-2. **Execution Modes**: Multiple council operation modes (separated, synthesis, debate, pipeline)
-3. **Synthesis Engine**: Tiered synthesis system (quick/balanced/deep) for combining expert outputs
-4. **Persona Library**: Pre-configured expert templates for different use cases
+### AI Integration
+- **Provider:** OpenRouter API (single key for all models)
+- **Models:** Configurable fleet of models (referenced as MAGNIFICENT_7_FLEET)
+- **Synthesis Modes:** parallel, consensus, adversarial, sequential execution
+- **Persona System:** Customizable AI expert personas with specialized prompts
 
-### Data Persistence
-- **IndexedDB**: Primary storage via idb-keyval for experts, sessions, and app state
-- **localStorage**: Fallback storage and session history
-- **Session Storage**: Temporary session data with timeout management
+### Data Storage
+- **Primary:** Dexie (IndexedDB wrapper) for client-side persistence
+- **Secondary:** idb-keyval for key-value storage
+- **No backend database** - designed for zero infrastructure costs
 
-### Deployment
-- **GitHub Pages**: Primary hosting via `gh-pages` (Base path: `./`)
-- **Status**: Vercel deployment has been disabled due to persistent build configuration conflicts. GitHub Pages remains the active and verified deployment platform.
+### Error Handling
+- Custom error classes (APIError, NetworkError, TimeoutError, RateLimitError)
+- React Error Boundaries with feature isolation
+- Recovery strategies: retry with exponential backoff, fallback patterns, circuit breaker
 
-### Security
-- **Content Sanitization**: DOMPurify for XSS protection on AI-generated content
-- **Vault System**: Encrypted API key storage with session-based unlocking
-- **Error Boundaries**: React error boundaries for graceful failure handling
+### Intelligence Tools
+1. **Scout** - GitHub repository scanning for opportunities
+2. **Goldmine Detector** - Filters abandoned high-potential projects
+3. **Mining Drill** - Extracts pain points from GitHub issues
+4. **Reddit Sniper** - Detects buying intent in Reddit posts
+5. **Daily Brief** - Combines all tools into actionable reports
 
 ## External Dependencies
 
-### AI/API Services
-- **OpenRouter API**: Primary gateway for multiple AI model providers
-- **Serper API**: Optional web search capability for real-time information
+### AI Services
+- **OpenRouter API** - Primary AI gateway (requires OPENROUTER_API_KEY)
+- **Google AI Studio** - Fallback for unlimited AI access (manual integration)
 
-### AI Model Fleet (Magnificent 7)
-- DeepSeek V3 (logic & reasoning)
-- Qwen 2.5 72B (code & architecture)
-- Gemini 2.0 Flash (context & speed)
-- Llama 3.1 8B (fast critique)
-- Command R7B (strategic reasoning)
-- Mixtral 8x7B (psychology & persuasion)
+### GitHub Integration
+- **GitHub API** - Repository intelligence extraction
+- **GitHub Actions** - Automated workflows (daily-scout.yml, reddit-radar.yml)
+- **GITHUB_TOKEN** - Auto-provided by Actions, or personal token for private repos
 
-### Document Export
-- **docx**: Microsoft Word document generation
-- **file-saver**: Client-side file downloads for CSV/DOCX exports
+### Reddit Integration
+- Uses public JSON endpoints (no API key required for basic scraping)
+- Optional OAuth for higher rate limits (REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET)
 
-### Visualization
-- **Mermaid**: Diagram rendering for flowcharts and architecture diagrams
-- **Recharts**: Data visualization components
+### HackerNews Integration
+- **Algolia Search API** - Free, no authentication required
+- Public API key: `8ece23f8eb07cd25d40262a1764599b1`
 
-### Core Libraries
-- **TanStack Query**: Async state management with caching
-- **Zustand**: Lightweight state management with persistence middleware
-- **React Hook Form + Zod**: Form handling and validation
-- **date-fns**: Date formatting and manipulation
+### Deployment Targets
+- **GitHub Pages** - Primary deployment (`gh-pages -d dist`)
+- **Firebase Hosting** - Alternative (`firebase deploy`)
+- **Vercel** - Alternative (`vercel --prod`)
+
+### UI Libraries
+- @radix-ui/* - Accessible component primitives
+- @tanstack/react-query - Server state management
+- lucide-react - Icon library
+- recharts - Data visualization
+- cmdk - Command palette
+- zod - Runtime validation
