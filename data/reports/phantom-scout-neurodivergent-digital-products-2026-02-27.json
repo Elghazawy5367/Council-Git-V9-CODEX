@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-27T08:29:50.791Z",
+  "timestamp": "2026-02-27T16:28:33.132Z",
   "niche": "Neurodivergent-Focused Digital Products & Services",
   "scanDepth": "normal",
   "repositoriesScanned": 25,
@@ -195,8 +195,8 @@
   ],
   "topOpportunities": [
     {
-      "id": "opp-1772180990787-vd329b2",
-      "category": "Developer Tools",
+      "id": "opp-1772209713127-hjoshwt",
+      "category": "UI/UX",
       "painPoint": "Unsure how to resolve `Missing field while writing result` error when using subscriptions",
       "solution": "Add missing feature as standalone tool",
       "confidence": 1,
@@ -226,8 +226,8 @@
       ]
     },
     {
-      "id": "opp-1772180990787-kjztk6m",
-      "category": "Developer Tools",
+      "id": "opp-1772209713128-0bpr34m",
+      "category": "Integration",
       "painPoint": "fix(i18n): Make rest of the tools translatable and translate them to German",
       "solution": "Tool to solve: fix(i18n): Make rest of the tools translatable and translate them to German",
       "confidence": 1,
@@ -253,13 +253,13 @@
       ]
     },
     {
-      "id": "opp-1772180990787-35vpghn",
-      "category": "Integration",
+      "id": "opp-1772209713128-hihbbgn",
+      "category": "Developer Tools",
       "painPoint": "Need assistance in using mailpit in our app",
       "solution": "Add missing feature as standalone tool",
       "confidence": 0.8099999999999999,
       "marketSize": 2100,
-      "competition": "weak",
+      "competition": "moderate",
       "effort": "low",
       "impact": "high",
       "evidence": [
@@ -278,13 +278,13 @@
       ]
     },
     {
-      "id": "opp-1772180990787-fhbbiuh",
-      "category": "Developer Tools",
+      "id": "opp-1772209713128-cwdm108",
+      "category": "Automation",
       "painPoint": "[NEW TOOL] Extending the \"Text to NATO\" spelling tool with other alphabets",
       "solution": "Tool to solve: [NEW TOOL] Extending the \"Text to NATO\" spelling tool with other alphabets",
       "confidence": 0.7799999999999999,
       "marketSize": 1800,
-      "competition": "strong",
+      "competition": "weak",
       "effort": "low",
       "impact": "high",
       "evidence": [
@@ -303,13 +303,13 @@
       ]
     },
     {
-      "id": "opp-1772180990787-5lus5gv",
-      "category": "Integration",
+      "id": "opp-1772209713128-lzaktjy",
+      "category": "Performance",
       "painPoint": "feat(new tool): Regex Tester (and Cheatsheet)",
       "solution": "Tool to solve: feat(new tool): Regex Tester (and Cheatsheet)",
       "confidence": 0.6900000000000001,
       "marketSize": 1400,
-      "competition": "strong",
+      "competition": "weak",
       "effort": "low",
       "impact": "high",
       "evidence": [
@@ -326,13 +326,13 @@
       ]
     },
     {
-      "id": "opp-1772180990787-y6kqsqg",
-      "category": "Automation",
+      "id": "opp-1772209713128-2q2nwdt",
+      "category": "UI/UX",
       "painPoint": "v3.9.2 typings file is missing ",
       "solution": "Add missing feature as standalone tool",
       "confidence": 0.64,
       "marketSize": 900,
-      "competition": "moderate",
+      "competition": "strong",
       "effort": "low",
       "impact": "medium",
       "evidence": [
@@ -349,13 +349,13 @@
       ]
     },
     {
-      "id": "opp-1772180990787-9y6vxcx",
-      "category": "Automation",
+      "id": "opp-1772209713128-uguzxj7",
+      "category": "Developer Tools",
       "painPoint": "Hot Module Replacement (HMR) Integration",
       "solution": "Build integration layer/connector",
       "confidence": 0.79,
       "marketSize": 1400,
-      "competition": "weak",
+      "competition": "moderate",
       "effort": "medium",
       "impact": "high",
       "evidence": [
@@ -372,13 +372,13 @@
       ]
     },
     {
-      "id": "opp-1772180990787-14m73wo",
-      "category": "UI/UX",
+      "id": "opp-1772209713128-m2j1k65",
+      "category": "Automation",
       "painPoint": "Uncatchable throws on botbuilder-adapter-webex registerWebhookSubscription Functions",
       "solution": "Tool to solve: Uncatchable throws on botbuilder-adapter-webex registerWebhookSubscription Functions",
       "confidence": 0.7899999999999999,
       "marketSize": 1900,
-      "competition": "moderate",
+      "competition": "weak",
       "effort": "medium",
       "impact": "high",
       "evidence": [
@@ -398,8 +398,8 @@
       ]
     },
     {
-      "id": "opp-1772180990787-q8sk3f6",
-      "category": "Integration",
+      "id": "opp-1772209713128-pk2w5s4",
+      "category": "Performance",
       "painPoint": "Make this easier to run automate integration tests",
       "solution": "Build integration layer/connector",
       "confidence": 0.74,
@@ -423,13 +423,13 @@
       ]
     },
     {
-      "id": "opp-1772180990787-o28ps44",
-      "category": "Integration",
+      "id": "opp-1772209713127-1wiqpio",
+      "category": "UI/UX",
       "painPoint": "[big refactoring] Audio latency fix for Android. Support to preload effects on Android now.",
       "solution": "Tool to solve: [big refactoring] Audio latency fix for Android. Support to preload effects on Android now.",
       "confidence": 1,
       "marketSize": 20600,
-      "competition": "moderate",
+      "competition": "strong",
       "effort": "high",
       "impact": "high",
       "evidence": [

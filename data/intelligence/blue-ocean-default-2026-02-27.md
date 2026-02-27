@@ -1,6 +1,6 @@
 # Blue Ocean Opportunities: developer tools
 
-**Generated:** 2/27/2026, 8:29:51 AM
+**Generated:** 2/27/2026, 4:28:35 PM
 **Total Found:** 29
 
 ## 🏆 Top 10 Goldmines
@@ -9,15 +9,15 @@
 
 **A modified web browser that helps in responsive web development. A web developer's must have dev-tool.**
 
-- ⭐ Stars: 24,758
-- 🍴 Forks: 1,330 (5.4% ratio)
-- 🐛 Open Issues: 291
+- ⭐ Stars: 24,757
+- 🍴 Forks: 1,331 (5.4% ratio)
+- 🐛 Open Issues: 293
 - 📅 Last Update: 2/27/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **69/100**
 - 🔗 [View on GitHub](https://github.com/responsively-org/responsively-app)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (24758+ stars)
+- ✅ Proven demand (24757+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -45,15 +45,15 @@
 
 **Podman Desktop is the best free and open source tool to work with Containers and Kubernetes for developers. Get an intuitive and user-friendly interface to effortlessly build, manage, and deploy containers and Kubernetes — all from your desktop.**
 
-- ⭐ Stars: 7,363
+- ⭐ Stars: 7,365
 - 🍴 Forks: 496 (6.7% ratio)
-- 🐛 Open Issues: 766
+- 🐛 Open Issues: 769
 - 📅 Last Update: 2/27/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **69/100**
 - 🔗 [View on GitHub](https://github.com/podman-desktop/podman-desktop)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (7363+ stars)
+- ✅ Proven demand (7365+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -65,7 +65,7 @@
 
 - ⭐ Stars: 6,313
 - 🍴 Forks: 296 (4.7% ratio)
-- 🐛 Open Issues: 292
+- 🐛 Open Issues: 293
 - 📅 Last Update: 2/26/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **69/100**
 - 🔗 [View on GitHub](https://github.com/spinframework/spin)
@@ -81,15 +81,15 @@
 
 **Collection of handy online tools for developers, with great UX. **
 
-- ⭐ Stars: 37,262
-- 🍴 Forks: 4,640 (12.5% ratio)
-- 🐛 Open Issues: 757
+- ⭐ Stars: 37,264
+- 🍴 Forks: 4,641 (12.5% ratio)
+- 🐛 Open Issues: 758
 - 📅 Last Update: 2/27/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **68/100**
 - 🔗 [View on GitHub](https://github.com/CorentinTh/it-tools)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (37262+ stars)
+- ✅ Proven demand (37264+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -117,7 +117,7 @@
 
 **DevSpace - The Fastest Developer Tool for Kubernetes ⚡ Automate your deployment workflow with DevSpace and develop software directly inside Kubernetes.**
 
-- ⭐ Stars: 4,917
+- ⭐ Stars: 4,919
 - 🍴 Forks: 404 (8.2% ratio)
 - 🐛 Open Issues: 109
 - 📅 Last Update: 2/27/2026 (0 days ago)
@@ -125,7 +125,7 @@
 - 🔗 [View on GitHub](https://github.com/devspace-sh/devspace)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (4917+ stars)
+- ✅ Proven demand (4919+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -135,15 +135,15 @@
 
 **The AWS Copilot CLI is a tool for developers to build, release and operate production ready containerized applications on AWS App Runner or Amazon ECS on AWS Fargate. **
 
-- ⭐ Stars: 3,740
-- 🍴 Forks: 438 (11.7% ratio)
+- ⭐ Stars: 3,741
+- 🍴 Forks: 437 (11.7% ratio)
 - 🐛 Open Issues: 606
-- 📅 Last Update: 2/26/2026 (0 days ago)
+- 📅 Last Update: 2/27/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **68/100**
 - 🔗 [View on GitHub](https://github.com/aws/copilot-cli)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (3740+ stars)
+- ✅ Proven demand (3741+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
