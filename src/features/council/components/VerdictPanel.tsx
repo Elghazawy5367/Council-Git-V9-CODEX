@@ -28,6 +28,9 @@ export const VerdictPanel: React.FC = () => {
   return (
     <div
       className="glass-panel p-4 rounded-lg flex flex-col min-h-[200px] transition-all duration-300 h-full"
+      role="region"
+      aria-label="Council verdict"
+      aria-live="polite"
     >
       <div className="flex-1 flex flex-col">
         <h2 className="text-lg font-semibold mb-3 text-gradient">Verdict</h2>
@@ -75,7 +78,7 @@ export const VerdictPanel: React.FC = () => {
                 </ScrollArea>
               </DialogContent>
             </Dialog>
-            <Button variant="outline" size="sm" onClick={handleCopy}>
+            <Button variant="outline" size="sm" onClick={handleCopy} aria-label="Copy verdict to clipboard">
               <ClipboardCopy className="h-4 w-4" />
             </Button>
           </div>

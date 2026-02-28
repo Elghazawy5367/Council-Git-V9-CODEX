@@ -154,6 +154,8 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
         className={`glass-panel transition-all duration-300 flex flex-col h-full ${
           isActive ? 'ring-2 ring-primary/50 animate-pulse-glow' : 'opacity-60'
         } ${expert.isLoading ? 'animate-shimmer border-primary/40' : ''}`}
+        role="article"
+        aria-label={`Expert: ${positionName}${loadedPersona ? ` - ${loadedPersona.name}` : ''}`}
       >
         <CardHeader className="pb-2 flex-shrink-0">
           <div className="flex items-start justify-between gap-2">
@@ -195,6 +197,7 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
                     className="h-7 w-7 hover:bg-primary/10"
                     onClick={() => setIsExpanded(true)}
                     title="Expand output"
+                    aria-label={`Expand ${positionName} output`}
                   >
                     <Maximize2 className="h-3.5 w-3.5" />
                   </Button>
@@ -205,6 +208,7 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
                   className="h-7 w-7 hover:bg-primary/10"
                   onClick={() => setIsEditing(!isEditing)}
                   title="Edit persona"
+                  aria-label={`Edit ${positionName} persona`}
                 >
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
@@ -216,6 +220,7 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
                   className="h-5 px-1.5 text-[9px] text-muted-foreground hover:text-destructive"
                   onClick={handleClearPersonaClick}
                   title="Reset to default"
+                  aria-label={`Reset ${positionName} persona to default`}
                 >
                   <RotateCcw className="h-2.5 w-2.5 mr-0.5" />
                   Reset
@@ -235,7 +240,7 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
           )}
 
           <Select value={expert.model} onValueChange={handleModelChange}>
-            <SelectTrigger className="mt-2 h-8 bg-muted/50 border-border/50 text-xs">
+            <SelectTrigger className="mt-2 h-8 bg-muted/50 border-border/50 text-xs" aria-label={`Select AI model for ${positionName}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -264,6 +269,7 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
                   accept=".txt,.md,.json,.pdf,.docx"
                   className="hidden"
                   onChange={handleFileUpload}
+                  aria-label={`Upload knowledge files for ${positionName}`}
                 />
                 <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px]" asChild>
                   <span>
@@ -290,6 +296,7 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
                       size="icon"
                       className="h-4 w-4 hover:bg-destructive/20 hover:text-destructive"
                       onClick={() => removeKnowledge(index, file.id)}
+                      aria-label={`Remove ${file.name}`}
                     >
                       <X className="h-2.5 w-2.5" />
                     </Button>
@@ -338,6 +345,7 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
                         max={2}
                         step={0.1}
                         className="slider-council"
+                        aria-label={`Temperature: ${expert.config.temperature.toFixed(2)}`}
                       />
                     </div>
 
@@ -353,6 +361,7 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
                         max={1}
                         step={0.05}
                         className="slider-council"
+                        aria-label={`Top P: ${expert.config.topP.toFixed(2)}`}
                       />
                     </div>
 
@@ -368,6 +377,7 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
                         max={8000}
                         step={500}
                         className="slider-council"
+                        aria-label={`Max tokens: ${expert.config.maxTokens}`}
                       />
                     </div>
                   </>
