@@ -1,7 +1,7 @@
 # 🔍 META-FEATURES DEEP AUDIT REPORT
 
 **Project:** Council-Git-V9  
-**Audit Date:** January 2026  
+**Audit Date:** March 1, 2026  
 **Auditor:** Copilot Deep Analysis  
 **Scope:** All meta-features, infrastructure systems, security posture, and 2026 readiness  
 **Methodology:** Line-by-line code review with runtime verification
@@ -592,11 +592,13 @@ Install `@tanstack/react-virtual` and apply to:
 ```typescript
 // vault.ts:27-35
 function simpleHash(str: string): string {
-  let hash = 5381;
+  let hash = 0;
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
   }
-  return (hash >>> 0).toString(36);
+  return hash.toString(36);
 }
 ```
 
