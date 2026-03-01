@@ -10,9 +10,8 @@
  */
 
 import { Octokit } from '@octokit/rest';
-import * as fs from 'fs';
-import * as path from 'path';
 import type { NicheConfig } from './types';
+import { isNode, getRuntimeRequire } from './env';
 
 // ============================================================================
 // SHARED TYPES - Used by both browser and Node.js code
@@ -352,8 +351,7 @@ async function searchAbandonedRepos(
   // Search by topics
   for (const topic of topics.slice(0, 3)) { // Limit to 3 topics to avoid rate limits
     try {
-      console.log(`    → Searching topic: ${topic}`);
-      const { data } = await octokit.search.repos({
+            const { data } = await octokit.search.repos({
         q: `topic:${topic} stars:>1000 pushed:<${dateStr}`,
         sort: 'stars',
         order: 'desc',
@@ -366,8 +364,7 @@ async function searchAbandonedRepos(
     } catch (error: any) {
       console.error(`    ⚠️ Error searching topic ${topic}:`, error.message);
       if (error.status === 403) {
-        console.log('    Rate limited. Waiting 60 seconds...');
-        await new Promise(resolve => setTimeout(resolve, 60000));
+                await new Promise(resolve => setTimeout(resolve, 60000));
       }
     }
   }
@@ -693,13 +690,15 @@ function generateReport(
  * Main function to run Goldmine Detector across all niches
  */
 export async function runGoldmineDetector(): Promise<void> {
-  console.log('💎 Goldmine Detector - Starting...');
+  if (!isNode) return;
   
+  const fs = await getRuntimeRequire('fs');
+  const path = await getRuntimeRequire('path');
+
   try {
     const allNiches = await loadNicheConfig();
     const niches = getEnabledNiches(allNiches);
-    console.log(`📂 Found ${niches.length} enabled niches`);
-    
+
     const githubToken = process.env.GITHUB_TOKEN;
     if (!githubToken) {
       throw new Error('GITHUB_TOKEN environment variable is required');
@@ -709,28 +708,24 @@ export async function runGoldmineDetector(): Promise<void> {
     const results = [];
 
     for (const niche of niches) {
-      console.log(`\n💎 Processing: ${niche.id}`);
-      
+
       // Get topics and keywords from nested monitoring structure or fallback
       const topics = niche.monitoring?.github_topics || niche.github_topics || [];
       const keywords = niche.monitoring?.keywords || niche.keywords || [];
       
       if (topics.length === 0) {
-        console.log(`  ⚠️ No GitHub topics configured for ${niche.id}, skipping...`);
-        continue;
+                continue;
       }
 
       // Search for abandoned repositories
       const repos = await searchAbandonedRepos(octokit, topics, keywords);
-      console.log(`  → Found ${repos.length} potentially abandoned repos`);
 
       // Analyze each repository
       const goldmines: Goldmine[] = [];
       const unmetNeeds = new Map<string, string[]>();
 
       for (const repo of repos.slice(0, 30)) { // Limit to 30 to avoid rate limits
-        console.log(`    Analyzing: ${repo.full_name}`);
-        const goldmine = await analyzeGoldmine(octokit, repo);
+                const goldmine = await analyzeGoldmine(octokit, repo);
         
         if (goldmine && goldmine.goldmineScore >= 50) {
           goldmines.push(goldmine);
@@ -744,7 +739,6 @@ export async function runGoldmineDetector(): Promise<void> {
       // Sort by goldmine score
       goldmines.sort((a, b) => b.goldmineScore - a.goldmineScore);
 
-      console.log(`  ✅ Found ${goldmines.length} goldmines (score >= 50)`);
 
       // Generate report
       const report = generateReport(niche.id, niche.name, goldmines, unmetNeeds);
@@ -757,7 +751,6 @@ export async function runGoldmineDetector(): Promise<void> {
       const filename = path.join(reportsDir, `goldmine-${niche.id}-${date}.md`);
       fs.writeFileSync(filename, report);
 
-      console.log(`  📄 Report saved: data/reports/goldmine-${niche.id}-${date}.md`);
 
       results.push({
         niche: niche.id,
@@ -766,11 +759,8 @@ export async function runGoldmineDetector(): Promise<void> {
       });
     }
 
-    console.log('\n✅ Goldmine Detector Complete!');
-    console.log(`Generated ${results.length} reports:`);
-    results.forEach(r => {
-      console.log(`  - ${r.niche}: ${r.goldmines} goldmines`);
-    });
+            results.forEach(r => {
+          });
   } catch (error) {
     console.error('❌ Goldmine Detector failed:', error);
     throw error;

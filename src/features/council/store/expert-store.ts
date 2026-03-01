@@ -35,21 +35,19 @@ declare global {
  * Proxies to the unified council store
  */
 export const useExpertStore = (selector?: (state: ExpertState) => any) => {
+  const store = useCouncilStore();
+
+  const mappedState: ExpertState = {
+    experts: store.experts,
+    setExperts: store.setExperts,
+    updateExpert: store.updateExpert,
+    addKnowledge: store.addKnowledge,
+    removeKnowledge: store.removeKnowledge,
+  };
+
   if (selector) {
-    return useCouncilStore((state) => selector({
-      experts: state.experts,
-      setExperts: state.setExperts,
-      updateExpert: state.updateExpert,
-      addKnowledge: state.addKnowledge,
-      removeKnowledge: state.removeKnowledge,
-    }));
+    return selector(mappedState);
   }
   
-  return useCouncilStore((state) => ({
-    experts: state.experts,
-    setExperts: state.setExperts,
-    updateExpert: state.updateExpert,
-    addKnowledge: state.addKnowledge,
-    removeKnowledge: state.removeKnowledge,
-  }));
+  return mappedState;
 };

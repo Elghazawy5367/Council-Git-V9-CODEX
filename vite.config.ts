@@ -45,9 +45,25 @@ export default defineConfig(({ mode, command }) => {
     },
   },
   build: {
+    // 2026: Modern bundle optimization
+    target: 'esnext',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
     // Better error reporting
     sourcemap: mode === 'development',
     rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-tabs', 'lucide-react'],
+          'vendor-ai': ['mermaid', 'dompurify'],
+        },
+      },
       onwarn(warning, warn) {
         // Suppress certain warnings
         if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return;

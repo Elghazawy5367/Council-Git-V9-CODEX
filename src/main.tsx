@@ -27,6 +27,15 @@ initDatabase().then(() => {
   // Don't crash the app on database init failure
 });
 
+// Register service worker for offline support
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js').catch(error => {
+      console.error('SW registration failed:', error);
+    });
+  });
+}
+
 // Render app immediately with ErrorBoundary
 
 const rootElement = document.getElementById("root");

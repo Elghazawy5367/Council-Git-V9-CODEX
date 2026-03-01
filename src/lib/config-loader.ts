@@ -25,6 +25,8 @@ async function loadNodeModules(): Promise<void> {
   }
 }
 
+import { isNode, getRuntimeRequire } from './env';
+
 /**
  * Load niche configuration from YAML file (Node.js only)
  * 
@@ -32,11 +34,11 @@ async function loadNodeModules(): Promise<void> {
  * @throws Error if running in browser or if config file cannot be loaded
  */
 export async function loadNicheConfig(): Promise<NicheConfig[]> {
-  await loadNodeModules();
-  
-  if (typeof window !== 'undefined') {
+  if (!isNode) {
     throw new Error('loadNicheConfig() can only be called in Node.js environment');
   }
+
+  await loadNodeModules();
   
   try {
     const configPath = path.join(process.cwd(), 'config', 'target-niches.yaml');

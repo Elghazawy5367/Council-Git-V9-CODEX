@@ -74,10 +74,10 @@ export const DashboardLayout: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
-            Council Analytics
+            Intelligence Metrics
           </h1>
           <p className="text-muted-foreground mt-2 text-sm md:text-base">
-            Insights from your AI council decisions • {hasData ? `${metrics.totalDecisions} total decisions` : 'No data yet'}
+            Predictive performance & economic trends • {hasData ? `${metrics.totalDecisions} tracked decisions` : 'No data yet'}
           </p>
         </div>
         {hasData && (

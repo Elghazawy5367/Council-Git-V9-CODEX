@@ -47,8 +47,7 @@ async function searchForkWorthyRepos(
   
   for (const topic of topics) {
     try {
-      console.log(`    → Searching topic: ${topic}`);
-      const { data } = await octokit.search.repos({
+            const { data } = await octokit.search.repos({
         q: `topic:${topic} stars:>1000 forks:>100`,
         sort: 'forks',
         order: 'desc',
@@ -346,8 +345,7 @@ function generateReport(
  * Main function to run Fork Evolution across all niches
  */
 export async function runForkEvolution(): Promise<void> {
-  console.log('🍴 Fork Evolution - Starting...');
-  
+
   const githubToken = process.env.GITHUB_TOKEN;
   if (!githubToken) {
     console.warn('⚠️  Warning: No GITHUB_TOKEN found. Rate limits will be lower.');
@@ -360,32 +358,27 @@ export async function runForkEvolution(): Promise<void> {
   try {
     const allNiches = await loadNicheConfig();
     const niches = getEnabledNiches(allNiches);
-    console.log(`📂 Found ${niches.length} enabled niches`);
-    
+
     const results = [];
     
     for (const niche of niches) {
-      console.log(`\n🍴 Analyzing: ${niche.id}`);
-      
+
       // Get topics from nested monitoring structure or top-level
       const topics = niche.monitoring?.github_topics || niche.github_topics || [];
       const keywords = niche.monitoring?.keywords || niche.keywords || [];
       
       if (topics.length === 0) {
-        console.log(`  ⚠️ No GitHub topics defined for ${niche.id}, skipping...`);
-        continue;
+                continue;
       }
       
       // Search fork-worthy repositories
-      console.log(`  → Searching repositories with high fork counts...`);
-      const repos = await searchForkWorthyRepos(
+            const repos = await searchForkWorthyRepos(
         octokit,
         topics,
         keywords
       );
       
-      console.log(`  → Found ${repos.length} fork-worthy repositories`);
-      
+
       // Analyze fork ecosystem for each repo (limit to 15 to avoid rate limits)
       const analyzed: Array<{repo: RepoData, analysis: ForkAnalysis}> = [];
       const reposToAnalyze = repos.slice(0, 15);
@@ -393,8 +386,7 @@ export async function runForkEvolution(): Promise<void> {
       for (let i = 0; i < reposToAnalyze.length; i++) {
         const repo = reposToAnalyze[i];
         try {
-          console.log(`  → Analyzing forks ${i + 1}/${reposToAnalyze.length}: ${repo.full_name}...`);
-          const analysis = await analyzeForkEcosystem(octokit, repo);
+                    const analysis = await analyzeForkEcosystem(octokit, repo);
           analyzed.push({ repo, analysis });
           
           // Rate limit protection: 2 seconds between fork analyses
@@ -404,8 +396,7 @@ export async function runForkEvolution(): Promise<void> {
         }
       }
       
-      console.log(`  ✅ Analyzed ${analyzed.length} fork ecosystems`);
-      
+
       // Generate report
       const report = generateReport(niche.id, niche.name, analyzed);
       
@@ -417,8 +408,7 @@ export async function runForkEvolution(): Promise<void> {
       const filename = path.join(reportsDir, `fork-evolution-${niche.id}-${date}.md`);
       fs.writeFileSync(filename, report);
       
-      console.log(`  ✅ Report saved: data/reports/fork-evolution-${niche.id}-${date}.md`);
-      
+
       results.push({
         niche: niche.id,
         repositories: analyzed.length,
@@ -426,13 +416,10 @@ export async function runForkEvolution(): Promise<void> {
       });
     }
     
-    console.log('\n✅ Complete!');
-    console.log(`Generated ${results.length} reports`);
-    
+
     // Summary
     results.forEach(r => {
-      console.log(`  - ${r.niche}: ${r.repositories} repos analyzed`);
-    });
+          });
   } catch (error) {
     console.error('❌ Fork Evolution failed:', error);
     throw error;

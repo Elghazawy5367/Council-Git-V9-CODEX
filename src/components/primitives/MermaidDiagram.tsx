@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+import { sanitizeMermaid } from '@/lib/sanitize';
 
 // Initialize mermaid with dark theme
 mermaid.initialize({
@@ -89,7 +90,7 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart, className
     <div 
       ref={containerRef}
       className={`mermaid-container overflow-x-auto p-4 bg-muted/20 rounded-lg border border-border/50 ${className}`}
-      dangerouslySetInnerHTML={{ __html: svg }}
+      dangerouslySetInnerHTML={{ __html: sanitizeMermaid(svg) }}
     />
   );
 };

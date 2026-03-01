@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { TooltipProvider } from "@/components/primitives/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { Loader2 } from "lucide-react";
 import RootErrorBoundary from "@/components/ErrorBoundary";
 import { Toaster } from "@/components/primitives/sonner";
@@ -12,6 +13,7 @@ import { CouncilWorkflow } from "@/features/council/components/CouncilWorkflow";
 const Index = React.lazy(() => import("@/pages/Index"));
 const AutomationDashboard = React.lazy(() => import("@/pages/AutomationDashboard"));
 const QualityDashboard = React.lazy(() => import("@/pages/QualityDashboard"));
+const CouncilAnalytics = React.lazy(() => import("@/features/dashboard/components/DashboardLayout").then(m => ({ default: m.DashboardLayout })));
 const ScoutConfig = React.lazy(() => import("@/pages/features/ScoutConfig"));
 const NotFound = React.lazy(() => import("@/pages/NotFound"));
 
@@ -32,26 +34,29 @@ const PageLoader = () => (
 
 const App = () => (
   <RootErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <CouncilProvider>
-        <TooltipProvider>
-          <Toaster />
-          <HashRouter>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/council" element={<CouncilWorkflow />} />
-                <Route path="/features" element={<AutomationDashboard />} />
-                <Route path="/quality" element={<QualityDashboard />} />
-                <Route path="/features/scout" element={<ScoutConfig />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </HashRouter>
-        </TooltipProvider>
-      </CouncilProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <CouncilProvider>
+          <TooltipProvider>
+            <Toaster />
+            <HashRouter>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/council" element={<CouncilWorkflow />} />
+                  <Route path="/features" element={<AutomationDashboard />} />
+                  <Route path="/quality" element={<QualityDashboard />} />
+                  <Route path="/analytics" element={<CouncilAnalytics />} />
+                  <Route path="/features/scout" element={<ScoutConfig />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </HashRouter>
+          </TooltipProvider>
+        </CouncilProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   </RootErrorBoundary>
 );
 

@@ -418,31 +418,26 @@ function generateReport(
  * Main function to run GitHub Trending analysis
  */
 export async function runGitHubTrending(): Promise<void> {
-  console.log('📈 GitHub Trending - Starting...');
-  
+
   const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
   });
   
   const allNiches = await loadNicheConfig();
   const niches = getEnabledNiches(allNiches);
-  console.log(`📂 Found ${niches.length} enabled niches`);
-  
+
   const results = [];
   
   for (const niche of niches) {
-    console.log(`\n📈 Scanning trending: ${niche.id}`);
-    
+
     // Scan trending repos
-    console.log(`  → Searching GitHub trending...`);
-    const repos = await scanTrendingRepos(
+        const repos = await scanTrendingRepos(
       octokit,
       niche.monitoring.github_topics,
       niche.monitoring.keywords
     );
     
-    console.log(`  → Found ${repos.length} trending repositories`);
-    
+
     // Analyze trends
     const analyses: TrendAnalysis[] = [];
     for (const repo of repos) {
@@ -454,8 +449,7 @@ export async function runGitHubTrending(): Promise<void> {
       }
     }
     
-    console.log(`  → Found ${analyses.length} significant trends`);
-    
+
     // Generate report
     const report = generateReport(niche.id, niche.name, analyses);
     
@@ -465,8 +459,7 @@ export async function runGitHubTrending(): Promise<void> {
     fs.mkdirSync('data/reports', { recursive: true });
     fs.writeFileSync(filename, report);
     
-    console.log(`  → Report saved: ${filename}`);
-    
+
     const hotTrends = analyses.filter(a => a.trendScore >= 80).length;
     
     results.push({
@@ -477,11 +470,8 @@ export async function runGitHubTrending(): Promise<void> {
     });
   }
   
-  console.log('\n✅ Complete!');
-  console.log(`Generated ${results.length} reports`);
-  
+
   // Summary
   results.forEach(r => {
-    console.log(`  - ${r.niche}: ${r.trends} trends (${r.hot} hot)`);
-  });
+      });
 }

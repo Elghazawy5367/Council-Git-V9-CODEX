@@ -142,22 +142,7 @@ export default function QualityDashboard(): JSX.Element {
     );
   }
 
-  if (!pipelineReport) {
-    return (
-      <div className="container mx-auto p-6 max-w-7xl">
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>No Data Available</AlertTitle>
-          <AlertDescription>
-            Run the quality pipeline to see your dashboard:
-            <code className="block mt-2 p-2 bg-muted rounded">npm run improve</code>
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
-  const trend = scoreHistory.length >= 2
+  const trend = pipelineReport && scoreHistory.length >= 2
     ? scoreHistory[scoreHistory.length - 1].score - scoreHistory[scoreHistory.length - 2].score
     : 0;
 
@@ -166,19 +151,41 @@ export default function QualityDashboard(): JSX.Element {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight">Quality Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
-            Track code quality and learned patterns
+          <h1 className="text-4xl font-bold tracking-tight">Quality Oracle</h1>
+          <p className="text-muted-foreground mt-2 italic flex items-center gap-2">
+            <Zap className="h-4 w-4 text-yellow-500" />
+            Predictive Quality Dashboard (2026 Edition)
           </p>
         </div>
         <div className="text-right">
-          <p className="text-sm text-muted-foreground">Last updated</p>
-          <p className="text-sm font-medium">
-            {new Date(pipelineReport.timestamp).toLocaleString()}
+          <p className="text-sm text-muted-foreground">Status</p>
+          <p className="text-sm font-medium flex items-center justify-end gap-1">
+            {pipelineReport ? (
+              <>
+                <CheckCircle className="h-3 w-3 text-green-500" />
+                Live Monitoring
+              </>
+            ) : (
+              <>
+                <AlertCircle className="h-3 w-3 text-yellow-500" />
+                Awaiting Data
+              </>
+            )}
           </p>
         </div>
       </div>
 
+      {!pipelineReport ? (
+        <Alert className="bg-muted/50 border-dashed">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>No Pipeline Data Available</AlertTitle>
+          <AlertDescription>
+            Run the predictive quality pipeline to hydrate the Oracle:
+            <code className="block mt-2 p-2 bg-background/50 rounded border">npm run improve</code>
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <>
       {/* Overall Score Card */}
       <Card className="border-2">
         <CardHeader>
@@ -493,6 +500,8 @@ export default function QualityDashboard(): JSX.Element {
           </Card>
         </TabsContent>
       </Tabs>
+      </>
+      )}
     </div>
   );
 }

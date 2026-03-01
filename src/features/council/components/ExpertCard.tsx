@@ -328,8 +328,15 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
                   <>
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px]">
-                        <span className="text-muted-foreground">Temp</span>
-                        <span className="font-mono">{expert.config.temperature.toFixed(2)}</span>
+                        <span className="text-muted-foreground">Temperature</span>
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant="outline" className="h-4 px-1 text-[9px] border-primary/30">
+                            {expert.config.temperature === 0 ? 'AUTO' : expert.config.temperature.toFixed(2)}
+                          </Badge>
+                          <span className="font-mono text-[9px]">
+                            {expert.config.temperature === 0 ? 'Adaptive' : 'Manual'}
+                          </span>
+                        </div>
                       </div>
                       <Slider
                         value={[expert.config.temperature]}
@@ -338,36 +345,31 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
                         max={2}
                         step={0.1}
                         className="slider-council"
+                        aria-label={expert.config.temperature === 0
+                          ? "Temperature set to AI Auto-Tuning"
+                          : `Adjust temperature (currently ${expert.config.temperature})`}
                       />
                     </div>
 
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px]">
-                        <span className="text-muted-foreground">Top P</span>
-                        <span className="font-mono">{expert.config.topP.toFixed(2)}</span>
-                      </div>
-                      <Slider
-                        value={[expert.config.topP]}
-                        onValueChange={([value]) => handleConfigChange('topP', value)}
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        className="slider-council"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-[10px]">
-                        <span className="text-muted-foreground">Max Tokens</span>
-                        <span className="font-mono">{expert.config.maxTokens}</span>
+                        <span className="text-muted-foreground">Context Tokens</span>
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant="outline" className="h-4 px-1 text-[9px] border-primary/30">
+                            {expert.config.maxTokens === 0 ? 'ADAPTIVE' : expert.config.maxTokens}
+                          </Badge>
+                        </div>
                       </div>
                       <Slider
                         value={[expert.config.maxTokens]}
                         onValueChange={([value]) => handleConfigChange('maxTokens', value)}
-                        min={1000}
+                        min={0}
                         max={8000}
                         step={500}
                         className="slider-council"
+                        aria-label={expert.config.maxTokens === 0
+                          ? "Max tokens set to AI Adaptive Window"
+                          : `Adjust max tokens (currently ${expert.config.maxTokens})`}
                       />
                     </div>
                   </>

@@ -10,8 +10,9 @@ import {
   DialogTrigger,
   DialogDescription,
 } from '@/components/primitives/dialog';
-import { Maximize2, ClipboardCopy } from 'lucide-react';
+import { Maximize2, ClipboardCopy, History } from 'lucide-react';
 import { toast } from 'sonner';
+import { VerdictGraph } from '@/components/VerdictGraph';
 
 export const VerdictPanel: React.FC = () => {
   const { verdict, status } = useExecutionStore();
@@ -37,8 +38,9 @@ export const VerdictPanel: React.FC = () => {
           }`}
         >
           {isVerdictReady ? (
-            <ScrollArea className="h-full max-h-64">
-              <p className="text-sm text-foreground whitespace-pre-wrap font-light leading-relaxed">
+            <ScrollArea className="h-full max-h-[400px]">
+              <VerdictGraph verdict={verdict || ''} />
+              <p className="text-sm text-foreground whitespace-pre-wrap font-light leading-relaxed border-t border-primary/10 pt-4 mt-4">
                 {verdict}
               </p>
             </ScrollArea>

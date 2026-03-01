@@ -11,6 +11,8 @@ import { ErrorBoundary } from "react-error-boundary";
 import { AlertCircle } from "lucide-react";
 import { NoExpertsEmptyState } from "@/components/EmptyState";
 import { LayoutDebugger } from "@/components/LayoutDebugger";
+import { AdaptiveGrid } from "@/components/AdaptiveGrid";
+import { QualityOracle } from "@/components/QualityOracle";
 const SettingsModal = lazy(() => import("@/features/settings/components/SettingsModal"));
 const HistorySidebar = lazy(() => import("@/features/council/components/HistoryPanel"));
 const MemoryPanel = lazy(() => import("@/features/council/components/MemoryPanel"));
@@ -57,19 +59,30 @@ const Index: React.FC = () => {
             <ErrorBoundary FallbackComponent={ComponentErrorFallback} onReset={() => undefined}>
               <VerdictPanel />
             </ErrorBoundary>
+
+            {/* Quality Oracle - Next-gen Dashboard Overlay */}
+            <ErrorBoundary FallbackComponent={ComponentErrorFallback} onReset={() => undefined}>
+              <QualityOracle />
+            </ErrorBoundary>
           </div>
 
           <div className="lg:col-span-2">
             {/* Expert Grid - Protected */}
             <ErrorBoundary FallbackComponent={ComponentErrorFallback} onReset={() => undefined}>
-              {experts.length === 0 ? <NoExpertsEmptyState onAddExpert={() => setShowSettings(true)} /> : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-fr stagger-fade-in">
-                  {experts.slice(0, activeExpertCount).map((expert, index) => <ExpertCard key={expert.id} index={index} />)}
+              {experts.length === 0 ? (
+                <NoExpertsEmptyState onAddExpert={() => setShowSettings(true)} />
+              ) : (
+                <AdaptiveGrid itemCount={activeExpertCount + 1} className="stagger-fade-in">
+                  {experts.slice(0, activeExpertCount).map((expert, index) => (
+                    <ExpertCard key={expert.id} index={index} />
+                  ))}
                   
                   {/* Synthesis Card - Protected */}
                   <ErrorBoundary FallbackComponent={ComponentErrorFallback} onReset={() => undefined}>
                     <SynthesisCard />
                   </ErrorBoundary>
-                </div>}
+                </AdaptiveGrid>
+              )}
             </ErrorBoundary>
           </div>
         </div>

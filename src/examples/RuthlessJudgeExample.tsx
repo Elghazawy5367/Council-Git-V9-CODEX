@@ -50,34 +50,20 @@ However, it has a learning curve and requires a build step, which some developer
  * Example 1: Basic Usage
  */
 async function basicExample(apiKey: string): Promise<void> {
-  console.log('=== Basic Ruthless Judge Example ===\n');
 
   const judge = new RuthlessJudgeService(apiKey);
   
   try {
     const result: JudgmentResult = await judge.judge(mockResponses);
 
-    console.log('📊 Score Breakdown:');
-    Object.entries(result.scoreBreakdown).forEach(([llmId, scores]) => {
-      console.log(`  ${llmId}:`);
-      console.log(`    Accuracy: ${scores.accuracy}/100`);
-      console.log(`    Completeness: ${scores.completeness}/100`);
-      console.log(`    Conciseness: ${scores.conciseness}/100`);
-      console.log(`    Total: ${scores.total}/100\n`);
-    });
+        Object.entries(result.scoreBreakdown).forEach(([llmId, scores]) => {
+                                  });
 
-    console.log('🎯 Confidence:', result.confidence);
-    console.log('\n⚠️  Contradictions:', result.contradictions.length);
-    result.contradictions.forEach((c, i) => {
-      console.log(`  ${i + 1}. ${c}`);
-    });
+            result.contradictions.forEach((c, i) => {
+          });
 
-    console.log('\n📝 Judge Commentary:');
-    console.log(result.judgeCommentary);
 
-    console.log('\n✨ Unified Response:');
-    console.log(result.unifiedResponse);
-  } catch (error) {
+          } catch (error) {
     console.error('Error during judging:', error);
   }
 }
@@ -86,21 +72,17 @@ async function basicExample(apiKey: string): Promise<void> {
  * Example 2: Handling Single Response
  */
 async function singleResponseExample(apiKey: string): Promise<void> {
-  console.log('\n=== Single Response Example ===\n');
 
   const judge = new RuthlessJudgeService(apiKey);
   const singleResponse = [mockResponses[0]];
 
   const result = await judge.judge(singleResponse);
-  console.log('Confidence:', result.confidence);
-  console.log('Commentary:', result.judgeCommentary);
-}
+    }
 
 /**
  * Example 3: Handling Failed Responses
  */
 async function failedResponsesExample(apiKey: string): Promise<void> {
-  console.log('\n=== Failed Responses Example ===\n');
 
   const failedResponses: LLMResponse[] = [
     {
@@ -124,17 +106,13 @@ async function failedResponsesExample(apiKey: string): Promise<void> {
   const judge = new RuthlessJudgeService(apiKey);
   const result = await judge.judge(failedResponses);
   
-  console.log('Confidence:', result.confidence);
-  console.log('Unified Response:', result.unifiedResponse);
-  console.log('Commentary:', result.judgeCommentary);
-}
+      }
 
 /**
  * Example 4: Integration with CouncilContext
  */
 function integrationExample(): void {
-  console.log('\n=== Integration Example ===\n');
-  
+
   const exampleCode = `
 import { useCouncilContext } from '@/contexts/CouncilContext';
 import RuthlessJudgeService from '@/services/ruthless-judge';
@@ -158,13 +136,10 @@ function MyComponent() {
     const result = await judge.judge(responses);
 
     // Use the judgment result
-    console.log('Unified Response:', result.unifiedResponse);
-    console.log('Confidence:', result.confidence);
-    
+
     // Display scores
     Object.entries(result.scoreBreakdown).forEach(([llmId, scores]) => {
-      console.log(\`\${llmId}: \${scores.total}/100\`);
-    });
+          });
   };
 
   return (
@@ -175,8 +150,7 @@ function MyComponent() {
 }
 `;
 
-  console.log(exampleCode);
-}
+  }
 
 /**
  * Main execution
@@ -185,9 +159,7 @@ export async function runExamples(apiKey: string): Promise<void> {
   // Note: In production, you would use a real API key
   // For this example, we're just demonstrating the structure
   
-  console.log('🏛️  Ruthless Judge Service Examples\n');
-  console.log('Note: These examples require a valid OpenRouter API key\n');
-  
+
   // Uncomment to run with a real API key:
   // await basicExample(apiKey);
   // await singleResponseExample(apiKey);
@@ -205,7 +177,6 @@ if (typeof window === 'undefined' && require.main === module) {
   if (apiKey) {
     runExamples(apiKey).catch(console.error);
   } else {
-    console.log('Set OPENROUTER_API_KEY environment variable to run examples');
-    integrationExample();
+        integrationExample();
   }
 }

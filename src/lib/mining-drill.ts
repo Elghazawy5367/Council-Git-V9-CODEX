@@ -9,9 +9,8 @@
  */
 
 import { Octokit } from '@octokit/rest';
-import * as fs from 'fs';
-import * as path from 'path';
 import type { NicheConfig } from './types';
+import { isNode, getRuntimeRequire } from './env';
 
 // ============================================================================
 // SHARED TYPES - Used by both browser and Node.js code
@@ -345,8 +344,7 @@ async function searchGitHubIssues(query: string, githubToken?: string): Promise<
       auth: githubToken || process.env.GITHUB_TOKEN,
     });
 
-    console.log(`    Searching: ${query.substring(0, 60)}...`);
-    
+
     const response = await octokit.rest.search.issuesAndPullRequests({
       q: query,
       sort: 'comments',
@@ -357,8 +355,7 @@ async function searchGitHubIssues(query: string, githubToken?: string): Promise<
     // Filter out pull requests
     const issues = response.data.items.filter((item: any) => !item.pull_request);
     
-    console.log(`    Found: ${issues.length} issues`);
-    
+
     // Rate limiting: wait 1 second between API calls
     await new Promise(resolve => setTimeout(resolve, 1000));
     
@@ -368,8 +365,7 @@ async function searchGitHubIssues(query: string, githubToken?: string): Promise<
     
     // Handle rate limiting
     if (error.status === 403) {
-      console.log('    Rate limited. Waiting 60 seconds...');
-      await new Promise(resolve => setTimeout(resolve, 60000));
+            await new Promise(resolve => setTimeout(resolve, 60000));
       return [];
     }
     
@@ -452,11 +448,11 @@ function generateOpportunity(issue: any, niche: string): string {
 /**
  * Generate markdown report for a niche (Node.js only)
  */
-function generateReport(
+async function generateReport(
   nicheId: string,
   nicheName: string,
   painPoints: PainPoint[]
-): string {
+): Promise<string> {
   const date = new Date().toISOString().split('T')[0];
   
   let markdown = `# Mining Drill Report: ${nicheName}\n\n`;
@@ -489,13 +485,15 @@ function generateReport(
  * Main function to run Mining Drill across all niches (Node.js only)
  */
 export async function runMiningDrill(): Promise<void> {
-  console.log('🔨 Mining Drill - Starting...');
+  if (!isNode) return;
   
+  const fs = await getRuntimeRequire('fs');
+  const path = await getRuntimeRequire('path');
+
   try {
     const allNiches = await loadNicheConfig();
     const niches = getEnabledNiches(allNiches);
-    console.log(`📂 Found ${niches.length} enabled niches`);
-    
+
     const results = [];
     const githubToken = process.env.GITHUB_TOKEN;
     
@@ -504,8 +502,7 @@ export async function runMiningDrill(): Promise<void> {
     }
     
     for (const niche of niches) {
-      console.log(`\n⛏️  Processing: ${niche.id}`);
-      
+
       const allIssues: any[] = [];
       
       // Search using each query for this niche
@@ -551,10 +548,9 @@ export async function runMiningDrill(): Promise<void> {
         .sort((a, b) => b.score - a.score)
         .slice(0, 30); // top 30
       
-      console.log(`  → Found ${painPoints.length} pain points`);
-      
+
       // Generate report
-      const report = generateReport(niche.id, niche.name, painPoints);
+      const report = await generateReport(niche.id, niche.name, painPoints);
       
       // Save report
       const date = new Date().toISOString().split('T')[0];
@@ -564,8 +560,7 @@ export async function runMiningDrill(): Promise<void> {
       const filename = path.join(reportsDir, `mining-drill-${niche.id}-${date}.md`);
       fs.writeFileSync(filename, report);
       
-      console.log(`  ✅ Report saved: data/reports/mining-drill-${niche.id}-${date}.md`);
-      
+
       results.push({ 
         niche: niche.id, 
         painPoints: painPoints.length, 
@@ -573,11 +568,8 @@ export async function runMiningDrill(): Promise<void> {
       });
     }
     
-    console.log('\n✅ Complete!');
-    console.log(`Generated ${results.length} reports:`);
-    results.forEach(r => {
-      console.log(`  - ${r.niche}: ${r.painPoints} pain points`);
-    });
+            results.forEach(r => {
+          });
   } catch (error) {
     console.error('❌ Mining Drill failed:', error);
     throw error;

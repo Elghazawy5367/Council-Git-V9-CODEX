@@ -9,92 +9,62 @@
 
 @layer base {
   :root {
-    /* Primary palette - Purple/Blue gradients */
-    --background: 222 47% 4%;
-    --foreground: 210 40% 96%;
+    /* 2026 Semantic Color System (OKLCH - Perceptually Uniform) */
+    --background: oklch(0.15 0.02 240);
+    --foreground: oklch(0.95 0.01 240);
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 96%;
+    --card: oklch(0.18 0.03 240);
+    --card-foreground: oklch(0.95 0.01 240);
 
-    --popover: 222 47% 6%;
-    --popover-foreground: 210 40% 96%;
+    --popover: oklch(0.16 0.03 240);
+    --popover-foreground: oklch(0.95 0.01 240);
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
+    --primary: oklch(0.65 0.25 270);
+    --primary-foreground: oklch(0.98 0.01 270);
 
-    --secondary: 217 91% 60%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: oklch(0.55 0.2 240);
+    --secondary-foreground: oklch(0.98 0.01 240);
 
-    --muted: 222 47% 14%;
-    --muted-foreground: 215 20% 65%;
+    --muted: oklch(0.25 0.02 240);
+    --muted-foreground: oklch(0.7 0.02 240);
 
-    --accent: 280 70% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: oklch(0.7 0.2 300);
+    --accent-foreground: oklch(0.98 0.01 300);
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: oklch(0.6 0.2 25);
+    --destructive-foreground: oklch(0.98 0.01 25);
 
-    --border: 222 30% 18%;
-    --input: 222 30% 18%;
-    --ring: 262 83% 58%;
+    --border: oklch(0.3 0.03 240 / 0.5);
+    --input: oklch(0.3 0.03 240 / 0.5);
+    --ring: oklch(0.65 0.25 270);
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    /* Council-specific tokens */
-    --council-primary: 139 92 246;
-    --council-secondary: 59 130 246;
-    --council-accent: 168 85 247;
-    --council-success: 34 197 94;
-    --council-warning: 251 191 36;
-    --council-error: 239 68 68;
+    /* Expert Semantic Colors */
+    --expert-active: oklch(0.7 0.15 145);
+    --verdict-critical: oklch(0.6 0.2 25);
+    --synthesis-progress: oklch(0.65 0.19 262);
     
-    /* Glass effect tokens */
-    --glass-bg: 222 47% 8% / 0.6;
-    --glass-border: 0 0% 100% / 0.1;
-    --glass-blur: 20px;
+    /* 2026 Glassmorphism Variables */
+    --glass-opacity: 0.15;
+    --glass-blur: 24px;
+    --min-contrast: 0.45;
 
     /* Gradient tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(217 91% 60%));
-    --gradient-accent: linear-gradient(135deg, hsl(280 70% 60%), hsl(262 83% 58%));
-    --gradient-glow: linear-gradient(135deg, hsl(262 83% 58% / 0.3), hsl(217 91% 60% / 0.3));
+    --gradient-primary: linear-gradient(135deg, oklch(0.65 0.25 270), oklch(0.55 0.2 240));
+    --gradient-accent: linear-gradient(135deg, oklch(0.7 0.2 300), oklch(0.65 0.25 270));
     
     /* Shadow tokens */
-    --shadow-glow: 0 0 40px hsl(262 83% 58% / 0.3);
-    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.3), inset 0 1px 0 hsl(0 0% 100% / 0.05);
-    --shadow-elevated: 0 12px 48px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 40px oklch(0.65 0.25 270 / 0.2);
+    --shadow-card: 0 8px 32px oklch(0 0 0 / 0.4);
 
     /* Sidebar tokens */
-    --sidebar-background: 222 47% 6%;
-    --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 262 83% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 91% 60%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 222 30% 18%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-background: oklch(0.14 0.02 240);
+    --sidebar-foreground: oklch(0.9 0.01 240);
+    --sidebar-primary: oklch(0.65 0.25 270);
+    --sidebar-primary-foreground: oklch(0.98 0.01 240);
   }
 
-  .dark {
-    --background: 222 47% 4%;
-    --foreground: 210 40% 96%;
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 96%;
-    --popover: 222 47% 6%;
-    --popover-foreground: 210 40% 96%;
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 217 91% 60%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 222 47% 14%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 280 70% 60%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 222 30% 18%;
-    --input: 222 30% 18%;
-    --ring: 262 83% 58%;
-  }
 }
 
 @layer base {
@@ -162,23 +132,29 @@
 }
 
 @layer components {
-  /* Glass panel effect */
+  /* Accessible 2026 Glassmorphism */
   .glass-panel {
-    background: hsl(var(--card) / 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(0 0% 100% / 0.1);
+    background: color-mix(in oklch, var(--card), transparent calc(100% - (var(--glass-opacity) * 100%)));
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid oklch(1 0 0 / max(0.1, var(--min-contrast)));
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-panel:hover {
+    background: color-mix(in oklch, var(--card), transparent calc(100% - (var(--glass-opacity) * 1.2 * 100%)));
+    border-color: oklch(1 0 0 / max(0.2, var(--min-contrast)));
   }
 
   .glass-panel-elevated {
-    background: hsl(var(--card) / 0.8);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid hsl(0 0% 100% / 0.15);
+    background: color-mix(in oklch, var(--card), transparent calc(100% - (var(--glass-opacity) * 1.5 * 100%)));
+    backdrop-filter: blur(calc(var(--glass-blur) * 1.5));
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.5));
+    border: 1px solid oklch(1 0 0 / max(0.2, var(--min-contrast)));
     border-radius: var(--radius);
-    box-shadow: var(--shadow-elevated);
+    box-shadow: 0 12px 48px oklch(0 0 0 / 0.5), 0 0 20px oklch(0.65 0.25 270 / 0.1);
   }
 
   /* Text gradient */
