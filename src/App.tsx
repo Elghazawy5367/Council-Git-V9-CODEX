@@ -12,6 +12,7 @@ import { CouncilWorkflow } from "@/features/council/components/CouncilWorkflow";
 const Index = React.lazy(() => import("@/pages/Index"));
 const AutomationDashboard = React.lazy(() => import("@/pages/AutomationDashboard"));
 const QualityDashboard = React.lazy(() => import("@/pages/QualityDashboard"));
+const AnalyticsDashboard = React.lazy(() => import("@/pages/AnalyticsDashboard"));
 const ScoutConfig = React.lazy(() => import("@/pages/features/ScoutConfig"));
 const NotFound = React.lazy(() => import("@/pages/NotFound"));
 
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/council" element={<CouncilWorkflow />} />
                 <Route path="/features" element={<AutomationDashboard />} />
                 <Route path="/quality" element={<QualityDashboard />} />
+                <Route path="/analytics" element={<AnalyticsDashboard />} />
                 <Route path="/features/scout" element={<ScoutConfig />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

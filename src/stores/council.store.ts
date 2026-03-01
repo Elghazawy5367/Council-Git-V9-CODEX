@@ -53,8 +53,10 @@ interface CouncilState {
   setActiveExpertCount: (count: number) => void;
   debateRounds: number;
   setDebateRounds: (rounds: number) => void;
-  fileData: FileData | null;
-  setFileData: (fileData: FileData | null) => void;
+  fileData: FileData[];
+  setFileData: (fileData: FileData[]) => void;
+  addFileData: (file: FileData) => void;
+  removeFileData: (index: number) => void;
   loadPersona: (expertIndex: number, personaId: string) => void;
   loadTeam: (teamId: string) => void;
   clearPersona: (expertIndex: number) => void;
@@ -479,8 +481,10 @@ export const useCouncilStore = create<CouncilState>((set, get) => ({
   setActiveExpertCount: (count) => set({ activeExpertCount: count }),
   debateRounds: 3,
   setDebateRounds: (rounds) => set({ debateRounds: rounds }),
-  fileData: null,
+  fileData: [],
   setFileData: (fileData) => set({ fileData }),
+  addFileData: (file) => set((state) => ({ fileData: [...state.fileData, file] })),
+  removeFileData: (index) => set((state) => ({ fileData: state.fileData.filter((_, i) => i !== index) })),
 
   loadPersona: (expertIndex, personaId) => {
     const personaExpert = loadPersonaIntoExpert(personaId, expertIndex);
@@ -587,6 +591,8 @@ export const useCouncilControl = () => useCouncilStore((state) => ({
   setDebateRounds: state.setDebateRounds,
   fileData: state.fileData,
   setFileData: state.setFileData,
+  addFileData: state.addFileData,
+  removeFileData: state.removeFileData,
   loadPersona: state.loadPersona,
   loadTeam: state.loadTeam,
   clearPersona: state.clearPersona,

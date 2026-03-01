@@ -21,8 +21,10 @@ interface ControlPanelState {
   setActiveExpertCount: (count: number) => void;
   debateRounds: number;
   setDebateRounds: (rounds: number) => void;
-  fileData: FileData | null;
-  setFileData: (fileData: FileData | null) => void;
+  fileData: FileData[];
+  setFileData: (fileData: FileData[]) => void;
+  addFileData: (file: FileData) => void;
+  removeFileData: (index: number) => void;
   loadPersona: (expertIndex: number, personaId: string) => void;
   loadTeam: (teamId: string) => void;
   clearPersona: (expertIndex: number) => void;
@@ -62,6 +64,8 @@ export const useControlPanelStore = (selector?: (state: ControlPanelState) => an
       setDebateRounds: state.setDebateRounds,
       fileData: state.fileData,
       setFileData: state.setFileData,
+      addFileData: state.addFileData,
+      removeFileData: state.removeFileData,
       loadPersona: state.loadPersona,
       loadTeam: state.loadTeam,
       clearPersona: state.clearPersona,
@@ -80,6 +84,8 @@ export const useControlPanelStore = (selector?: (state: ControlPanelState) => an
     setDebateRounds: state.setDebateRounds,
     fileData: state.fileData,
     setFileData: state.setFileData,
+    addFileData: state.addFileData,
+    removeFileData: state.removeFileData,
     loadPersona: state.loadPersona,
     loadTeam: state.loadTeam,
     clearPersona: state.clearPersona,

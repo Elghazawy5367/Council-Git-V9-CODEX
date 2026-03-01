@@ -12,7 +12,8 @@ import {
   LayoutGrid, 
   Shield,
   Zap,
-  Brain
+  Brain,
+  BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/primitives/button';
 import { Badge } from '@/components/primitives/badge';
@@ -39,6 +40,7 @@ export const Header: React.FC = () => {
   const navItems = [
     { to: '/features', label: 'Automation', icon: Zap },
     { to: '/quality', label: 'Quality', icon: Shield },
+    { to: '/analytics', label: 'Analytics', icon: BarChart3 },
   ];
 
   return (
@@ -63,7 +65,7 @@ export const Header: React.FC = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-muted/30 border border-border/50">
+            <nav className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-muted/30 border border-border/50" aria-label="Main navigation">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.to);
@@ -71,6 +73,7 @@ export const Header: React.FC = () => {
                   <Link
                     key={item.to}
                     to={item.to}
+                    aria-current={active ? 'page' : undefined}
                     className={cn(
                       "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                       active 
