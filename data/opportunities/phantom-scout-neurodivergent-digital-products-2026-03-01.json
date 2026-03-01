@@ -1,0 +1,256 @@
+[
+  {
+    "id": "opp-1772327628362-s1zvrcb",
+    "category": "Automation",
+    "painPoint": "Unsure how to resolve `Missing field while writing result` error when using subscriptions",
+    "solution": "Add missing feature as standalone tool",
+    "confidence": 1,
+    "marketSize": 7500,
+    "competition": "weak",
+    "effort": "low",
+    "impact": "high",
+    "evidence": [
+      "apollographql/apollo-client",
+      "https://github.com/apollographql/apollo-client/issues/8677"
+    ],
+    "keywords": [
+      "unsure",
+      "resolve",
+      "missing",
+      "field",
+      "while",
+      "writing",
+      "result",
+      "error",
+      "when",
+      "using",
+      "subscriptions",
+      "feature",
+      "standalone",
+      "tool"
+    ]
+  },
+  {
+    "id": "opp-1772327628363-mm5t09d",
+    "category": "Integration",
+    "painPoint": "fix(i18n): Make rest of the tools translatable and translate them to German",
+    "solution": "Tool to solve: fix(i18n): Make rest of the tools translatable and translate them to German",
+    "confidence": 1,
+    "marketSize": 1100,
+    "competition": "none",
+    "effort": "low",
+    "impact": "high",
+    "evidence": [
+      "CorentinTh/it-tools",
+      "https://github.com/CorentinTh/it-tools/pull/1178"
+    ],
+    "keywords": [
+      "i18n",
+      "make",
+      "rest",
+      "tools",
+      "translatable",
+      "translate",
+      "them",
+      "german",
+      "tool",
+      "solve"
+    ]
+  },
+  {
+    "id": "opp-1772327628362-fte3tqh",
+    "category": "Integration",
+    "painPoint": "Need assistance in using mailpit in our app",
+    "solution": "Add missing feature as standalone tool",
+    "confidence": 0.8099999999999999,
+    "marketSize": 2100,
+    "competition": "weak",
+    "effort": "low",
+    "impact": "high",
+    "evidence": [
+      "axllent/mailpit",
+      "https://github.com/axllent/mailpit/issues/14"
+    ],
+    "keywords": [
+      "need",
+      "assistance",
+      "using",
+      "mailpit",
+      "missing",
+      "feature",
+      "standalone",
+      "tool"
+    ]
+  },
+  {
+    "id": "opp-1772327628362-qyz8ahc",
+    "category": "Integration",
+    "painPoint": "[NEW TOOL] Extending the \"Text to NATO\" spelling tool with other alphabets",
+    "solution": "Tool to solve: [NEW TOOL] Extending the \"Text to NATO\" spelling tool with other alphabets",
+    "confidence": 0.7799999999999999,
+    "marketSize": 1800,
+    "competition": "moderate",
+    "effort": "low",
+    "impact": "high",
+    "evidence": [
+      "CorentinTh/it-tools",
+      "https://github.com/CorentinTh/it-tools/issues/794"
+    ],
+    "keywords": [
+      "tool",
+      "extending",
+      "text",
+      "nato",
+      "spelling",
+      "other",
+      "alphabets",
+      "solve"
+    ]
+  },
+  {
+    "id": "opp-1772327628362-n0s0l5b",
+    "category": "Automation",
+    "painPoint": "feat(new tool): Regex Tester (and Cheatsheet)",
+    "solution": "Tool to solve: feat(new tool): Regex Tester (and Cheatsheet)",
+    "confidence": 0.6900000000000001,
+    "marketSize": 1400,
+    "competition": "weak",
+    "effort": "low",
+    "impact": "high",
+    "evidence": [
+      "CorentinTh/it-tools",
+      "https://github.com/CorentinTh/it-tools/pull/1030"
+    ],
+    "keywords": [
+      "feat",
+      "tool",
+      "regex",
+      "tester",
+      "cheatsheet",
+      "solve"
+    ]
+  },
+  {
+    "id": "opp-1772327628363-rz65ht7",
+    "category": "Performance",
+    "painPoint": "v3.9.2 typings file is missing ",
+    "solution": "Add missing feature as standalone tool",
+    "confidence": 0.64,
+    "marketSize": 900,
+    "competition": "weak",
+    "effort": "low",
+    "impact": "medium",
+    "evidence": [
+      "Tencent/vConsole",
+      "https://github.com/Tencent/vConsole/issues/464"
+    ],
+    "keywords": [
+      "typings",
+      "file",
+      "missing",
+      "feature",
+      "standalone",
+      "tool"
+    ]
+  },
+  {
+    "id": "opp-1772327628362-yh8pbzc",
+    "category": "Integration",
+    "painPoint": "Hot Module Replacement (HMR) Integration",
+    "solution": "Build integration layer/connector",
+    "confidence": 0.79,
+    "marketSize": 1400,
+    "competition": "strong",
+    "effort": "medium",
+    "impact": "high",
+    "evidence": [
+      "responsively-org/responsively-app",
+      "https://github.com/responsively-org/responsively-app/pull/1265"
+    ],
+    "keywords": [
+      "module",
+      "replacement",
+      "integration",
+      "build",
+      "layer",
+      "connector"
+    ]
+  },
+  {
+    "id": "opp-1772327628362-cln1576",
+    "category": "Automation",
+    "painPoint": "Uncatchable throws on botbuilder-adapter-webex registerWebhookSubscription Functions",
+    "solution": "Tool to solve: Uncatchable throws on botbuilder-adapter-webex registerWebhookSubscription Functions",
+    "confidence": 0.7899999999999999,
+    "marketSize": 1900,
+    "competition": "strong",
+    "effort": "medium",
+    "impact": "high",
+    "evidence": [
+      "howdyai/botkit",
+      "https://github.com/howdyai/botkit/issues/2217"
+    ],
+    "keywords": [
+      "uncatchable",
+      "throws",
+      "botbuilder",
+      "adapter",
+      "webex",
+      "registerwebhooksubscription",
+      "functions",
+      "tool",
+      "solve"
+    ]
+  },
+  {
+    "id": "opp-1772327628362-bmvnzv3",
+    "category": "Integration",
+    "painPoint": "Make this easier to run automate integration tests",
+    "solution": "Build integration layer/connector",
+    "confidence": 0.74,
+    "marketSize": 1900,
+    "competition": "strong",
+    "effort": "medium",
+    "impact": "high",
+    "evidence": [
+      "axllent/mailpit",
+      "https://github.com/axllent/mailpit/issues/166"
+    ],
+    "keywords": [
+      "make",
+      "easier",
+      "automate",
+      "integration",
+      "tests",
+      "build",
+      "layer",
+      "connector"
+    ]
+  },
+  {
+    "id": "opp-1772327628362-zoomx2j",
+    "category": "UI/UX",
+    "painPoint": "[big refactoring] Audio latency fix for Android. Support to preload effects on Android now.",
+    "solution": "Tool to solve: [big refactoring] Audio latency fix for Android. Support to preload effects on Android now.",
+    "confidence": 1,
+    "marketSize": 20600,
+    "competition": "weak",
+    "effort": "high",
+    "impact": "high",
+    "evidence": [
+      "cocos2d/cocos2d-x",
+      "https://github.com/cocos2d/cocos2d-x/pull/15875"
+    ],
+    "keywords": [
+      "refactoring",
+      "audio",
+      "latency",
+      "android",
+      "support",
+      "preload",
+      "effects",
+      "tool",
+      "solve"
+    ]
+  }
+]
