@@ -27,6 +27,8 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          dim: "hsl(var(--primary-dim))",
+          glow: "hsl(var(--primary-glow))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -43,6 +45,10 @@ export default {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          cyan: "hsl(var(--accent-cyan))",
+          emerald: "hsl(var(--accent-emerald))",
+          amber: "hsl(var(--accent-amber))",
+          rose: "hsl(var(--accent-rose))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -51,6 +57,13 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        surface: {
+          void: "hsl(var(--bg-void))",
+          base: "hsl(var(--bg-base))",
+          raised: "hsl(var(--bg-raised))",
+          elevated: "hsl(var(--bg-elevated))",
+          overlay: "hsl(var(--bg-overlay))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -62,6 +75,10 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))",
+        error: "hsl(var(--error))",
+        info: "hsl(var(--info))",
         // Council-specific semantic colors
         council: {
           primary: "rgb(var(--council-primary))",

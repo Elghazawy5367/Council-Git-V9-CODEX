@@ -1,5 +1,4 @@
 import React, { Suspense, lazy } from "react";
-import { Header } from "@/features/council/components/Header";
 import { ControlPanel } from "@/features/council/components/ControlPanel";
 import { ExpertCard } from "@/features/council/components/ExpertCard";
 import { VerdictPanel } from "@/features/council/components/VerdictPanel";
@@ -39,18 +38,13 @@ const Index: React.FC = () => {
   const showHistory = useSettingsStore(state => state.showHistory);
   const showMemory = useSettingsStore(state => state.showMemory);
   const setShowMemory = useSettingsStore(state => state.setShowMemory);
-  return <div className="min-h-screen flex flex-col">
+  return <div className="min-h-full flex flex-col">
       {/* Skip to main content link for keyboard navigation */}
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:p-4 focus:bg-primary focus:text-primary-foreground">
         Skip to main content
       </a>
 
-      {/* Header - Protected */}
-      <ErrorBoundary FallbackComponent={ComponentErrorFallback} onReset={() => undefined}>
-        <Header />
-      </ErrorBoundary>
-
-      <main id="main-content" className="flex-1 container mx-auto px-4 py-6 max-w-screen-2xl">
+      <div className="flex-1 container mx-auto px-4 py-6 max-w-screen-2xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 lg:min-w-[300px] space-y-4">
             {/* Control Panel - Protected */}
@@ -78,7 +72,7 @@ const Index: React.FC = () => {
             </ErrorBoundary>
           </div>
         </div>
-      </main>
+      </div>
 
       <Suspense fallback={<div className="h-12 w-12 animate-spin text-primary" />}>
         {showSettings && <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />}

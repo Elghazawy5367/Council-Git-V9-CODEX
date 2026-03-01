@@ -7,6 +7,7 @@ import RootErrorBoundary from "@/components/ErrorBoundary";
 import { Toaster } from "@/components/primitives/sonner";
 import { CouncilProvider } from "@/contexts/CouncilContext";
 import { CouncilWorkflow } from "@/features/council/components/CouncilWorkflow";
+import { AppShell } from "@/components/layout/AppShell";
 
 // Lazy load pages for code splitting
 const Index = React.lazy(() => import("@/pages/Index"));
@@ -23,7 +24,7 @@ const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="flex flex-col items-center gap-4">
       <div className="relative">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary to-secondary blur-lg opacity-50 animate-pulse" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary to-accent-cyan blur-lg opacity-50 animate-pulse" />
         <Loader2 className="h-12 w-12 animate-spin text-primary relative z-10" />
       </div>
       <p className="text-sm text-muted-foreground animate-pulse">Loading Council...</p>
@@ -39,16 +40,18 @@ const App = () => (
           <Toaster />
           <HashRouter>
             <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/council" element={<CouncilWorkflow />} />
-                <Route path="/features" element={<AutomationDashboard />} />
-                <Route path="/quality" element={<QualityDashboard />} />
-                <Route path="/analytics" element={<AnalyticsDashboard />} />
-                <Route path="/features/scout" element={<ScoutConfig />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AppShell>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/council" element={<CouncilWorkflow />} />
+                  <Route path="/features" element={<AutomationDashboard />} />
+                  <Route path="/quality" element={<QualityDashboard />} />
+                  <Route path="/analytics" element={<AnalyticsDashboard />} />
+                  <Route path="/features/scout" element={<ScoutConfig />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AppShell>
             </Suspense>
           </HashRouter>
         </TooltipProvider>
