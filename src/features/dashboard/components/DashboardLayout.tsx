@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDashboardStore } from '../store/dashboard-store';
 import { MetricCard } from './MetricCard';
 import { DecisionTimeline } from './DecisionTimeline';
@@ -10,20 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/primitive
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/primitives/tabs';
 import { Button } from '@/components/primitives/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/primitives/select';
-import {
   Brain,
   Clock,
   DollarSign,
   TrendingUp,
   Target,
   BarChart3,
-  Calendar,
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -36,6 +29,7 @@ const DATE_RANGES = {
 };
 
 export const DashboardLayout: React.FC = () => {
+  const navigate = useNavigate();
   const { metrics, setDateRange, clearAllData, recentDecisions } = useDashboardStore();
   const [selectedRange, setSelectedRange] = useState<keyof typeof DATE_RANGES>('30d');
 
@@ -73,36 +67,32 @@ export const DashboardLayout: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
-            Council Analytics
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            Analytics
           </h1>
-          <p className="text-muted-foreground mt-2 text-sm md:text-base">
-            Insights from your AI council decisions • {hasData ? `${metrics.totalDecisions} total decisions` : 'No data yet'}
+          <p className="text-muted-foreground mt-1 text-sm">
+            {hasData ? `${metrics.totalDecisions} total decisions` : 'No data yet'}
           </p>
         </div>
         {hasData && (
           <div className="flex items-center gap-2 flex-wrap">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <Select value={selectedRange} onValueChange={handleDateRangeChange}>
-              <SelectTrigger className="w-[160px] glass-panel">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
+            <Tabs value={selectedRange} onValueChange={(v) => handleDateRangeChange(v)} className="w-auto">
+              <TabsList className="overflow-x-auto">
                 {Object.entries(DATE_RANGES).map(([key, { label }]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
+                  <TabsTrigger key={key} value={key} className="text-xs px-3">
+                    {key === 'all' ? 'All' : key}
+                  </TabsTrigger>
                 ))}
-              </SelectContent>
-            </Select>
+              </TabsList>
+            </Tabs>
             <Button
               variant="outline"
               size="sm"
               onClick={handleClearData}
-              className="text-destructive hover:bg-destructive/10 glass-panel"
+              className="text-destructive hover:bg-destructive/10"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Clear Data
+              <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+              Clear
             </Button>
           </div>
         )}
@@ -141,26 +131,24 @@ export const DashboardLayout: React.FC = () => {
           />
         </div>
       ) : (
-        <Card className="glass-panel border-2 border-dashed border-violet-500/30 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
-          <CardContent className="flex flex-col items-center justify-center py-20">
+        <Card className="glass-panel border-2 border-dashed border-border/40">
+          <CardContent className="flex flex-col items-center justify-center py-16">
             <div className="relative mb-6">
-              <Brain className="h-20 w-20 text-violet-500/50" />
-              <div className="absolute inset-0 animate-ping">
-                <Brain className="h-20 w-20 text-violet-500/20" />
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent-cyan/20 flex items-center justify-center">
+                <Brain className="h-8 w-8 text-primary" />
               </div>
             </div>
-            <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+            <h3 className="text-xl font-bold mb-2 text-foreground">
               No Analytics Data Yet
             </h3>
-            <p className="text-muted-foreground text-center max-w-md mb-8 leading-relaxed">
-              Execute your first Council analysis to start tracking metrics, costs, and performance insights. 
-              Your analytics journey begins with a single question.
+            <p className="text-muted-foreground text-center max-w-md mb-6 text-sm leading-relaxed">
+              Execute your first Council analysis to start tracking metrics, costs, and performance insights.
             </p>
             <Button 
-              onClick={() => window.location.href = '/'} 
-              className="bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white font-semibold px-6 py-6 text-base"
+              onClick={() => navigate('/')} 
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-5"
             >
-              <Brain className="mr-2 h-5 w-5" />
+              <Brain className="mr-2 h-4 w-4" />
               Go to Council
             </Button>
           </CardContent>
@@ -170,7 +158,7 @@ export const DashboardLayout: React.FC = () => {
       {/* Main Content Tabs */}
       {hasData && (
         <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto overflow-x-auto">
           <TabsTrigger value="overview">
             <BarChart3 className="h-4 w-4 mr-2" />
             Overview
