@@ -47,6 +47,13 @@ export default defineConfig(({ mode, command }) => {
   build: {
     // Better error reporting
     sourcemap: mode === 'development',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
     rollupOptions: {
       onwarn(warning, warn) {
         // Suppress certain warnings

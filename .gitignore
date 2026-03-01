@@ -36,3 +36,8 @@ test-scout-refactor.ts
 test-sniper-refactor.ts
 test-ruthless-judge-enhanced.ts
 examples-council-messaging.ts
+
+# Backup and original files
+*.backup
+*.bak
+*.original
