@@ -9,8 +9,7 @@
  */
 
 import { Octokit } from '@octokit/rest';
-import * as fs from 'fs';
-import * as path from 'path';
+import { isNode, getRuntimeRequire } from './env';
 import type { NicheConfig } from './types';
 
 // ============================================================================
@@ -491,6 +490,10 @@ function generateReport(
 export async function runMiningDrill(): Promise<void> {
   console.log('🔨 Mining Drill - Starting...');
   
+  if (!isNode) return;
+  const fs = getRuntimeRequire()('fs');
+  const path = getRuntimeRequire()('path');
+
   try {
     const allNiches = await loadNicheConfig();
     const niches = getEnabledNiches(allNiches);

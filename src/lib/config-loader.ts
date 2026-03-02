@@ -7,6 +7,7 @@
  */
 
 import type { NicheConfig, YamlConfig } from './types';
+import { isNode, getRuntimeRequire } from './env';
 
 // Dynamic imports for Node.js-only modules
 let yaml: any;
@@ -18,10 +19,11 @@ let path: any;
  * This prevents build failures in browser environments
  */
 async function loadNodeModules(): Promise<void> {
-  if (typeof window === 'undefined') {
-    yaml = await import('js-yaml');
-    fs = await import('fs');
-    path = await import('path');
+  if (isNode) {
+    const runtimeRequire = getRuntimeRequire();
+    yaml = runtimeRequire('js-yaml');
+    fs = runtimeRequire('fs');
+    path = runtimeRequire('path');
   }
 }
 

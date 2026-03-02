@@ -142,8 +142,8 @@ export class APIClient {
         const errorText = await response.text();
         if (errorText) errorMessage = errorText;
       }
-    } catch {
-      // If parsing fails, use default error message
+    } catch (e) {
+      console.warn('Failed to parse error response:', e);
     }
 
     // Handle rate limiting
