@@ -12,7 +12,9 @@ export function HeistPanel() {
   const parentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    db.heistPrompts.orderBy('qualityScore').reverse().toArray().then(setPrompts);
+    db.heistPrompts.orderBy('qualityScore').reverse().toArray()
+      .then(setPrompts)
+      .catch((err) => console.warn('[HeistPanel] Failed to load prompts:', err));
   }, []);
 
   const virtualizer = useVirtualizer({

@@ -9,7 +9,9 @@ export function ActivityLog() {
   const parentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    db.devToolsRuns.orderBy('startedAt').reverse().limit(50).toArray().then(setRuns);
+    db.devToolsRuns.orderBy('startedAt').reverse().limit(50).toArray()
+      .then(setRuns)
+      .catch((err) => console.warn('[ActivityLog] Failed to load runs:', err));
   }, []);
 
   const virtualizer = useVirtualizer({

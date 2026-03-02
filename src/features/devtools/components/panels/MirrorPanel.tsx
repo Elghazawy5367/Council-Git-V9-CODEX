@@ -33,20 +33,32 @@ export function MirrorPanel() {
   async function runMirror() {
     setRunning(true);
     const runId = await startRun('mirror');
-    const worker = new Worker(
-      new URL('../../workers/analysis.worker.ts', import.meta.url), { type: 'module' }
-    );
-    worker.onmessage = async (e) => {
-      if (e.data.type === 'success') {
-        setFindings(e.data.results);
-        await completeRun(runId, 'mirror', `${e.data.results.length} issues found`);
-      } else {
-        await failRun(runId, 'mirror', e.data.message);
-      }
+    let worker: Worker | null = null;
+    try {
+      worker = new Worker(
+        new URL('../../workers/analysis.worker.ts', import.meta.url), { type: 'module' }
+      );
+      worker.onmessage = async (e) => {
+        if (e.data.type === 'success') {
+          setFindings(e.data.results);
+          await completeRun(runId, 'mirror', `${e.data.results.length} issues found`);
+        } else {
+          await failRun(runId, 'mirror', e.data.message);
+        }
+        setRunning(false);
+        worker?.terminate();
+      };
+      worker.onerror = async (err) => {
+        await failRun(runId, 'mirror', String(err.message));
+        setRunning(false);
+        worker?.terminate();
+      };
+      worker.postMessage({ files: [] });
+    } catch (err) {
+      await failRun(runId, 'mirror', String(err));
       setRunning(false);
-      worker.terminate();
-    };
-    worker.postMessage({ files: [] });
+      worker?.terminate();
+    }
   }
 
   return (

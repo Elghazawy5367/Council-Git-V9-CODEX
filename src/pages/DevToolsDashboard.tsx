@@ -14,7 +14,7 @@ const PANELS = { mirror: MirrorPanel, learn: LearnPanel, twin: TwinPanel,
 
 export default function DevToolsDashboard() {
   const { activeTool, loadLastRuns } = useDevToolsStore();
-  useEffect(() => { loadLastRuns(); }, []);
+  useEffect(() => { loadLastRuns(); }, [loadLastRuns]);
   const ActivePanel = PANELS[activeTool];
 
   return (
