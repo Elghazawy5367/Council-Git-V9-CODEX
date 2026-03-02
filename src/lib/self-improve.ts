@@ -7,6 +7,8 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { callDevToolsLLM } from '@/features/devtools/lib/llm-client';
+import { db } from './db';
 export interface GitHubRepo {
   name: string;
   fullName: string;
@@ -119,6 +121,7 @@ async function searchSuccessfulRepos(niche: string, minStars: number, maxRepos: 
       } catch (error) {
         console.warn('[SelfImprove] Pattern extraction failed:', error);
       }
+    }
     return repos;
   } catch (error) {
     console.error("Failed to search GitHub:", error);
@@ -554,4 +557,97 @@ function generateMockRepos(niche: string, count: number): GitHubRepo[] {
     });
   }
   return mockRepos;
+}
+
+// ── LLM-Powered Pattern Intelligence (Phase 2) ──────────────────────────
+
+export interface RepoAnalysis {
+  repoName: string;
+  analyzedAt: number;
+  architectureTags: string[];
+  patterns: Array<{
+    pattern: string;
+    confidence: number;
+    evidence: string;
+  }>;
+  techChoices: Array<{ choice: string; rationale: string }>;
+  innovationSignals: string[];
+  qualityScore: number;
+}
+
+export async function analyzeRepoWithLLM(
+  repoName: string,
+  readmeContent: string,
+  fileList: string[]
+): Promise<RepoAnalysis> {
+  const response = await callDevToolsLLM({
+    model: 'deepseek/deepseek-chat',
+    systemPrompt: `You are an elite code pattern analyst. Extract structured intelligence from repository content.
+    
+    You MUST return ONLY a valid JSON object — no markdown fences, no preamble, no explanation.
+    
+    JSON schema:
+    {
+      "architectureTags": ["string"],
+      "patterns": [{"pattern":"string","confidence":0.0,"evidence":"string"}],
+      "techChoices": [{"choice":"string","rationale":"string"}],
+      "innovationSignals": ["string"],
+      "qualityScore": 0
+    }`,
+    userPrompt: `Repository: ${repoName}
+    
+    README excerpt:
+    ${readmeContent.slice(0, 3000)}
+    
+    File structure sample:
+    ${fileList.slice(0, 40).join('\n')}
+    
+    Extract patterns, architecture tags, tech choices, and quality score.
+    Confidence values must be 0.0–1.0. Quality score must be 0–100.`,
+    responseFormat: { type: 'json_object' },
+    maxTokens: 1200,
+  });
+
+  const parsed = JSON.parse(response.content);
+  const result: RepoAnalysis = {
+    repoName,
+    analyzedAt: Date.now(),
+    architectureTags: parsed.architectureTags ?? [],
+    patterns:         parsed.patterns ?? [],
+    techChoices:      parsed.techChoices ?? [],
+    innovationSignals: parsed.innovationSignals ?? [],
+    qualityScore:     Math.min(100, Math.max(0, parsed.qualityScore ?? 50)),
+  };
+
+  // Save to Dexie — upsert by repoName
+  const existing = await db.learnedPatterns.where('repoName').equals(repoName).first();
+  if (existing) {
+    await db.learnedPatterns.update(existing.id!, result);
+  } else {
+    await db.learnedPatterns.add(result);
+  }
+  return result;
+}
+
+export async function synthesizePatterns(analyses: RepoAnalysis[]): Promise<string> {
+  if (analyses.length === 0) return 'No analyses to synthesize.';
+
+  const response = await callDevToolsLLM({
+    model: 'anthropic/claude-sonnet-4-5',
+    systemPrompt: `You are a meta-pattern synthesizer. Given analyses of multiple elite repositories,
+    identify recurring patterns that appear across 2+ repos. These cross-repo patterns are the most
+    actionable learnings. Be specific and concrete. Format as numbered markdown list.`,
+    userPrompt: `Analyses from ${analyses.length} repositories:
+    
+    ${analyses.map(a =>
+      `## ${a.repoName} (score: ${a.qualityScore})
+      Architecture: ${a.architectureTags.join(', ')}
+      Top patterns: ${a.patterns.slice(0,3).map(p => p.pattern).join('; ')}`
+    ).join('\n\n')}
+    
+    What patterns appear in 2+ repos? What should I adopt first?`,
+    maxTokens: 1000,
+  });
+
+  return response.content;
 }

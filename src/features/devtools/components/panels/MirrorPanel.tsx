@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useDevToolsStore } from '../../store/devtools-store';
+import { runSemanticAnalysis, SemanticIssue } from '../../../../lib/code-mirror';
 
 interface MirrorFinding {
   severity: 'critical' | 'high' | 'medium' | 'low';
   file: string;
   message: string;
+  source?: 'static' | 'llm';
 }
 
 type Severity = 'all' | 'critical' | 'high' | 'medium' | 'low';
@@ -18,6 +20,7 @@ export function MirrorPanel() {
   const [filter, setFilter]   = useState<Severity>('all');
   const [findings, setFindings] = useState<MirrorFinding[]>([]);
   const [isRunning, setRunning] = useState(false);
+  const [isLLMRunning, setLLMRunning] = useState(false);
   const { startRun, completeRun, failRun } = useDevToolsStore();
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +43,8 @@ export function MirrorPanel() {
       );
       worker.onmessage = async (e) => {
         if (e.data.type === 'success') {
-          setFindings(e.data.results);
+          const staticFindings = (e.data.results as MirrorFinding[]).map(f => ({ ...f, source: 'static' as const }));
+          setFindings(staticFindings);
           await completeRun(runId, 'mirror', `${e.data.results.length} issues found`);
         } else {
           await failRun(runId, 'mirror', e.data.message);
@@ -61,6 +65,42 @@ export function MirrorPanel() {
     }
   }
 
+  async function runLLMDeepScan() {
+    setLLMRunning(true);
+    const runId = await startRun('mirror');
+    try {
+      // Fetch a few key source files from GitHub for semantic analysis
+      const filePaths = [
+        'src/features/council/api/ai-client.ts',
+        'src/stores/council.store.ts',
+        'src/lib/db.ts',
+        'src/features/settings/store/settings-store.ts',
+        'src/lib/synthesis-engine.ts',
+      ];
+      const files = await Promise.all(
+        filePaths.map(async p => {
+          const res = await fetch(
+            `https://raw.githubusercontent.com/Elghazawy5367/Council-Git-V9/main/${p}`
+          );
+          return { path: p, content: res.ok ? await res.text() : '', regexFindingCount: 1 };
+        })
+      );
+      const issues: SemanticIssue[] = await runSemanticAnalysis(files.filter(f => f.content));
+      const llmFindings: MirrorFinding[] = issues.map(i => ({
+        severity: i.severity,
+        file: i.file,
+        message: `${i.finding} — ${i.suggestion}`,
+        source: 'llm' as const,
+      }));
+      setFindings(prev => [...prev, ...llmFindings]);
+      await completeRun(runId, 'mirror', `${issues.length} LLM issues found`);
+    } catch (err) {
+      await failRun(runId, 'mirror', String(err));
+    } finally {
+      setLLMRunning(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -68,11 +108,18 @@ export function MirrorPanel() {
           <h2 className="font-semibold">🪞 Code Mirror</h2>
           <p className="text-xs text-muted-foreground">Static + semantic analysis against elite standards</p>
         </div>
-        <button onClick={runMirror} disabled={isRunning}
-          className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground
-            disabled:opacity-50 flex items-center gap-2">
-          {isRunning ? <><span className="animate-spin">⟳</span> Scanning…</> : '▶ Run Analysis'}
-        </button>
+        <div className="flex gap-2">
+          <button onClick={runMirror} disabled={isRunning}
+            className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground
+              disabled:opacity-50 flex items-center gap-2">
+            {isRunning ? <><span className="animate-spin">⟳</span> Scanning…</> : '▶ Run Analysis'}
+          </button>
+          <button onClick={runLLMDeepScan} disabled={isLLMRunning}
+            className="px-4 py-2 text-sm rounded-lg border border-primary/30 text-primary
+              disabled:opacity-50 flex items-center gap-2 hover:bg-primary/10 transition-colors">
+            {isLLMRunning ? <><span className="animate-spin">⟳</span> Scanning…</> : '🧠 LLM Deep Scan'}
+          </button>
+        </div>
       </div>
 
       {/* Severity filter */}
@@ -91,7 +138,7 @@ export function MirrorPanel() {
       <div ref={parentRef} className="h-[500px] overflow-y-auto rounded-lg border border-border">
         {filtered.length === 0 ? (
           <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-            {isRunning ? 'Analyzing…' : findings.length === 0 ? 'Run analysis to see results' : 'No issues at this severity'}
+            {isRunning || isLLMRunning ? 'Analyzing…' : findings.length === 0 ? 'Run analysis to see results' : 'No issues at this severity'}
           </div>
         ) : (
           <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
@@ -106,8 +153,13 @@ export function MirrorPanel() {
                       ${SEVERITY_COLORS[f.severity as keyof typeof SEVERITY_COLORS]}`}>
                       {f.severity}
                     </span>
-                    <div>
-                      <div className="text-xs font-mono text-muted-foreground">{f.file}</div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-muted-foreground">{f.file}</span>
+                        {f.source === 'llm' && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">LLM</span>
+                        )}
+                      </div>
                       <div className="text-sm mt-0.5">{f.message}</div>
                     </div>
                   </div>

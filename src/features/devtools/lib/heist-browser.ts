@@ -52,3 +52,48 @@ export async function savePromptsToDb(prompts: HeistPrompt[]): Promise<number> {
   }
   return saved;
 }
+
+// ── LLM Auto-Categorization (Phase 2) ──────────────────────────────
+
+import { callDevToolsLLM } from './llm-client';
+
+export async function categorizePrompts(
+  prompts: HeistPrompt[]
+): Promise<HeistPrompt[]> {
+  const BATCH_SIZE = 10;
+  const results: HeistPrompt[] = [];
+
+  for (let i = 0; i < prompts.length; i += BATCH_SIZE) {
+    const batch = prompts.slice(i, i + BATCH_SIZE);
+    const categorized = await Promise.allSettled(
+      batch.map(p => categorizeSingle(p))
+    );
+    results.push(...categorized.map((r, idx) =>
+      r.status === 'fulfilled' ? r.value : batch[idx]
+    ));
+  }
+
+  // Persist all to Dexie
+  await db.heistPrompts.bulkPut(results);
+  return results;
+}
+
+async function categorizeSingle(prompt: HeistPrompt): Promise<HeistPrompt> {
+  const response = await callDevToolsLLM({
+    model: 'google/gemini-2.5-flash-preview',
+    systemPrompt: 'Categorize this AI system prompt. Return ONLY JSON: {"category":"reasoning|writing|analysis|coding|research|evaluation|creativity|extraction|other","qualityScore":0}. qualityScore is 0-100.',
+    userPrompt: prompt.content.slice(0, 400),
+    responseFormat: { type: 'json_object' },
+    maxTokens: 60,
+  });
+  try {
+    const meta = JSON.parse(response.content);
+    return {
+      ...prompt,
+      category: meta.category ?? 'other',
+      qualityScore: Math.min(100, Math.max(0, meta.qualityScore ?? 50)),
+    };
+  } catch {
+    return prompt;
+  }
+}
