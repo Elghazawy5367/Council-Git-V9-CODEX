@@ -7,6 +7,7 @@ import RootErrorBoundary from "@/components/ErrorBoundary";
 import { Toaster } from "@/components/primitives/sonner";
 import { CouncilProvider } from "@/contexts/CouncilContext";
 import { CouncilWorkflow } from "@/features/council/components/CouncilWorkflow";
+import { AppShell } from "@/components/layout/AppShell";
 
 // Lazy load pages for code splitting
 const Index = React.lazy(() => import("@/pages/Index"));
@@ -38,18 +39,20 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <HashRouter>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/council" element={<CouncilWorkflow />} />
-                <Route path="/features" element={<AutomationDashboard />} />
-                <Route path="/quality" element={<QualityDashboard />} />
-                <Route path="/analytics" element={<AnalyticsDashboard />} />
-                <Route path="/features/scout" element={<ScoutConfig />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
+            <AppShell>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/council" element={<CouncilWorkflow />} />
+                  <Route path="/features" element={<AutomationDashboard />} />
+                  <Route path="/quality" element={<QualityDashboard />} />
+                  <Route path="/analytics" element={<AnalyticsDashboard />} />
+                  <Route path="/features/scout" element={<ScoutConfig />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </AppShell>
           </HashRouter>
         </TooltipProvider>
       </CouncilProvider>

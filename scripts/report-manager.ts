@@ -167,7 +167,7 @@ function calculateQualityScore(content: string, sizeBytes: number): number {
   const headings = (content.match(/^##\s/gm) || []).length;
   score += Math.min(30, headings * 3);
   // List items (* or -) count (max 20 pts)
-  const listItems = (content.match(/^[\*\-]\s/gm) || []).length;
+  const listItems = (content.match(/^[*-]\s/gm) || []).length;
   score += Math.min(20, listItems);
   // Links count (max 10 pts)
   const links = (content.match(/https?:\/\//g) || []).length;

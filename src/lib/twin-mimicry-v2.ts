@@ -548,11 +548,9 @@ export async function analyzeMOEPatterns(config: {
 
   // Detect repository type
   const repoType = detectRepositoryType(repoPath);
-  console.log(`Detected repository type: ${repoType}`);
 
   // Find relevant files
   const files = findMOEFiles(repoPath, repoType);
-  console.log(`Found ${files.length} MOE-relevant files`);
 
   // Extract patterns based on repository type
   let patterns: MOEPatterns = {
@@ -730,10 +728,7 @@ function generateMOEReport(report: MOEAnalysisReport): void {
   fs.mkdirSync(path.dirname(reportPath), { recursive: true });
   fs.writeFileSync(reportPath, markdown);
 
-  console.log(`\n✅ MOE Pattern Report generated:`);
-  console.log(`   JSON: data/moe-patterns.json`);
-  console.log(`   Markdown: data/reports/council-adaptations.md\n`);
-}
+      }
 
 /**
  * CLI interface
@@ -774,8 +769,7 @@ Target Repositories:
     focusOnMOE: true,
   };
 
-  console.log('🎯 Analyzing MOE patterns...\n');
-  await analyzeMOEPatterns(config);
+    await analyzeMOEPatterns(config);
 }
 
 // Run if called directly

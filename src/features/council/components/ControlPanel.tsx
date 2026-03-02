@@ -210,7 +210,13 @@ export const ControlPanel: React.FC = () => {
   const canRunPhase2 = executionPhase === 'phase1-complete' && !isSynthesizing;
 
   return (
-    <Card className="glass-panel-elevated">
+    <Card className="glass-panel-elevated relative overflow-hidden">
+      {/* Execution progress shimmer bar */}
+      {(isPhase1Running || isPhase2Running) && (
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-muted overflow-hidden" role="progressbar" aria-label="Execution in progress" aria-valuemin={0} aria-valuemax={100}>
+          <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent animate-shimmer" />
+        </div>
+      )}
       <CardContent className="p-6 space-y-6">
         <PersonaSelector />
 
@@ -424,10 +430,11 @@ export const ControlPanel: React.FC = () => {
         <div className="space-y-3">
           {/* Phase 1 Button */}
           <Button 
-            className="w-full h-14 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground font-semibold text-lg shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30" 
+            className="w-full h-14 bg-gradient-to-r from-primary to-accent-cyan hover:opacity-90 text-primary-foreground font-semibold text-lg shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30" 
             onClick={handlePhase1Click} 
             disabled={!canRunPhase1 || !task.trim()}
-            aria-label={isPhase1Running ? 'Phase 1 running' : executionPhase === 'phase1-complete' || executionPhase === 'complete' ? 'Phase 1 complete' : 'Run Council Phase 1'}
+            aria-label={isPhase1Running ? 'Phase 1 running — gathering expert intelligence' : executionPhase === 'phase1-complete' || executionPhase === 'complete' ? 'Phase 1 complete' : 'Start Phase 1: Gather expert intelligence'}
+            aria-busy={isPhase1Running}
           >
             {isPhase1Running ? (
               <><Loader2 className="h-5 w-5 mr-2 animate-spin" />Phase 1: Running...</>
@@ -444,7 +451,9 @@ export const ControlPanel: React.FC = () => {
               className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-primary-foreground font-semibold text-lg shadow-lg shadow-purple-500/25 transition-all hover:shadow-xl hover:shadow-purple-500/30" 
               onClick={handlePhase2Click} 
               disabled={!canRunPhase2}
-              aria-label={isPhase2Running ? 'Phase 2 synthesizing' : executionPhase === 'complete' ? 'Phase 2 complete' : 'Run Judge Phase 2'}
+              aria-label={isPhase2Running ? 'Phase 2 synthesizing expert outputs' : executionPhase === 'complete' ? 'Phase 2 complete' : 'Start Phase 2: Synthesize expert outputs'}
+              aria-busy={isPhase2Running}
+              title={!canRunPhase2 && executionPhase !== 'complete' ? 'Complete Phase 1 first' : undefined}
             >
               {isPhase2Running ? (
                 <><Loader2 className="h-5 w-5 mr-2 animate-spin" />Phase 2: Synthesizing...</>

@@ -33,20 +33,6 @@ export interface ExpertConfig {
   frequencyPenalty: number;
 }
 
-export interface ModeBehavior {
-  parallel: string;
-  consensus: string;
-  adversarial: string;
-  sequential: string;
-  separated: string;
-  synthesis: string;
-  debate: string;
-  pipeline: string;
-  modeName: string;
-  description: string;
-  isEnabled: boolean;
-}
-
 export interface KnowledgeFile {
   id: string;
   name: string;
@@ -55,13 +41,16 @@ export interface KnowledgeFile {
   type: string;
 }
 
+// Re-exporting canonical types for backward compatibility or niche use
+import { ModeBehavior, SynthesisConfig, SynthesisTier } from '@/lib/types';
+
 export interface Expert {
   id: string;
   name: string;
   model: string;
   role: string;
   basePersona: string;
-  knowledge: KnowledgeFile[]; // Ensure this is properly typed
+  knowledge: KnowledgeFile[];
   config: ExpertConfig;
   modeBehavior: ModeBehavior;
   color: string;
@@ -74,12 +63,12 @@ export interface Expert {
   positionSpecialty?: string;
   pluginId?: string;
   pluginConfig?: Record<string, unknown>;
-  content?: string; // Added to align with control-panel-store.ts
+  content?: string;
   
   // AutoGen-style messaging capabilities
   conversationContext?: ConversationContext;
-  canSendMessages?: boolean; // Enable message passing for this expert
-  messageHandler?: (message: ExpertMessage) => void; // Optional message handler
+  canSendMessages?: boolean;
+  messageHandler?: (message: ExpertMessage) => void;
 }
 
 // Phase 1: Expert execution mode (all experts run in parallel)
@@ -87,19 +76,6 @@ export type ExecutionMode = 'parallel' | 'consensus' | 'adversarial' | 'sequenti
 
 // Phase 2: Judge/synthesis modes for unifying expert outputs
 export type JudgeMode = 'ruthless-judge' | 'consensus-judge' | 'debate-judge' | 'pipeline-judge';
-
-export type SynthesisTier = 'quick' | 'balanced' | 'deep';
-
-export interface SynthesisConfig {
-  tier: SynthesisTier;
-  model?: string;
-  fallbackModel?: string;
-  temperature?: number;
-  maxTokens?: number;
-  customInstructions?: string;
-  options?: Record<string, unknown>;
-  judgeMode?: JudgeMode; // Phase 2: Judge mode selection
-}
 
 export interface SynthesisResult {
   content: string;
@@ -163,7 +139,6 @@ export interface CouncilSession {
   };
 }
 
-// Added missing 'ExpertOutput' type definition
 export interface ExpertOutput {
   name: string;
   model: string;

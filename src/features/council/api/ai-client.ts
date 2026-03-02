@@ -110,8 +110,9 @@ export async function callExpert(expert: Expert, task: string, mode: ExecutionMo
     body: JSON.stringify({
       model: expert.model,
       messages,
-      temperature: expert.config.temperature,
-      max_tokens: expert.config.maxTokens,
+      // 2026: Auto-tuning logic. If 0, we let the provider decide or use dynamic defaults
+      temperature: expert.config.temperature === 0 ? 0.7 : expert.config.temperature,
+      max_tokens: expert.config.maxTokens === 0 ? undefined : expert.config.maxTokens,
       top_p: expert.config.topP,
       presence_penalty: expert.config.presencePenalty,
       frequency_penalty: expert.config.frequencyPenalty
@@ -176,8 +177,9 @@ export async function callExpertStreaming(expert: Expert, task: string, mode: Ex
     body: JSON.stringify({
       model: expert.model,
       messages,
-      temperature: expert.config.temperature,
-      max_tokens: expert.config.maxTokens,
+      // 2026: Auto-tuning logic
+      temperature: expert.config.temperature === 0 ? 0.7 : expert.config.temperature,
+      max_tokens: expert.config.maxTokens === 0 ? undefined : expert.config.maxTokens,
       top_p: expert.config.topP,
       stream: true
     })
@@ -577,7 +579,7 @@ export async function synthesizeVerdict(expertOutputs: Record<string, {
     const imbalance = detectWeightImbalance(weightAnalysis);
     weightContext = buildWeightedContext(weights, imbalance);
     if (imbalance.hasImbalance)
-      {}}
+        { console.warn("Weight imbalance detected", imbalance); }}
 
   // Convert expert outputs to array format for synthesis-engine
   const expertArray = Object.entries(expertOutputs).map(([id, data]) => ({

@@ -30,7 +30,9 @@ import {
   Maximize2,
   RotateCcw,
   Sparkles,
-  Globe
+  Globe,
+  Circle,
+  CheckCircle2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ExpertOutputFooter } from './ExpertOutputFooter';
@@ -46,11 +48,29 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   AlertTriangle,
 };
 
+// Deterministic gradient based on expert name hash
+const getAvatarGradient = (name: string): string => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const gradients = [
+    'from-violet-500 to-indigo-600',
+    'from-cyan-500 to-blue-600',
+    'from-emerald-500 to-teal-600',
+    'from-amber-500 to-orange-600',
+    'from-rose-500 to-pink-600',
+    'from-fuchsia-500 to-purple-600',
+    'from-sky-500 to-blue-600',
+  ];
+  return gradients[Math.abs(hash) % gradients.length];
+};
+
 interface ExpertCardProps {
   index: number;
 }
 
-export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
+const ExpertCardInner: React.FC<ExpertCardProps> = ({ index }) => {
   const expert = useExpertStore(state => state.experts[index]);
   const updateExpert = useExpertStore(state => state.updateExpert);
   const addKnowledge = useExpertStore(state => state.addKnowledge);
@@ -142,6 +162,11 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
   const positionName = expert.positionName || positionInfo.position;
   
   const loadedPersona = expert.personaId ? PERSONA_LIBRARY[expert.personaId] : null;
+  const avatarGradient = getAvatarGradient(positionName);
+
+  // Status determination
+  const statusLabel = expert.isLoading ? 'Running' : expert.output ? 'Done' : isActive ? 'Active' : 'Idle';
+  const statusIcon = expert.isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : expert.output ? <CheckCircle2 className="h-3 w-3" /> : <Circle className="h-3 w-3" />;
 
   const handleClearPersonaClick = () => {
     clearPersona(index);
@@ -151,8 +176,8 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
   return (
     <>
       <Card
-        className={`glass-panel transition-all duration-300 flex flex-col h-full ${
-          isActive ? 'ring-2 ring-primary/50 animate-pulse-glow' : 'opacity-60'
+        className={`glass-panel transition-all duration-200 flex flex-col h-full ${
+          isActive ? 'border-border/50' : 'opacity-60'
         } ${expert.isLoading ? 'animate-shimmer border-primary/40' : ''}`}
         role="article"
         aria-label={`Expert: ${positionName}${loadedPersona ? ` - ${loadedPersona.name}` : ''}`}
@@ -161,9 +186,9 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <div
-                className={`w-10 h-10 rounded-lg bg-gradient-to-br ${expert.color} flex items-center justify-center shadow-lg flex-shrink-0 relative`}
+                className={`w-10 h-10 rounded-lg bg-gradient-to-br ${avatarGradient} flex items-center justify-center shadow-md flex-shrink-0 relative`}
               >
-                <IconComponent className="w-5 h-5 text-primary-foreground" />
+                <IconComponent className="w-5 h-5 text-white" />
                 {expert.hasWebSearch && (
                   <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                     <Globe className="w-2.5 h-2.5 text-white" />
@@ -189,6 +214,20 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
               </div>
             </div>
             <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+              <div aria-live="polite">
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] gap-1 ${
+                    expert.isLoading ? 'border-primary/40 text-primary bg-primary/10' :
+                    expert.output ? 'border-success/40 text-success bg-success/10' :
+                    isActive ? 'border-accent-cyan/40 text-accent-cyan bg-accent-cyan/10' :
+                    'border-border text-muted-foreground'
+                  }`}
+                >
+                  {statusIcon}
+                  {statusLabel}
+                </Badge>
+              </div>
               <div className="flex items-center gap-0.5">
                 {expert.output && (
                   <Button
@@ -460,4 +499,5 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
   );
 };
 
-export default ExpertExpandedModal;
+export const ExpertCard = React.memo(ExpertCardInner);
+export default ExpertCard;

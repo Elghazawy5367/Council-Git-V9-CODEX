@@ -30,8 +30,7 @@ function CouncilDemo(): JSX.Element {
   const handleExecuteParallel = async (): Promise<void> => {
     try {
       await executeParallel();
-      console.log('Parallel execution complete!');
-    } catch (error) {
+          } catch (error) {
       console.error('Execution failed:', error);
     }
   };
@@ -39,8 +38,7 @@ function CouncilDemo(): JSX.Element {
   const handleExecuteJudge = async (): Promise<void> => {
     try {
       await executeJudge();
-      console.log('Judge synthesis complete!');
-    } catch (error) {
+          } catch (error) {
       console.error('Judge failed:', error);
     }
   };

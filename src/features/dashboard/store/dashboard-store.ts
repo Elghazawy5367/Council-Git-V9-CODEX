@@ -42,13 +42,11 @@ declare global {
  * Backward compatibility wrapper for useDashboardStore
  * Proxies to the unified analytics store
  */
-export const useDashboardStore = (selector?: (state: DashboardState) => any) => {
-  if (selector) {
-    return useAnalyticsStore(selector as any);
-  }
-  
-  return useAnalyticsStore();
-};
+export function useDashboardStore<T>(selector: (state: DashboardState) => T): T;
+export function useDashboardStore(): DashboardState;
+export function useDashboardStore(selector?: (state: DashboardState) => unknown) {
+  return useAnalyticsStore(selector as (state: any) => any);
+}
 
 // Re-export types for backward compatibility
 export type { DecisionRecord, DecisionMetrics };
