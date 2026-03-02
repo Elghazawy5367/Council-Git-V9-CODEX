@@ -427,7 +427,8 @@ export const ControlPanel: React.FC = () => {
             className="w-full h-14 bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground font-semibold text-lg shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30" 
             onClick={handlePhase1Click} 
             disabled={!canRunPhase1 || !task.trim()}
-            aria-label={isPhase1Running ? 'Phase 1 running' : executionPhase === 'phase1-complete' || executionPhase === 'complete' ? 'Phase 1 complete' : 'Run Council Phase 1'}
+            aria-label={isPhase1Running ? 'Phase 1 running' : executionPhase === 'phase1-complete' || executionPhase === 'complete' ? 'Phase 1 complete' : 'Start Phase 1: Gather expert intelligence'}
+            aria-busy={isPhase1Running}
           >
             {isPhase1Running ? (
               <><Loader2 className="h-5 w-5 mr-2 animate-spin" />Phase 1: Running...</>
@@ -444,7 +445,8 @@ export const ControlPanel: React.FC = () => {
               className="w-full h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-primary-foreground font-semibold text-lg shadow-lg shadow-purple-500/25 transition-all hover:shadow-xl hover:shadow-purple-500/30" 
               onClick={handlePhase2Click} 
               disabled={!canRunPhase2}
-              aria-label={isPhase2Running ? 'Phase 2 synthesizing' : executionPhase === 'complete' ? 'Phase 2 complete' : 'Run Judge Phase 2'}
+              aria-label={isPhase2Running ? 'Phase 2 synthesizing' : executionPhase === 'complete' ? 'Phase 2 complete' : 'Start Phase 2: Synthesize results'}
+              aria-busy={isPhase2Running}
             >
               {isPhase2Running ? (
                 <><Loader2 className="h-5 w-5 mr-2 animate-spin" />Phase 2: Synthesizing...</>

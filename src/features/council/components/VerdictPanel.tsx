@@ -43,14 +43,19 @@ export const VerdictPanel: React.FC = () => {
             <ScrollArea className="h-full max-h-64">
               <p className="text-sm text-foreground whitespace-pre-wrap font-light leading-relaxed">
                 {verdict}
+                <span className="inline-block w-1.5 h-4 ml-0.5 bg-primary animate-pulse align-text-bottom" aria-hidden="true" />
               </p>
             </ScrollArea>
+          ) : (status === 'EXECUTING' || status === 'SYNTHESIZING') ? (
+            <div className="space-y-3 animate-pulse">
+              <div className="h-4 w-3/4 bg-muted rounded" />
+              <div className="h-4 w-full bg-muted rounded" />
+              <div className="h-4 w-5/6 bg-muted rounded" />
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full">
               <p className="text-sm text-muted-foreground italic">
-                {status === 'IDLE' && 'Awaiting instructions...'}
-                {status === 'EXECUTING' && 'The Council is deliberating...'}
-                {status === 'SYNTHESIZING' && 'The Synthesis expert is drafting the final verdict...'}
+                Awaiting instructions...
               </p>
             </div>
           )}

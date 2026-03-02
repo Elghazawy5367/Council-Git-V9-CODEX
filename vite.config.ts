@@ -45,15 +45,32 @@ export default defineConfig(({ mode, command }) => {
     },
   },
   build: {
-    // Better error reporting
     sourcemap: mode === 'development',
     rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-mermaid': ['mermaid'],
+          'vendor-charts': ['recharts'],
+          'vendor-ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-avatar'
+          ],
+          'vendor-react': ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
+          'vendor-utils': ['zustand', 'lucide-react', 'date-fns', 'clsx', 'tailwind-merge'],
+        },
+      },
       onwarn(warning, warn) {
-        // Suppress certain warnings
         if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return;
         warn(warning);
       },
     },
+    minify: 'esbuild',
+  },
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
   },
   // Optimize dependency pre-bundling
     optimizeDeps: {
