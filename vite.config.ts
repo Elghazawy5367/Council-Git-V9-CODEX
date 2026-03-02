@@ -70,7 +70,8 @@ export default defineConfig(({ mode, command }) => {
     minify: 'esbuild',
   },
   esbuild: {
-    drop: mode === 'production' ? ['console', 'debugger'] : [],
+    drop: mode === 'production' ? ['debugger'] : [],
+    pure: mode === 'production' ? ['console.log', 'console.debug'] : [],
   },
   // Optimize dependency pre-bundling
     optimizeDeps: {

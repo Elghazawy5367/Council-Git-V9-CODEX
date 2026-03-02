@@ -43,7 +43,6 @@ export const VerdictPanel: React.FC = () => {
             <ScrollArea className="h-full max-h-64">
               <p className="text-sm text-foreground whitespace-pre-wrap font-light leading-relaxed">
                 {verdict}
-                <span className="inline-block w-1.5 h-4 ml-0.5 bg-primary animate-pulse align-text-bottom" aria-hidden="true" />
               </p>
             </ScrollArea>
           ) : (status === 'EXECUTING' || status === 'SYNTHESIZING') ? (

@@ -38,6 +38,7 @@ const Index: React.FC = () => {
   const showSettings = useSettingsStore(state => state.showSettings);
   const setShowSettings = useSettingsStore(state => state.setShowSettings);
   const showHistory = useSettingsStore(state => state.showHistory);
+  const setShowHistory = useSettingsStore(state => state.setShowHistory);
   const showMemory = useSettingsStore(state => state.showMemory);
   const setShowMemory = useSettingsStore(state => state.setShowMemory);
 

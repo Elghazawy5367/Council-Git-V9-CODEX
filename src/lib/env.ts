@@ -22,7 +22,7 @@ export const isBrowser = !isNode;
 export function getRuntimeRequire() {
   if (isNode) {
     // @ts-ignore - 'require' is available in Node.js
-    return typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require;
+    return require;
   }
   return null;
 }
