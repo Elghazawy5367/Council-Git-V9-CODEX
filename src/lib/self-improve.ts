@@ -116,8 +116,9 @@ async function searchSuccessfulRepos(niche: string, minStars: number, maxRepos: 
       try {
         const repo = await fetchRepoDetails(item.full_name, githubToken);
         repos.push(repo);
-      } catch (error) // eslint-disable-next-line no-empty
-      {}}
+      } catch (error) {
+        console.warn('[SelfImprove] Pattern extraction failed:', error);
+      }
     return repos;
   } catch (error) {
     console.error("Failed to search GitHub:", error);

@@ -1,65 +1,59 @@
-// Simplified Vault service for secure API key storage
-// Uses localStorage with base64 encoding (demo version)
+// Vault service for secure API key storage
+// Uses AES-256-GCM via Web Crypto API (PBKDF2 key derivation)
 
-const VAULT_KEY = 'council_vault_v18';
-const SESSION_KEY = 'council_session_v18';
-const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour
-
-interface VaultData {
-  encodedKeys: string;
-  passwordHash: string;
-}
-
-interface SessionData {
-  openRouterKey: string;
-  serperKey?: string;
-  githubApiKey?: string;
-  redditApiKey?: string;
-  unlockTime: number;
-}
+const VAULT_KEY = 'council_vault_v19'; // v19 invalidates the old insecure v18 data
+const PBKDF2_ITERATIONS = 600_000;     // OWASP 2024 recommendation
 
 export interface VaultStatus {
   hasVault: boolean;
   isLocked: boolean;
 }
 
-// Simple hash function for demo
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return hash.toString(36);
+// In-memory session store — never written to sessionStorage
+const sessionKeys = new Map<string, string>();
+
+async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
+  const enc = new TextEncoder();
+  const raw = await crypto.subtle.importKey(
+    'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
+    raw,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
 }
 
-// Initialize vault status
+async function encryptData(password: string, plaintext: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv   = crypto.getRandomValues(new Uint8Array(12));
+  const key  = await deriveKey(password, salt);
+  const enc  = new TextEncoder();
+  const ct   = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(plaintext));
+  const out  = new Uint8Array(16 + 12 + ct.byteLength);
+  out.set(salt, 0); out.set(iv, 16); out.set(new Uint8Array(ct), 28);
+  return btoa(String.fromCharCode(...out)); // btoa here = encoding a CIPHERTEXT blob, safe
+}
+
+async function decryptData(password: string, blob: string): Promise<string> {
+  const buf  = Uint8Array.from(atob(blob), c => c.charCodeAt(0));
+  const salt = buf.slice(0, 16);
+  const iv   = buf.slice(16, 28);
+  const data = buf.slice(28);
+  const key  = await deriveKey(password, salt);
+  const pt   = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+  return new TextDecoder().decode(pt);
+}
+
+// ── Public API (same signatures as before) ─────────────────────────────────
+
+// Initialize vault status (synchronous — checks localStorage + in-memory session)
 export function initializeVault(): VaultStatus {
-  const vault = localStorage.getItem(VAULT_KEY);
-  const session = sessionStorage.getItem(SESSION_KEY);
-
-  if (!vault) {
-    return { hasVault: false, isLocked: true };
-  }
-
-  if (!session) {
-    return { hasVault: true, isLocked: true };
-  }
-
-  try {
-    const sessionData: SessionData = JSON.parse(session);
-    const now = Date.now();
-    
-    if (now - sessionData.unlockTime > SESSION_TIMEOUT) {
-      sessionStorage.removeItem(SESSION_KEY);
-      return { hasVault: true, isLocked: true };
-    }
-
-    return { hasVault: true, isLocked: false };
-  } catch {
-    return { hasVault: true, isLocked: true };
-  }
+  const hasVault = localStorage.getItem(VAULT_KEY) !== null;
+  const isLocked = sessionKeys.size === 0;
+  return { hasVault, isLocked };
 }
 
 // Get vault status
@@ -76,28 +70,24 @@ export async function createVault(data: {
   redditApiKey?: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
-    const keysToStore = JSON.stringify({
+    const keys = {
       openRouterKey: data.openRouterKey,
       serperKey: data.serperKey || '',
       githubApiKey: data.githubApiKey || '',
       redditApiKey: data.redditApiKey || '',
-    });
-
-    const vaultData: VaultData = {
-      encodedKeys: btoa(keysToStore),
-      passwordHash: simpleHash(data.password),
     };
-    localStorage.setItem(VAULT_KEY, JSON.stringify(vaultData));
 
-    // Auto-unlock after creation
-    const sessionData: SessionData = {
-      openRouterKey: data.openRouterKey,
-      serperKey: data.serperKey,
-      githubApiKey: data.githubApiKey,
-      redditApiKey: data.redditApiKey,
-      unlockTime: Date.now(),
-    };
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+    const encrypted = await encryptData(data.password, JSON.stringify(keys));
+    localStorage.setItem(VAULT_KEY, encrypted);
+
+    // Remove old insecure vault
+    localStorage.removeItem('council_vault_v18');
+
+    // Auto-unlock after creation (store in memory, not sessionStorage)
+    sessionKeys.set('openRouterKey', keys.openRouterKey);
+    sessionKeys.set('serperKey', keys.serperKey);
+    sessionKeys.set('githubApiKey', keys.githubApiKey);
+    sessionKeys.set('redditApiKey', keys.redditApiKey);
 
     return { success: true };
   } catch (error) {
@@ -109,36 +99,28 @@ export async function createVault(data: {
 // Unlock vault
 export async function unlockVault(password: string): Promise<{ success: boolean; error?: string; keys?: { openRouterKey: string; serperKey?: string; githubApiKey?: string; redditApiKey?: string } }> {
   try {
-    const vaultStr = localStorage.getItem(VAULT_KEY);
-    if (!vaultStr) {
+    // Remove old insecure vault on first unlock attempt
+    localStorage.removeItem('council_vault_v18');
+
+    const blob = localStorage.getItem(VAULT_KEY);
+    if (!blob) {
       return { success: false, error: 'No vault found' };
     }
 
-    const vaultData: VaultData = JSON.parse(vaultStr);
-    
-    if (simpleHash(password) !== vaultData.passwordHash) {
-      return { success: false, error: 'Invalid password' };
-    }
+    const decrypted = await decryptData(password, blob); // throws DOMException if wrong password
+    const keys = JSON.parse(decrypted) as Record<string, string>;
 
-    const keys = JSON.parse(atob(vaultData.encodedKeys));
+    // Store in-memory session
+    Object.entries(keys).forEach(([k, v]) => sessionKeys.set(k, v));
 
-    const sessionData: SessionData = {
-      openRouterKey: keys.openRouterKey,
-      serperKey: keys.serperKey,
-      githubApiKey: keys.githubApiKey,
-      redditApiKey: keys.redditApiKey,
-      unlockTime: Date.now(),
-    };
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-
-    return { 
-      success: true, 
-      keys: { 
-        openRouterKey: keys.openRouterKey, 
+    return {
+      success: true,
+      keys: {
+        openRouterKey: keys.openRouterKey,
         serperKey: keys.serperKey,
         githubApiKey: keys.githubApiKey,
-        redditApiKey: keys.redditApiKey
-      } 
+        redditApiKey: keys.redditApiKey,
+      }
     };
   } catch (error) {
     console.error('Failed to unlock vault:', error);
@@ -148,40 +130,24 @@ export async function unlockVault(password: string): Promise<{ success: boolean;
 
 // Lock vault
 export function lockVault(): void {
-  sessionStorage.removeItem(SESSION_KEY);
+  sessionKeys.clear();
 }
 
 // Get session keys
 export function getSessionKeys(): { openRouterKey: string; serperKey?: string; githubApiKey?: string; redditApiKey?: string } | null {
-  const session = sessionStorage.getItem(SESSION_KEY);
-  if (!session) return null;
+  if (sessionKeys.size === 0) return null;
 
-  try {
-    const sessionData: SessionData = JSON.parse(session);
-    const now = Date.now();
-
-    if (now - sessionData.unlockTime > SESSION_TIMEOUT) {
-      sessionStorage.removeItem(SESSION_KEY);
-      return null;
-    }
-
-    // Refresh session
-    sessionData.unlockTime = now;
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-
-    return {
-      openRouterKey: sessionData.openRouterKey,
-      serperKey: sessionData.serperKey,
-      githubApiKey: sessionData.githubApiKey,
-      redditApiKey: sessionData.redditApiKey,
-    };
-  } catch {
-    return null;
-  }
+  return {
+    openRouterKey: sessionKeys.get('openRouterKey') || '',
+    serperKey: sessionKeys.get('serperKey'),
+    githubApiKey: sessionKeys.get('githubApiKey'),
+    redditApiKey: sessionKeys.get('redditApiKey'),
+  };
 }
 
 // Delete vault
 export function deleteVault(): void {
   localStorage.removeItem(VAULT_KEY);
-  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem('council_vault_v18'); // clean up old version too
+  sessionKeys.clear();
 }
