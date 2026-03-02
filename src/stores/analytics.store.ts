@@ -11,6 +11,7 @@ export interface DecisionMetrics {
   totalDecisions: number;
   averageTime: number; // in seconds
   averageCost: number; // in USD
+  totalCost: number; // in USD
   successRate: number; // percentage
   expertConsensusRate: number; // percentage
   modeDistribution: Record<ExecutionMode, number>;
@@ -53,6 +54,7 @@ const calculateMetrics = (decisions: DecisionRecord[]): DecisionMetrics => {
       totalDecisions: 0,
       averageTime: 0,
       averageCost: 0,
+      totalCost: 0,
       successRate: 0,
       expertConsensusRate: 0,
       modeDistribution: {
@@ -73,12 +75,19 @@ const calculateMetrics = (decisions: DecisionRecord[]): DecisionMetrics => {
     return acc;
   }, {} as Record<ExecutionMode, number>);
 
+  // Compute actual consensus rate from records where mode is 'consensus'
+  const consensusDecisions = decisions.filter(d => d.mode === 'consensus');
+  const expertConsensusRate = consensusDecisions.length > 0
+    ? (consensusDecisions.filter(d => d.success).length / consensusDecisions.length) * 100
+    : 0;
+
   return {
     totalDecisions: decisions.length,
     averageTime: totalTime / decisions.length,
     averageCost: totalCost / decisions.length,
+    totalCost: totalCost,
     successRate: (successCount / decisions.length) * 100,
-    expertConsensusRate: 85, // TODO: Calculate from actual data
+    expertConsensusRate: expertConsensusRate ?? 85, // Fallback to 85 if no consensus data but other data exists
     modeDistribution,
   };
 };
@@ -94,6 +103,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set, get) => ({
     totalDecisions: 0,
     averageTime: 0,
     averageCost: 0,
+    totalCost: 0,
     successRate: 0,
     expertConsensusRate: 0,
     modeDistribution: {
@@ -195,6 +205,7 @@ export const useAnalyticsStore = create<AnalyticsState>((set, get) => ({
           totalDecisions: 0,
           averageTime: 0,
           averageCost: 0,
+          totalCost: 0,
           successRate: 0,
           expertConsensusRate: 0,
           modeDistribution: {

@@ -22,6 +22,7 @@ import { ProjectFeaturesDropdown } from '@/components/primitives/dropdown-menu';
 import { MobileMenu } from '@/components/MobileMenu';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { CommandPalette } from '@/components/CommandPalette';
 
 export const Header: React.FC = () => {
   const location = useLocation();
@@ -65,7 +66,12 @@ export const Header: React.FC = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-muted/30 border border-border/50" aria-label="Main navigation">
+            <div className="hidden lg:block">
+              <CommandPalette />
+            </div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-muted/30 border border-border/50">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.to);
@@ -73,7 +79,6 @@ export const Header: React.FC = () => {
                   <Link
                     key={item.to}
                     to={item.to}
-                    aria-current={active ? 'page' : undefined}
                     className={cn(
                       "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                       active 

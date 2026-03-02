@@ -1,7 +1,7 @@
 # Blue Ocean Opportunities: freelancing
 
-**Generated:** 3/2/2026, 4:31:45 PM
-**Total Found:** 6
+**Generated:** 3/2/2026, 8:31:58 AM
+**Total Found:** 7
 
 ## 🏆 Top 10 Goldmines
 
@@ -27,15 +27,15 @@
 
 **Kimai is the #1 open-source time-tracking application. From freelancers to companies and organisations - everyone can manage timesheets, generate reports, create invoices and so much more... Web-based multi-user application, available as On-Premise or SaaS version: https://www.kimai.org**
 
-- ⭐ Stars: 4,518
+- ⭐ Stars: 4,517
 - 🍴 Forks: 743 (16.4% ratio)
-- 🐛 Open Issues: 312
+- 🐛 Open Issues: 311
 - 📅 Last Update: 3/2/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **67/100**
 - 🔗 [View on GitHub](https://github.com/kimai/kimai)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (4518+ stars)
+- ✅ Proven demand (4517+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -63,15 +63,15 @@
 
 **Dolibarr ERP CRM is a modern software package to manage your company or foundation's activity (contacts, suppliers, invoices, orders, stocks, agenda, accounting, ...). it's an open source Web application (written in PHP) designed for businesses of any sizes, foundations and freelancers.**
 
-- ⭐ Stars: 6,956
+- ⭐ Stars: 6,954
 - 🍴 Forks: 3,296 (47.4% ratio)
-- 🐛 Open Issues: 1142
+- 🐛 Open Issues: 1139
 - 📅 Last Update: 3/2/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **61/100**
 - 🔗 [View on GitHub](https://github.com/Dolibarr/dolibarr)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (6956+ stars)
+- ✅ Proven demand (6954+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -81,21 +81,39 @@
 
 **Hola 👋 Soy Brais Moure 💻 Freelance full-stack dev 📲 iOS & Android engineer ♥️ Swift & Kotlin 📖 YouTube, Twitch, Discord & Elgato partner 👥 Microsoft MVP & GDG 👾 Geek & Friki**
 
-- ⭐ Stars: 5,139
-- 🍴 Forks: 605 (11.8% ratio)
+- ⭐ Stars: 5,138
+- 🍴 Forks: 604 (11.8% ratio)
 - 🐛 Open Issues: 17
-- 📅 Last Update: 3/2/2026 (0 days ago)
+- 📅 Last Update: 3/1/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **54/100**
 - 🔗 [View on GitHub](https://github.com/mouredev/mouredev)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (5139+ stars)
+- ✅ Proven demand (5138+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
 ---
 
-### 6. engineerapart/TheRemoteFreelancer (Score: 50)
+### 6. midday-ai/midday (Score: 50)
+
+**Invoicing, Time tracking, File reconciliation, Storage, Financial Overview & your own Assistant made for Freelancers**
+
+- ⭐ Stars: 14,065
+- 🍴 Forks: 1,355 (9.6% ratio)
+- 🐛 Open Issues: 4
+- 📅 Last Update: 3/1/2026 (0 days ago)
+- 🌊 Blue Ocean Score: **50/100**
+- 🔗 [View on GitHub](https://github.com/midday-ai/midday)
+
+**Why it's a goldmine:**
+- ✅ Proven demand (14065+ stars)
+
+**Opportunity:** Build a modern alternative or fork with active maintenance.
+
+---
+
+### 7. engineerapart/TheRemoteFreelancer (Score: 50)
 
 **Listing of community-curated resources to find topical remote freelance & contract work for software developers, web designers, and more!**
 

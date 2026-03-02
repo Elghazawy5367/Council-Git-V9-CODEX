@@ -452,12 +452,10 @@ function generateReport(
 // ============================================================================
 
 export async function runRedditPainPoints(): Promise<void> {
-  console.log('💬 Reddit Pain Points - Starting...');
-  
+
   const allNiches = await loadNicheConfig();
   const niches = getEnabledNiches(allNiches);
-  console.log(`📂 Found ${niches.length} enabled niches`);
-  
+
   const results: Array<{
     niche: string;
     patterns: number;
@@ -466,8 +464,7 @@ export async function runRedditPainPoints(): Promise<void> {
   }> = [];
   
   for (const niche of niches) {
-    console.log(`\n💬 Extracting pain points: ${niche.id}`);
-    
+
     const allPosts: PainPost[] = [];
     
     // Get subreddits (with backward compatibility)
@@ -478,31 +475,25 @@ export async function runRedditPainPoints(): Promise<void> {
     
     // Search each subreddit
     for (const subreddit of subreddits) {
-      console.log(`  → Searching r/${subreddit}...`);
-      
+
       const posts = await searchPainSignals(
         subreddit,
         painSignals
       );
       
-      console.log(`  → Found ${posts.length} posts with pain signals`);
-      allPosts.push(...posts);
+            allPosts.push(...posts);
     }
     
-    console.log(`  → Total posts: ${allPosts.length}`);
-    
+
     // Extract pain points
-    console.log(`  → Extracting pain patterns...`);
-    const painMap = extractPainPoints(allPosts);
-    console.log(`  → Found ${painMap.size} unique pain points`);
-    
+        const painMap = extractPainPoints(allPosts);
+
     // Analyze patterns
     const patterns = analyzePainPatterns(painMap, allPosts);
     
     // Filter for meaningful patterns (score >= 40)
     const meaningfulPatterns = patterns.filter(p => p.totalScore >= 40);
-    console.log(`  → Found ${meaningfulPatterns.length} meaningful patterns`);
-    
+
     // Generate report
     const report = generateReport(niche.id, niche.name, meaningfulPatterns, allPosts);
     
@@ -512,8 +503,7 @@ export async function runRedditPainPoints(): Promise<void> {
     fs.mkdirSync('data/reports', { recursive: true });
     fs.writeFileSync(filename, report);
     
-    console.log(`  → Report saved: ${filename}`);
-    
+
     const majorOpportunities = meaningfulPatterns.filter(p => p.totalScore >= 80).length;
     
     results.push({
@@ -524,11 +514,8 @@ export async function runRedditPainPoints(): Promise<void> {
     });
   }
   
-  console.log('\n✅ Complete!');
-  console.log(`Generated ${results.length} reports`);
-  
+
   // Summary
   results.forEach(r => {
-    console.log(`  - ${r.niche}: ${r.patterns} patterns (${r.major} major opportunities)`);
-  });
+      });
 }

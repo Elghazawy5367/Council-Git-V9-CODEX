@@ -9,10 +9,13 @@ import { useFeatureConfigStore } from '@/features/council/store/feature-config-s
 import { parseCronSchedule } from '@/lib/workflow-dispatcher';
 import { MiningDrillPanel } from '@/features/council/components/MiningDrillPanel';
 import { GoldmineDetector } from '@/features/council/components/GoldmineDetector';
+import { IntelligenceFeed } from '@/components/IntelligenceFeed';
+import { FeatureCard } from '@/features/automation/components/FeatureCard';
 import { loadAllOpportunities } from '@/lib/opportunity-loader';
 import { Opportunity } from '@/lib/goldmine-detector';
 import { getSessionKeys } from '@/features/council/lib/vault';
 import { toast } from 'sonner';
+import { useIntelligenceStore } from '@/stores/intelligence-store';
 
 const FeatureConfigModal = lazy(() => import('@/features/council/components/FeatureConfigModal'));
 
@@ -29,13 +32,12 @@ interface Feature {
 
 /**
  * AutomationDashboard - Unified dashboard for managing all core automation features
- * Consolidates previous Dashboard.tsx and FeaturesDashboard.tsx
- * Features include: GitHub Trending, Reddit Analysis, Code Quality, Market Research, etc.
  */
 const AutomationDashboard: React.FC = () => {
   const navigate = useNavigate();
   const repoOwner = GITHUB_OWNER;
   const repoName = GITHUB_REPO;
+  const addSuggestion = useIntelligenceStore(state => state.addSuggestion);
   
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [selectedFeatureId, setSelectedFeatureId] = useState<string | null>(null);
@@ -77,6 +79,23 @@ const AutomationDashboard: React.FC = () => {
     
     void loadData();
   }, []);
+
+  // Mock initial suggestions for 2026 feel
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      addSuggestion({
+        title: 'Security Vulnerability Alert',
+        description: 'New high-risk pattern detected in cross-feature imports. Standard architecture protocol violation.',
+        priority: 'high',
+        featureId: 'quality',
+        rationale: {
+          strategic: 'Maintain codebase integrity to prevent cascading failures in autonomous workflows.',
+          technical: 'Static analysis flagged 3 new violations of the "no-direct-import" rule between Features and Shared Libs.'
+        }
+      });
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [addSuggestion]);
   
   const [features, setFeatures] = useState<Feature[]>([]);
 
@@ -220,78 +239,6 @@ const AutomationDashboard: React.FC = () => {
     ]);
   }, [scout, mirror, quality, selfImprove, githubTrending, marketGap, redditSniper, redditPainPoints, viralRadar, twinMimicry, forkEvolution, promptHeist, stargazerAnalysis, hackerNews]);
 
-  const getWorkflowUrl = (workflow: string): string => {
-    return `https://github.com/${repoOwner}/${repoName}/actions/workflows/${workflow}`;
-  };
-
-  const getTriggerUrl = (workflow: string): string => {
-    return `https://github.com/${repoOwner}/${repoName}/actions/workflows/${workflow}`;
-  };
-
-  const getStatusBadge = (status: Feature['status']): JSX.Element => {
-    const variants: Record<Feature['status'], { className: string; label: string; icon: JSX.Element }> = {
-      idle: { 
-        className: 'bg-gray-500/10 text-gray-600 dark:text-gray-400', 
-        label: 'Disabled',
-        icon: <Clock className="h-3 w-3" />
-      },
-      scheduled: { 
-        className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', 
-        label: 'Scheduled',
-        icon: <Clock className="h-3 w-3" />
-      },
-      active: { 
-        className: 'bg-green-500/10 text-green-600 dark:text-green-400', 
-        label: 'Active',
-        icon: <CheckCircle2 className="h-3 w-3" />
-      },
-    };
-
-    const { className, label, icon } = variants[status];
-    return (
-      <Badge className={`${className} flex items-center gap-1`}>
-        {icon}
-        {label}
-      </Badge>
-    );
-  };
-
-  const getFeatureConfig = (featureId: string): string => {
-    switch (featureId) {
-      case 'scout':
-      case 'sonar':
-        return `Niche: ${scout.targetNiche} | Min Stars: ${scout.minStars} | Depth: ${scout.depth}`;
-      case 'reddit-sniper':
-        return `Intent: >${redditSniper.minIntentScore}/10 | Subs: ${redditSniper.subreddits.join(', ')}`;
-      case 'reddit-pain-points':
-        return `Model: ${redditPainPoints.analysisModel} | Subs: ${redditPainPoints.targetSubreddits.join(', ')}`;
-      case 'viral-radar':
-        return `Score: >${viralRadar.minViralScore} | Platforms: ${viralRadar.platforms.join(', ')}`;
-      case 'hackernews':
-        return `Schedule: ${hackerNews.schedule}`;
-      case 'twin-mimicry':
-        return `Target: ${twinMimicry.targetRepo || 'None'} | Style: ${twinMimicry.mimicStyle}`;
-      case 'fork-evolution':
-        return `Min Forks: ${forkEvolution.minForks} | Tracking: ${forkEvolution.trackChanges ? 'Yes' : 'No'}`;
-      case 'heist':
-        return `Patterns: ${promptHeist.patternsEnabled.length} enabled | Cache: ${promptHeist.cacheExpiry}h | Auto-update: ${promptHeist.autoUpdate ? 'On' : 'Off'}`;
-      case 'github-trending':
-        return `Topics: ${githubTrending.topics.join(', ')} | Langs: ${githubTrending.languages.join(', ')}`;
-      case 'market-gap':
-        return `Quality: >${marketGap.minQualityScore} | AI: ${marketGap.deepAnalysis ? 'Deep' : 'Fast'}`;
-      case 'stargazer':
-        return `Min Followers: ${stargazerAnalysis.minFollowers} | Co: ${stargazerAnalysis.targetCompanies.slice(0, 3).join(', ')}...`;
-      case 'mirror':
-        return `Report: ${mirror.generateReport ? 'Yes' : 'No'} | Standards: ${mirror.standards.length}`;
-      case 'quality':
-        return `Auto-fix: ${quality.autoFix ? 'Yes' : 'No'} | Lint: ${quality.runLinter ? 'Yes' : 'No'}`;
-      case 'learn':
-        return `Niche: ${selfImprove.niche} | Min Stars: ${selfImprove.minStars}`;
-      default:
-        return '';
-    }
-  };
-
   const handleOpenConfig = (id?: string) => {
     // Map feature IDs to modal tab IDs if necessary
     const tabMap: Record<string, string> = {
@@ -316,7 +263,7 @@ const AutomationDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background selection:bg-primary/30">
       {/* Header */}
       <header className="glass-panel border-b border-border/50 sticky top-0 z-50 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4">
@@ -327,9 +274,9 @@ const AutomationDashboard: React.FC = () => {
               </Button>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
-                  Automation Control Center
+                  Intelligence Command Center
                 </h1>
-                <p className="text-xs text-muted-foreground">Manage all {features.length} core automation features • {features.filter(f => f.status === 'active' || f.status === 'scheduled').length} active</p>
+                <p className="text-xs text-muted-foreground">Orchestrating {features.length} autonomous agents • {features.filter(f => f.status === 'active' || f.status === 'scheduled').length} active</p>
               </div>
             </div>
             <div className="flex gap-2">
@@ -356,9 +303,14 @@ const AutomationDashboard: React.FC = () => {
       </Suspense>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Features List */}
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Left Column: Intelligence Feed */}
+          <div className="xl:col-span-1 h-[calc(100vh-12rem)] sticky top-24">
+            <IntelligenceFeed />
+          </div>
+
+          {/* Center Column: Features List */}
+          <div className="xl:col-span-1 space-y-4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-semibold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
                 Core Features ({features.length})
@@ -369,69 +321,32 @@ const AutomationDashboard: React.FC = () => {
               </Badge>
             </div>
             
-            {features.map((feature) => (
-              <Card key={feature.id} className="hover:shadow-xl hover:scale-[1.02] transition-all glass-panel border-2 border-violet-500/10">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{feature.icon}</span>
-                      <div>
-                        <CardTitle className="text-lg">{feature.name}</CardTitle>
-                        <CardDescription className="mt-1">{feature.description}</CardDescription>
-                      </div>
-                    </div>
-                    {getStatusBadge(feature.status)}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>{parseCronSchedule(feature.schedule)}</span>
-                  </div>
-                  
-                  <div className="text-xs text-muted-foreground bg-muted/20 p-2 rounded">
-                    {getFeatureConfig(feature.id)}
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => handleOpenConfig(feature.id)}
-                      size="sm"
-                      variant="default"
-                      className="gap-2 bg-violet-600/20 hover:bg-violet-600/40 text-violet-100 border border-violet-500/30"
-                    >
-                      <Settings className="h-4 w-4" />
-                      Configure
-                    </Button>
-                    <Button
-                      onClick={() => window.open(getTriggerUrl(feature.workflow), '_blank')}
-                      size="sm"
-                      className="gap-2 flex-1"
-                    >
-                      <Play className="h-4 w-4" />
-                      Trigger
-                    </Button>
-                    <Button
-                      onClick={() => window.open(getWorkflowUrl(feature.workflow), '_blank')}
-                      size="sm"
-                      variant="outline"
-                      className="gap-2"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Runs
-                    </Button>
-                  </div>
-                  
-                  <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded">
-                    <code>Workflow: {feature.workflow}</code>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {features.map((feature) => {
+              // Map local Feature interface to FeatureDefinition for FeatureCard
+              const featureDef = {
+                id: feature.id,
+                name: feature.name,
+                description: feature.description,
+                icon: feature.icon,
+                category: 'Market Intelligence',
+                status: feature.status === 'active' ? 'active' : 'inactive',
+                enabled: feature.status === 'active',
+                defaultConfig: {},
+                metrics: {
+                  lastRun: feature.lastRun ? new Date(feature.lastRun) : null,
+                  successRate: 0.95,
+                  totalRuns: 12,
+                  reportsGenerated: 8,
+                  averageExecutionTime: 45000,
+                }
+              } as any;
+
+              return <FeatureCard key={feature.id} feature={featureDef} />;
+            })}
           </div>
 
-          {/* Info Panel */}
-          <div className="space-y-4">
+          {/* Right Column: Info Panel */}
+          <div className="xl:col-span-1 space-y-4">
             <Card className="bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-fuchsia-500/10 border-2 border-violet-500/20 glass-panel">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-xl">

@@ -21,10 +21,8 @@ interface ControlPanelState {
   setActiveExpertCount: (count: number) => void;
   debateRounds: number;
   setDebateRounds: (rounds: number) => void;
-  fileData: FileData[];
-  setFileData: (fileData: FileData[]) => void;
-  addFileData: (file: FileData) => void;
-  removeFileData: (index: number) => void;
+  fileData: FileData | null;
+  setFileData: (fileData: FileData | null) => void;
   loadPersona: (expertIndex: number, personaId: string) => void;
   loadTeam: (teamId: string) => void;
   clearPersona: (expertIndex: number) => void;
@@ -52,43 +50,28 @@ declare global {
  * Proxies to the unified council store
  */
 export const useControlPanelStore = (selector?: (state: ControlPanelState) => any) => {
+  const store = useCouncilStore();
+
+  const mappedState: ControlPanelState = {
+    task: store.task,
+    setTask: store.setTask,
+    mode: store.mode,
+    setMode: store.setMode,
+    activeExpertCount: store.activeExpertCount,
+    setActiveExpertCount: store.setActiveExpertCount,
+    debateRounds: store.debateRounds,
+    setDebateRounds: store.setDebateRounds,
+    fileData: store.fileData,
+    setFileData: store.setFileData,
+    loadPersona: store.loadPersona,
+    loadTeam: (teamId: string) => (useCouncilStore as any).loadTeam(teamId),
+    clearPersona: store.clearPersona,
+    resetToDefault: () => (useCouncilStore as any).resetToDefault(),
+  };
+
   if (selector) {
-    return useCouncilStore((state) => selector({
-      task: state.task,
-      setTask: state.setTask,
-      mode: state.mode,
-      setMode: state.setMode,
-      activeExpertCount: state.activeExpertCount,
-      setActiveExpertCount: state.setActiveExpertCount,
-      debateRounds: state.debateRounds,
-      setDebateRounds: state.setDebateRounds,
-      fileData: state.fileData,
-      setFileData: state.setFileData,
-      addFileData: state.addFileData,
-      removeFileData: state.removeFileData,
-      loadPersona: state.loadPersona,
-      loadTeam: state.loadTeam,
-      clearPersona: state.clearPersona,
-      resetToDefault: state.resetToDefault,
-    }));
+    return selector(mappedState);
   }
   
-  return useCouncilStore((state) => ({
-    task: state.task,
-    setTask: state.setTask,
-    mode: state.mode,
-    setMode: state.setMode,
-    activeExpertCount: state.activeExpertCount,
-    setActiveExpertCount: state.setActiveExpertCount,
-    debateRounds: state.debateRounds,
-    setDebateRounds: state.setDebateRounds,
-    fileData: state.fileData,
-    setFileData: state.setFileData,
-    addFileData: state.addFileData,
-    removeFileData: state.removeFileData,
-    loadPersona: state.loadPersona,
-    loadTeam: state.loadTeam,
-    clearPersona: state.clearPersona,
-    resetToDefault: state.resetToDefault,
-  }));
+  return mappedState;
 };

@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
+import { HelmetProvider } from 'react-helmet-async';
 import "./index.css";
 import { initDatabase } from "@/lib/db";
 import { initializeProtection } from "@/lib/hmr-protection";
@@ -27,6 +28,15 @@ initDatabase().then(() => {
   // Don't crash the app on database init failure
 });
 
+// Register service worker for offline support
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js').catch(error => {
+      console.error('SW registration failed:', error);
+    });
+  });
+}
+
 // Render app immediately with ErrorBoundary
 
 const rootElement = document.getElementById("root");
@@ -35,6 +45,8 @@ if (!rootElement) {
   document.body.innerHTML = '<div style="padding:20px;font-family:sans-serif;"><h1>⚠️ Council Error</h1><p>Root element not found. Please refresh the page.</p></div>';
 } else {
   createRoot(rootElement).render(<CustomErrorBoundary>
-      <App />
+      <HelmetProvider>
+        <App />
+      </HelmetProvider>
     </CustomErrorBoundary>);
 }

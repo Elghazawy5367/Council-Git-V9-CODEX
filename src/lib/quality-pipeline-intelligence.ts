@@ -435,41 +435,31 @@ function avgQuality(items: QualityAnalysis[]): number {
 // ============================================================================
 
 export async function runQualityPipeline(): Promise<void> {
-  console.log('🔍 Quality Pipeline - Starting...');
-  
+
   const allNiches = await loadNicheConfig();
   const niches = getEnabledNiches(allNiches);
-  console.log(`📂 Found ${niches.length} enabled niches`);
-  
+
   const results = [];
   
   for (const niche of niches) {
-    console.log(`\n🔍 Quality scoring: ${niche.id}`);
-    
+
     // Load all reports
-    console.log(`  → Loading reports from last 7 days...`);
-    const items = await loadAllReports(niche.id, 7);
-    console.log(`  → Found ${items.length} items across all features`);
-    
+        const items = await loadAllReports(niche.id, 7);
+
     if (items.length === 0) {
-      console.log(`  ⚠️  No reports found - run other features first`);
-      continue;
+            continue;
     }
     
     // Score quality
-    console.log(`  → Scoring quality...`);
-    const analyses = items.map(item => scoreQuality(item));
+        const analyses = items.map(item => scoreQuality(item));
     
     // Filter high-quality
     const highQuality = analyses.filter(a => a.totalQuality >= 70);
-    console.log(`  → High-quality items (70+): ${highQuality.length}`);
-    
+
     const platinum = highQuality.filter(a => a.tier === 'platinum').length;
     const gold = highQuality.filter(a => a.tier === 'gold').length;
     
-    console.log(`  → Platinum (90+): ${platinum}`);
-    console.log(`  → Gold (80-89): ${gold}`);
-    
+
     // Generate report
     const report = generateReport(niche.id, niche.name, analyses);
     
@@ -479,8 +469,7 @@ export async function runQualityPipeline(): Promise<void> {
     fs.mkdirSync(path.join(process.cwd(), 'data', 'intelligence'), { recursive: true });
     fs.writeFileSync(filename, report);
     
-    console.log(`  → Report saved: ${filename}`);
-    
+
     results.push({
       niche: niche.id,
       total: items.length,
@@ -491,14 +480,10 @@ export async function runQualityPipeline(): Promise<void> {
     });
   }
   
-  console.log('\n✅ Complete!');
-  console.log(`Generated ${results.length} quality reports`);
-  
+
   // Summary
   if (results.length > 0) {
-    console.log('\n📊 Summary:');
-    results.forEach(r => {
-      console.log(`  - ${r.niche}: ${r.highQuality}/${r.total} high-quality (${r.platinum} platinum, ${r.gold} gold)`);
-    });
+        results.forEach(r => {
+          });
   }
 }

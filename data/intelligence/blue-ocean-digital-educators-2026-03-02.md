@@ -1,6 +1,6 @@
 # Blue Ocean Opportunities: education
 
-**Generated:** 3/2/2026, 4:32:35 PM
+**Generated:** 3/2/2026, 8:32:51 AM
 **Total Found:** 44
 
 ## 🏆 Top 10 Goldmines
@@ -11,7 +11,7 @@
 
 - ⭐ Stars: 10,346
 - 🍴 Forks: 219 (2.1% ratio)
-- 🐛 Open Issues: 69
+- 🐛 Open Issues: 68
 - 📅 Last Update: 3/2/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **70/100**
 - 🔗 [View on GitHub](https://github.com/rolling-scopes/rsschool-app)
@@ -27,7 +27,7 @@
 
 **FCC China open source codebase and curriculum. Learn to code and help nonprofits.**
 
-- ⭐ Stars: 37,639
+- ⭐ Stars: 37,640
 - 🍴 Forks: 1,410 (3.7% ratio)
 - 🐛 Open Issues: 157
 - 📅 Last Update: 3/2/2026 (0 days ago)
@@ -35,7 +35,7 @@
 - 🔗 [View on GitHub](https://github.com/FreeCodeCampChina/freecodecamp.cn)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (37639+ stars)
+- ✅ Proven demand (37640+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -48,7 +48,7 @@
 - ⭐ Stars: 4,182
 - 🍴 Forks: 311 (7.4% ratio)
 - 🐛 Open Issues: 54
-- 📅 Last Update: 2/15/2026 (15 days ago)
+- 📅 Last Update: 2/15/2026 (14 days ago)
 - 🌊 Blue Ocean Score: **69/100**
 - 🔗 [View on GitHub](https://github.com/berwin/Blog)
 
@@ -81,15 +81,15 @@
 
 **A computer science textbook**
 
-- ⭐ Stars: 4,651
+- ⭐ Stars: 4,649
 - 🍴 Forks: 476 (10.2% ratio)
 - 🐛 Open Issues: 185
-- 📅 Last Update: 3/2/2026 (0 days ago)
+- 📅 Last Update: 3/1/2026 (1 days ago)
 - 🌊 Blue Ocean Score: **68/100**
 - 🔗 [View on GitHub](https://github.com/algorithmica-org/algorithmica)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (4651+ stars)
+- ✅ Proven demand (4649+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -102,7 +102,7 @@
 - ⭐ Stars: 2,567
 - 🍴 Forks: 251 (9.8% ratio)
 - 🐛 Open Issues: 175
-- 📅 Last Update: 3/1/2026 (1 days ago)
+- 📅 Last Update: 3/1/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **68/100**
 - 🔗 [View on GitHub](https://github.com/kantord/LibreLingo)
 
@@ -120,7 +120,7 @@
 - ⭐ Stars: 1,351
 - 🍴 Forks: 166 (12.3% ratio)
 - 🐛 Open Issues: 116
-- 📅 Last Update: 1/17/2026 (44 days ago)
+- 📅 Last Update: 1/17/2026 (43 days ago)
 - 🌊 Blue Ocean Score: **68/100**
 - 🔗 [View on GitHub](https://github.com/arschles/go-in-5-minutes)
 
@@ -174,7 +174,7 @@
 **RARS -- RISC-V Assembler and Runtime Simulator**
 
 - ⭐ Stars: 1,508
-- 🍴 Forks: 303 (20.1% ratio)
+- 🍴 Forks: 302 (20.0% ratio)
 - 🐛 Open Issues: 72
 - 📅 Last Update: 3/1/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **66/100**
