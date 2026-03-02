@@ -18,7 +18,8 @@ import {
   ChevronDown,
   ChevronUp,
   BrainCircuit,
-  AlertCircle
+  AlertCircle,
+  Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { VerdictSkeleton } from '@/components/skeletons';

@@ -13,10 +13,10 @@ async function cleanupLogs() {
     const newContent = content.replace(/^[ \t]*console\.(log|debug)\(.*\);?[ \t]*\n?/gm, '');
 
     if (content !== newContent) {
-      const removedCount = (content.length - newContent.length); // rough estimate
+      const removedBytes = content.length - newContent.length;
       totalRemoved++;
       fs.writeFileSync(file, newContent, 'utf8');
-      console.log(`Cleaned logs from ${file}`);
+      console.log(`Cleaned logs from ${file} (removed ${removedBytes} bytes)`);
     }
   }
 
