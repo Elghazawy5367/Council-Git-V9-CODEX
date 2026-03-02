@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useDevToolsStore } from '../../store/devtools-store';
 import { runSemanticAnalysis, SemanticIssue } from '../../../../lib/code-mirror';
+import { GITHUB_OWNER, GITHUB_REPO } from '../../../../lib/config';
 
 interface MirrorFinding {
   severity: 'critical' | 'high' | 'medium' | 'low';
@@ -80,7 +81,7 @@ export function MirrorPanel() {
       const files = await Promise.all(
         filePaths.map(async p => {
           const res = await fetch(
-            `https://raw.githubusercontent.com/Elghazawy5367/Council-Git-V9/main/${p}`
+            `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${p}`
           );
           return { path: p, content: res.ok ? await res.text() : '', regexFindingCount: 1 };
         })

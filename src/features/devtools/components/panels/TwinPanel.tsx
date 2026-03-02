@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from 'recharts';
 import { analyzeTwinDNA, TwinProfile } from '../../lib/twin-analyzer';
 import { useDevToolsStore } from '../../store/devtools-store';
+import { GITHUB_OWNER, GITHUB_REPO } from '../../../../lib/config';
 
 const YOUR_KEY_FILES = [
   'src/features/council/api/ai-client.ts',
@@ -22,7 +23,7 @@ export function TwinPanel() {
       const yourFiles = await Promise.all(
         YOUR_KEY_FILES.map(async p => {
           const res = await fetch(
-            `https://raw.githubusercontent.com/Elghazawy5367/Council-Git-V9/main/${p}`
+            `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${p}`
           );
           return { path: p, content: res.ok ? await res.text() : '' };
         })

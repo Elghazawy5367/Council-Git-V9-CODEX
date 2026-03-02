@@ -1,4 +1,5 @@
 import { callDevToolsLLM } from './llm-client';
+import { GITHUB_REPO } from '../../../lib/config';
 
 export interface TwinProfile {
   yourRepoName: string;
@@ -82,7 +83,7 @@ export async function analyzeTwinDNA(
 
   const parsed = JSON.parse(response.content);
   return {
-    yourRepoName: 'Council-Git-V9',
+    yourRepoName: GITHUB_REPO,
     targetRepoName: targetRepo,
     analyzedAt: Date.now(),
     alignmentScore: parsed.alignmentScore ?? 0,

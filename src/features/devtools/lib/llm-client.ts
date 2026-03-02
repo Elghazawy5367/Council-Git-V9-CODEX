@@ -24,7 +24,7 @@ export interface LLMCallResult {
 
 function getApiKey(): string {
   const key = useSettingsStore.getState().openRouterKey;
-  if (!key) throw new Error('OpenRouter API key not set. Unlock vault first.');
+  if (!key) throw new Error('OpenRouter API key not configured. Please set your API key in Settings first.');
   return key;
 }
 
