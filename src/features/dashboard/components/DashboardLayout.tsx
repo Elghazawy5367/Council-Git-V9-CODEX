@@ -9,6 +9,7 @@ import { ExpertPerformance } from './ExpertPerformance';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/primitives/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/primitives/tabs';
 import { Button } from '@/components/primitives/button';
+import { EmptyState } from '@/components/EmptyState';
 import {
   Select,
   SelectContent,
@@ -25,21 +26,27 @@ import {
   BarChart3,
   Calendar,
   Trash2,
+  LayoutDashboard,
+  ShieldCheck,
+  History,
+  Activity,
+  Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const DATE_RANGES = {
-  '7d': { label: 'Last 7 days', days: 7 },
-  '30d': { label: 'Last 30 days', days: 30 },
-  '90d': { label: 'Last 90 days', days: 90 },
-  'all': { label: 'All time', days: null },
+  '7d': { label: '7 Days', days: 7 },
+  '30d': { label: '30 Days', days: 30 },
+  '90d': { label: '90 Days', days: 90 },
+  'all': { label: 'All Time', days: null },
 };
 
 export const DashboardLayout: React.FC = () => {
+  const navigate = useNavigate();
   const { metrics, setDateRange, clearAllData, recentDecisions } = useDashboardStore();
   const [selectedRange, setSelectedRange] = useState<keyof typeof DATE_RANGES>('30d');
 
-  // Check if we have any data to display
   const hasData = recentDecisions.length > 0 || metrics.totalDecisions > 0;
 
   const handleDateRangeChange = (value: string) => {
@@ -47,7 +54,6 @@ export const DashboardLayout: React.FC = () => {
     const range = DATE_RANGES[value as keyof typeof DATE_RANGES];
     
     if (range.days === null) {
-      // All time
       setDateRange(new Date(0), new Date());
     } else {
       const end = new Date();
@@ -69,174 +75,151 @@ export const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
-            Council Analytics
-          </h1>
-          <p className="text-muted-foreground mt-2 text-sm md:text-base">
-            Insights from your AI council decisions • {hasData ? `${metrics.totalDecisions} total decisions` : 'No data yet'}
-          </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border-subtle">
+        <div className="space-y-1.5">
+           <div className="flex items-center gap-2 text-primary-glow font-bold uppercase tracking-[0.2em] text-[10px]">
+              <Activity className="w-3.5 h-3.5" /> Platform Intelligence
+           </div>
+           <h1 className="text-3xl font-bold text-text-primary tracking-tight">Analytics Dashboard</h1>
+           <p className="text-sm text-text-tertiary font-medium">
+             Performance and cost analysis of your autonomous council network
+           </p>
         </div>
+
         {hasData && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <Select value={selectedRange} onValueChange={handleDateRangeChange}>
-              <SelectTrigger className="w-[160px] glass-panel">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(DATE_RANGES).map(([key, { label }]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex items-center gap-3">
+            <Tabs value={selectedRange} onValueChange={handleDateRangeChange} className="bg-bg-base border border-border-subtle p-1 rounded-xl">
+               <TabsList className="bg-transparent border-none">
+                 {Object.entries(DATE_RANGES).map(([key, { label }]) => (
+                   <TabsTrigger
+                     key={key}
+                     value={key}
+                     className="h-8 text-[10px] px-3 font-bold uppercase tracking-wider data-[state=active]:bg-bg-raised data-[state=active]:text-primary-glow"
+                   >
+                     {label}
+                   </TabsTrigger>
+                 ))}
+               </TabsList>
+            </Tabs>
+
             <Button
               variant="outline"
               size="sm"
               onClick={handleClearData}
-              className="text-destructive hover:bg-destructive/10 glass-panel"
+              className="h-10 px-4 text-text-tertiary border-border-subtle hover:bg-error/10 hover:text-error hover:border-error/20 rounded-xl font-bold text-[10px] uppercase tracking-wider"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Clear Data
+              Wipe
             </Button>
           </div>
         )}
       </div>
 
       {/* Metrics Grid */}
-      {hasData ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard
-            title="Total Decisions"
-            value={metrics.totalDecisions}
-            subtitle="All time"
-            icon={Brain}
-            colorClass="from-violet-500 to-purple-600"
-          />
-          <MetricCard
-            title="Avg. Decision Time"
-            value={`${Math.round(metrics.averageTime)}s`}
-            subtitle="Per decision"
-            icon={Clock}
-            colorClass="from-blue-500 to-cyan-500"
-          />
-          <MetricCard
-            title="Avg. Cost"
-            value={`$${metrics.averageCost.toFixed(4)}`}
-            subtitle="Per decision"
-            icon={DollarSign}
-            colorClass="from-green-500 to-emerald-600"
-          />
-          <MetricCard
-            title="Success Rate"
-            value={`${Math.round(metrics.successRate)}%`}
-            subtitle="Completed successfully"
-            icon={TrendingUp}
-            colorClass="from-orange-500 to-red-500"
-          />
-        </div>
-      ) : (
-        <Card className="glass-panel border-2 border-dashed border-violet-500/30 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
-          <CardContent className="flex flex-col items-center justify-center py-20">
-            <div className="relative mb-6">
-              <Brain className="h-20 w-20 text-violet-500/50" />
-              <div className="absolute inset-0 animate-ping">
-                <Brain className="h-20 w-20 text-violet-500/20" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-              No Analytics Data Yet
-            </h3>
-            <p className="text-muted-foreground text-center max-w-md mb-8 leading-relaxed">
-              Execute your first Council analysis to start tracking metrics, costs, and performance insights. 
-              Your analytics journey begins with a single question.
-            </p>
+      {!hasData ? (
+        <EmptyState
+          icon={<BarChart3 className="w-8 h-8 text-primary" />}
+          title="No Intelligence Gathered"
+          description="Execute your first autonomous council session to generate performance metrics, cost analysis, and decision history."
+          action={
             <Button 
-              onClick={() => window.location.href = '/'} 
-              className="bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white font-semibold px-6 py-6 text-base"
+              onClick={() => navigate('/')}
+              className="h-11 px-6 bg-primary hover:bg-primary-glow text-white font-bold rounded-xl shadow-lg shadow-primary/20 flex items-center gap-2"
             >
-              <Brain className="mr-2 h-5 w-5" />
-              Go to Council
+              <Plus className="w-4 h-4" /> Start First Session
             </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Main Content Tabs */}
-      {hasData && (
-        <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
-          <TabsTrigger value="overview">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger value="timeline">
-            <Clock className="h-4 w-4 mr-2" />
-            Timeline
-          </TabsTrigger>
-          <TabsTrigger value="modes">
-            <Target className="h-4 w-4 mr-2" />
-            Modes
-          </TabsTrigger>
-          <TabsTrigger value="history">
-            <Brain className="h-4 w-4 mr-2" />
-            History
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="glass-panel">
-              <CardHeader>
-                <CardTitle>Mode Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ModeDistribution data={metrics.modeDistribution} />
-              </CardContent>
-            </Card>
-            <Card className="glass-panel">
-              <CardHeader>
-                <CardTitle>Cost Analytics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CostAnalytics />
-              </CardContent>
-            </Card>
+          }
+          className="bg-bg-raised border-border-subtle shadow-inner py-24"
+        />
+      ) : (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard
+              title="Total Sessions"
+              value={metrics.totalDecisions}
+              subtitle="All time"
+              icon={ShieldCheck}
+              colorClass="from-primary to-primary-glow"
+            />
+            <MetricCard
+              title="Avg Duration"
+              value={`${Math.round(metrics.averageTime)}s`}
+              subtitle="Real-time latency"
+              icon={Clock}
+              colorClass="from-accent-cyan to-blue-500"
+            />
+            <MetricCard
+              title="Total Cost"
+              value={`$${metrics.totalCost.toFixed(3)}`}
+              subtitle="OpenRouter usage"
+              icon={DollarSign}
+              colorClass="from-accent-emerald to-emerald-600"
+            />
+            <MetricCard
+              title="Success Rate"
+              value={`${Math.round(metrics.successRate)}%`}
+              subtitle="Reliability"
+              icon={TrendingUp}
+              colorClass="from-accent-amber to-orange-500"
+            />
           </div>
-          <ExpertPerformance />
-        </TabsContent>
 
-        <TabsContent value="timeline">
-          <Card className="glass-panel">
-            <CardHeader>
-              <CardTitle>Decision Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DecisionTimeline />
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <Tabs defaultValue="overview" className="space-y-8">
+            <div className="flex items-center justify-between gap-4 flex-wrap border-b border-border-subtle pb-1">
+              <TabsList className="bg-transparent border-none gap-8 p-0">
+                <TabsTrigger value="overview" className="bg-transparent h-10 px-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary-glow font-bold text-xs uppercase tracking-widest shadow-none">
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="experts" className="bg-transparent h-10 px-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary-glow font-bold text-xs uppercase tracking-widest shadow-none">
+                  Expert Network
+                </TabsTrigger>
+                <TabsTrigger value="history" className="bg-transparent h-10 px-0 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary-glow font-bold text-xs uppercase tracking-widest shadow-none">
+                  Decision Vault
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-        <TabsContent value="modes">
-          <Card className="glass-panel">
-            <CardHeader>
-              <CardTitle>Execution Mode Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ModeDistribution data={metrics.modeDistribution} detailed />
-            </CardContent>
-          </Card>
-        </TabsContent>
+            <TabsContent value="overview" className="space-y-6 animate-fade-in outline-none">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="glass-panel border-border-subtle bg-bg-raised shadow-md">
+                  <CardHeader>
+                    <CardTitle className="text-xs font-bold text-text-tertiary uppercase tracking-widest">Execution Modes</CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-[300px]">
+                    <ModeDistribution data={metrics.modeDistribution} />
+                  </CardContent>
+                </Card>
+                <Card className="glass-panel border-border-subtle bg-bg-raised shadow-md">
+                  <CardHeader>
+                    <CardTitle className="text-xs font-bold text-text-tertiary uppercase tracking-widest">Cost Trends</CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-[300px]">
+                    <CostAnalytics />
+                  </CardContent>
+                </Card>
+              </div>
 
-        <TabsContent value="history">
-          <HistoricalView />
-        </TabsContent>
-      </Tabs>
+              <Card className="glass-panel border-border-subtle bg-bg-raised shadow-md">
+                <CardHeader>
+                  <CardTitle className="text-xs font-bold text-text-tertiary uppercase tracking-widest">Activity Timeline</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[350px]">
+                  <DecisionTimeline />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="experts" className="animate-fade-in outline-none">
+              <ExpertPerformance />
+            </TabsContent>
+
+            <TabsContent value="history" className="animate-fade-in outline-none">
+              <HistoricalView />
+            </TabsContent>
+          </Tabs>
+        </div>
       )}
     </div>
   );
