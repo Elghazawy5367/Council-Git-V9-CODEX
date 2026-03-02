@@ -1,6 +1,6 @@
 # Blue Ocean Opportunities: education
 
-**Generated:** 3/2/2026, 1:07:13 AM
+**Generated:** 3/2/2026, 8:32:51 AM
 **Total Found:** 44
 
 ## 🏆 Top 10 Goldmines
@@ -9,15 +9,15 @@
 
 **An application for the RS School education process**
 
-- ⭐ Stars: 10,345
+- ⭐ Stars: 10,346
 - 🍴 Forks: 219 (2.1% ratio)
 - 🐛 Open Issues: 68
-- 📅 Last Update: 3/1/2026 (0 days ago)
+- 📅 Last Update: 3/2/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **70/100**
 - 🔗 [View on GitHub](https://github.com/rolling-scopes/rsschool-app)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (10345+ stars)
+- ✅ Proven demand (10346+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -27,15 +27,15 @@
 
 **FCC China open source codebase and curriculum. Learn to code and help nonprofits.**
 
-- ⭐ Stars: 37,639
+- ⭐ Stars: 37,640
 - 🍴 Forks: 1,410 (3.7% ratio)
 - 🐛 Open Issues: 157
-- 📅 Last Update: 2/28/2026 (1 days ago)
+- 📅 Last Update: 3/2/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **69/100**
 - 🔗 [View on GitHub](https://github.com/FreeCodeCampChina/freecodecamp.cn)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (37639+ stars)
+- ✅ Proven demand (37640+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -63,15 +63,15 @@
 
 **Learning operating system development using Linux kernel and Raspberry Pi**
 
-- ⭐ Stars: 13,763
+- ⭐ Stars: 13,764
 - 🍴 Forks: 1,337 (9.7% ratio)
 - 🐛 Open Issues: 65
-- 📅 Last Update: 3/1/2026 (0 days ago)
+- 📅 Last Update: 3/2/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **68/100**
 - 🔗 [View on GitHub](https://github.com/s-matyukevich/raspberry-pi-os)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (13763+ stars)
+- ✅ Proven demand (13764+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -84,7 +84,7 @@
 - ⭐ Stars: 4,649
 - 🍴 Forks: 476 (10.2% ratio)
 - 🐛 Open Issues: 185
-- 📅 Last Update: 3/1/2026 (0 days ago)
+- 📅 Last Update: 3/1/2026 (1 days ago)
 - 🌊 Blue Ocean Score: **68/100**
 - 🔗 [View on GitHub](https://github.com/algorithmica-org/algorithmica)
 
@@ -139,7 +139,7 @@
 - ⭐ Stars: 1,795
 - 🍴 Forks: 286 (15.9% ratio)
 - 🐛 Open Issues: 53
-- 📅 Last Update: 2/26/2026 (3 days ago)
+- 📅 Last Update: 2/26/2026 (4 days ago)
 - 🌊 Blue Ocean Score: **67/100**
 - 🔗 [View on GitHub](https://github.com/dunnousername/yanderifier)
 
@@ -157,7 +157,7 @@
 - ⭐ Stars: 2,004
 - 🍴 Forks: 116 (5.8% ratio)
 - 🐛 Open Issues: 44
-- 📅 Last Update: 2/15/2026 (14 days ago)
+- 📅 Last Update: 2/15/2026 (15 days ago)
 - 🌊 Blue Ocean Score: **66/100**
 - 🔗 [View on GitHub](https://github.com/Netflix-Skunkworks/stethoscope)
 

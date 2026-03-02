@@ -1,6 +1,6 @@
 # Blue Ocean Opportunities: freelancing
 
-**Generated:** 3/2/2026, 1:06:25 AM
+**Generated:** 3/2/2026, 8:31:58 AM
 **Total Found:** 7
 
 ## 🏆 Top 10 Goldmines
@@ -27,15 +27,15 @@
 
 **Kimai is the #1 open-source time-tracking application. From freelancers to companies and organisations - everyone can manage timesheets, generate reports, create invoices and so much more... Web-based multi-user application, available as On-Premise or SaaS version: https://www.kimai.org**
 
-- ⭐ Stars: 4,515
-- 🍴 Forks: 743 (16.5% ratio)
+- ⭐ Stars: 4,517
+- 🍴 Forks: 743 (16.4% ratio)
 - 🐛 Open Issues: 311
-- 📅 Last Update: 3/1/2026 (0 days ago)
+- 📅 Last Update: 3/2/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **67/100**
 - 🔗 [View on GitHub](https://github.com/kimai/kimai)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (4515+ stars)
+- ✅ Proven demand (4517+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -48,7 +48,7 @@
 - ⭐ Stars: 2,913
 - 🍴 Forks: 718 (24.6% ratio)
 - 🐛 Open Issues: 62
-- 📅 Last Update: 2/28/2026 (1 days ago)
+- 📅 Last Update: 2/28/2026 (2 days ago)
 - 🌊 Blue Ocean Score: **65/100**
 - 🔗 [View on GitHub](https://github.com/gitscrum-core/laravel-gitscrum)
 
@@ -63,15 +63,15 @@
 
 **Dolibarr ERP CRM is a modern software package to manage your company or foundation's activity (contacts, suppliers, invoices, orders, stocks, agenda, accounting, ...). it's an open source Web application (written in PHP) designed for businesses of any sizes, foundations and freelancers.**
 
-- ⭐ Stars: 6,952
+- ⭐ Stars: 6,954
 - 🍴 Forks: 3,296 (47.4% ratio)
-- 🐛 Open Issues: 1142
+- 🐛 Open Issues: 1139
 - 📅 Last Update: 3/2/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **61/100**
 - 🔗 [View on GitHub](https://github.com/Dolibarr/dolibarr)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (6952+ stars)
+- ✅ Proven demand (6954+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -118,7 +118,7 @@
 **Listing of community-curated resources to find topical remote freelance & contract work for software developers, web designers, and more!**
 
 - ⭐ Stars: 7,416
-- 🍴 Forks: 438 (5.9% ratio)
+- 🍴 Forks: 439 (5.9% ratio)
 - 🐛 Open Issues: 2
 - 📅 Last Update: 3/1/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **50/100**
