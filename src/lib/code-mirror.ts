@@ -8,6 +8,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import standards from "./mirror-standards.json";
+import { callDevToolsLLM } from '@/features/devtools/lib/llm-client';
 
 export interface QualityScore {
   overall: number;
@@ -467,4 +468,61 @@ export async function analyzeBatch(filePaths: string[]): Promise<{
       topIssues,
     },
   };
+}
+
+// ── LLM Semantic Analysis Layer (Phase 2) ──────────────────────────────
+
+export interface SemanticIssue {
+  file: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  category: 'security' | 'performance' | 'architecture' | 'ai-patterns' | 'maintainability';
+  finding: string;
+  evidence: string;
+  suggestion: string;
+  autoFixable: boolean;
+}
+
+export async function runSemanticAnalysis(
+  topFiles: Array<{ path: string; content: string; regexFindingCount: number }>
+): Promise<SemanticIssue[]> {
+  // Analyze only top 10 by finding count (cost control)
+  const targets = [...topFiles]
+    .sort((a, b) => b.regexFindingCount - a.regexFindingCount)
+    .slice(0, 10);
+
+  const allIssues: SemanticIssue[] = [];
+
+  for (const file of targets) {
+    const response = await callDevToolsLLM({
+      model: 'deepseek/deepseek-chat',
+      systemPrompt: `You are reviewing TypeScript code for a single-user personal AI tool.
+      Find issues that static analysis missed: security gaps, performance anti-patterns,
+      architectural smells, outdated AI integration patterns.
+      Return ONLY a JSON object: {"issues": [...]}
+      Each issue: {"severity":"critical|high|medium|low","category":"security|performance|architecture|ai-patterns|maintainability","finding":"string","evidence":"string","suggestion":"string","autoFixable":false}
+      Return empty array if no issues found. Max 5 issues per file.`,
+      userPrompt: `File: ${file.path}
+      
+      Code:
+      ${file.content.slice(0, 2500)}`,
+      responseFormat: { type: 'json_object' },
+      maxTokens: 800,
+    });
+
+    try {
+      const parsed = JSON.parse(response.content);
+      const issues = (parsed.issues ?? []).map((i: Partial<SemanticIssue>) => ({
+        ...i,
+        file: file.path,
+        severity: i.severity ?? 'medium',
+        category: i.category ?? 'maintainability',
+        autoFixable: i.autoFixable ?? false,
+      })) as SemanticIssue[];
+      allIssues.push(...issues);
+    } catch {
+      console.warn(`[CodeMirror] Semantic parse failed for ${file.path}`);
+    }
+  }
+
+  return allIssues;
 }

@@ -166,8 +166,10 @@ export async function cacheSynthesis(expertOutputs: Record<string, {
     await db.add(STORE_NAME, entry);
     // Cleanup old entries if cache is too large
     await cleanupCache();
-  } catch (error) // eslint-disable-next-line no-empty
-  {}}
+  } catch (error) {
+    console.warn('[SynthesisCache] Operation failed silently:', error);
+  }
+}
 
 /**
  * Cleanup old or excess cache entries
@@ -195,8 +197,10 @@ async function cleanupCache(): Promise<void> {
     for (const entry of toRemove) {
       await db.delete(STORE_NAME, entry.id);
     }
-  } catch (error) // eslint-disable-next-line no-empty
-  {}}
+  } catch (error) {
+    console.warn('[SynthesisCache] Operation failed silently:', error);
+  }
+}
 
 /**
  * Get cache statistics
@@ -246,8 +250,10 @@ export async function clearSynthesisCache(): Promise<void> {
   if (!db) return;
   try {
     await db.clear(STORE_NAME);
-  } catch (error) // eslint-disable-next-line no-empty
-  {}}
+  } catch (error) {
+    console.warn('[SynthesisCache] Operation failed silently:', error);
+  }
+}
 
 /**
  * Remove expired cache entries
@@ -265,7 +271,11 @@ export async function removeExpiredEntries(): Promise<number> {
         removedCount++;
       }
     }
-    if (removedCount > 0) // eslint-disable-next-line no-empty
-      {}} catch (error) // eslint-disable-next-line no-empty
-  {}return removedCount;
+    if (removedCount > 0) {
+      // Entries removed successfully
+    }
+  } catch (error) {
+    console.warn('[SynthesisCache] Operation failed silently:', error);
+  }
+  return removedCount;
 }

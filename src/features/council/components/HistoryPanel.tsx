@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/primitive
 import { Button } from '@/components/primitives/button';
 import { ScrollArea } from '@/components/primitives/scroll-area';
 import { Badge } from '@/components/primitives/badge';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 import { 
   History, 
@@ -197,6 +198,14 @@ export const HistoryCard: React.FC<HistoryPanelProps> = ({ onLoadSession, onRefr
 // Sidebar History Panel Component
 export const HistorySidebar: React.FC<HistoryPanelProps> = ({ onLoadSession, onRefresh, isOpen, onClose }) => {
   const { sessions, loadSessions, handleDelete, handleClearAll } = useSessionHistory(false);
+  const parentRef = React.useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: sessions.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 120,
+    overscan: 5,
+  });
 
   React.useEffect(() => {
     // Only load sessions when panel opens, not on every render
@@ -278,7 +287,7 @@ export const HistorySidebar: React.FC<HistoryPanelProps> = ({ onLoadSession, onR
           </p>
         </SheetHeader>
 
-        <ScrollArea className="h-[calc(100vh-100px)]">
+        <div ref={parentRef} className="h-[calc(100vh-100px)] overflow-auto">
           <div className="p-4">
             {sessions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -291,54 +300,71 @@ export const HistorySidebar: React.FC<HistoryPanelProps> = ({ onLoadSession, onR
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {sessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className="group p-4 rounded-xl bg-muted/30 hover:bg-muted/50 cursor-pointer transition-all border border-transparent hover:border-primary/30"
-                    onClick={() => handleLoad(session)}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground line-clamp-2">
-                          {formatSessionPreview(session)}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          <Badge variant="outline" className={`text-xs px-2 py-0.5 ${getModeColor(session.mode)}`}>
-                            {session.mode}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            {session.activeExpertCount} experts
-                          </span>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <DollarSign className="h-3 w-3" />
-                            ${session.cost.total.toFixed(4)}
-                          </span>
+              <div
+                style={{
+                  height: `${virtualizer.getTotalSize()}px`,
+                  width: '100%',
+                  position: 'relative',
+                }}
+              >
+                {virtualizer.getVirtualItems().map((virtualRow) => {
+                  const session = sessions[virtualRow.index];
+                  return (
+                    <div
+                      key={virtualRow.key}
+                      className="absolute top-0 left-0 w-full"
+                      style={{
+                        transform: `translateY(${virtualRow.start}px)`,
+                        paddingBottom: '12px'
+                      }}
+                    >
+                      <div
+                        className="group p-4 rounded-xl bg-muted/30 hover:bg-muted/50 cursor-pointer transition-all border border-transparent hover:border-primary/30"
+                        onClick={() => handleLoad(session)}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground line-clamp-2">
+                              {formatSessionPreview(session)}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                              <Badge variant="outline" className={`text-xs px-2 py-0.5 ${getModeColor(session.mode)}`}>
+                                {session.mode}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Users className="h-3 w-3" />
+                                {session.activeExpertCount} experts
+                              </span>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <DollarSign className="h-3 w-3" />
+                                ${session.cost.total.toFixed(4)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground/70">
+                              <Clock className="h-3 w-3" />
+                              {formatRelativeTime(session.timestamp)}
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => handleDelete(session.id, e)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground/70">
-                          <Clock className="h-3 w-3" />
-                          {formatRelativeTime(session.timestamp)}
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(e) => handleDelete(session.id, e)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
       </SheetContent>
     </Sheet>
   );

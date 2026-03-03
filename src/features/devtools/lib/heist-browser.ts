@@ -1,89 +1,99 @@
-// Heist Browser - Fetches and categorizes prompts from the fabric patterns repository
 import { db, HeistPrompt } from '../../../lib/db';
-import { callDevToolsLLM } from './llm-client';
 
-const FABRIC_PATTERNS_API = 'https://api.github.com/repos/danielmiessler/fabric/git/trees/main?recursive=1';
-const FABRIC_RAW_BASE = 'https://raw.githubusercontent.com/danielmiessler/fabric/main/patterns';
+const FABRIC_BASE = 'https://api.github.com/repos/danielmiessler/fabric/contents/patterns';
 
-interface RawPrompt {
-  slug: string;
-  name: string;
-  content: string;
-}
+export async function fetchFabricPrompts(githubToken?: string): Promise<HeistPrompt[]> {
+  const headers: HeadersInit = { Accept: 'application/vnd.github.v3+json' };
+  if (githubToken) headers['Authorization'] = `Bearer ${githubToken}`;
 
-export async function fetchFabricPrompts(): Promise<RawPrompt[]> {
-  const res = await fetch(FABRIC_PATTERNS_API);
-  if (!res.ok) throw new Error(`Failed to fetch fabric tree: ${res.status}`);
+  const res = await fetch(FABRIC_BASE, { headers });
+  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+  const dirs: Array<{ name: string; url: string }> = await res.json();
 
-  const data = await res.json();
-  const patternPaths = (data.tree as Array<{ path: string; type: string }>)
-    .filter(f => f.path.startsWith('patterns/') && f.path.endsWith('/system.md') && f.type === 'blob')
-    .map(f => f.path);
-
-  const prompts: RawPrompt[] = [];
-  for (const path of patternPaths.slice(0, 100)) {
-    const slug = path.split('/')[1];
-    const name = slug.replace(/_/g, ' ').replace(/-/g, ' ');
-    try {
-      const contentRes = await fetch(`${FABRIC_RAW_BASE}/${slug}/system.md`);
-      if (contentRes.ok) {
-        const content = await contentRes.text();
-        prompts.push({ slug, name, content });
-      }
-    } catch {
-      // Skip failed fetches
-    }
+  const results: HeistPrompt[] = [];
+  // Batch 8 at a time to respect rate limits
+  for (let i = 0; i < dirs.length; i += 8) {
+    const batch = dirs.slice(i, i + 8);
+    const settled = await Promise.allSettled(
+      batch.map(d => fetchSinglePattern(d.name, headers))
+    );
+    settled.forEach(r => { if (r.status === 'fulfilled' && r.value) results.push(r.value); });
+    if (i + 8 < dirs.length) await new Promise(r => setTimeout(r, 1200)); // rate limit pause
   }
-
-  return prompts;
+  return results;
 }
 
-export async function savePromptsToDb(rawPrompts: RawPrompt[]): Promise<void> {
-  const heistPrompts: HeistPrompt[] = rawPrompts.map(p => ({
-    id: p.slug,
-    name: p.name,
-    content: p.content,
-    wordCount: p.content.split(/\s+/).length,
+async function fetchSinglePattern(name: string, headers: HeadersInit): Promise<HeistPrompt | null> {
+  const url = `https://raw.githubusercontent.com/danielmiessler/fabric/main/patterns/${name}/system.md`;
+  const res = await fetch(url, { headers });
+  if (!res.ok) return null;
+  const content = await res.text();
+  return {
+    slug: name,
+    name: name.replace(/_/g, ' '),
+    content,
+    wordCount: content.split(/\s+/).length,
     category: 'other',
     qualityScore: 50,
-    useCases: [],
     lastUpdated: Date.now(),
-  }));
-
-  await db.heistPrompts.bulkPut(heistPrompts);
+  };
 }
 
-export async function categorizePrompts(rawPrompts: RawPrompt[]): Promise<HeistPrompt[]> {
-  const categorized: HeistPrompt[] = [];
-
-  for (const prompt of rawPrompts) {
-    try {
-      const result = await callDevToolsLLM({
-        model: 'google/gemini-flash-1.5',
-        systemPrompt: 'You are a prompt categorizer. Respond with a JSON object: { "category": string, "qualityScore": number, "useCases": string[] }. Categories: reasoning, writing, analysis, coding, research, evaluation, creativity, extraction, other.',
-        userPrompt: `Categorize this prompt:\n\nName: ${prompt.name}\nContent (first 500 chars): ${prompt.content.slice(0, 500)}`,
-        responseFormat: { type: 'json_object' },
-        maxTokens: 200,
-        temperature: 0.1,
-      });
-
-      const parsed = JSON.parse(result.content);
-      const heistPrompt: HeistPrompt = {
-        id: prompt.slug,
-        name: prompt.name,
-        content: prompt.content,
-        wordCount: prompt.content.split(/\s+/).length,
-        category: parsed.category || 'other',
-        qualityScore: parsed.qualityScore || 50,
-        useCases: parsed.useCases || [],
-        lastUpdated: Date.now(),
-      };
-      await db.heistPrompts.put(heistPrompt);
-      categorized.push(heistPrompt);
-    } catch {
-      // Skip prompts that fail categorization
+export async function savePromptsToDb(prompts: HeistPrompt[]): Promise<number> {
+  let saved = 0;
+  for (const prompt of prompts) {
+    const existing = await db.heistPrompts.where('slug').equals(prompt.slug).first();
+    if (existing) {
+      await db.heistPrompts.update(existing.id!, prompt);
+    } else {
+      await db.heistPrompts.add(prompt);
     }
+    saved++;
+  }
+  return saved;
+}
+
+// ── LLM Auto-Categorization (Phase 2) ──────────────────────────────
+
+import { callDevToolsLLM } from './llm-client';
+
+export async function categorizePrompts(
+  prompts: HeistPrompt[]
+): Promise<HeistPrompt[]> {
+  const BATCH_SIZE = 10;
+  const results: HeistPrompt[] = [];
+
+  for (let i = 0; i < prompts.length; i += BATCH_SIZE) {
+    const batch = prompts.slice(i, i + BATCH_SIZE);
+    const categorized = await Promise.allSettled(
+      batch.map(p => categorizeSingle(p))
+    );
+    results.push(...categorized.map((r, idx) =>
+      r.status === 'fulfilled' ? r.value : batch[idx]
+    ));
   }
 
-  return categorized;
+  // Persist all to Dexie
+  await db.heistPrompts.bulkPut(results);
+  return results;
+}
+
+async function categorizeSingle(prompt: HeistPrompt): Promise<HeistPrompt> {
+  const response = await callDevToolsLLM({
+    model: 'google/gemini-2.5-flash-preview',
+    systemPrompt: 'Categorize this AI system prompt. Return ONLY JSON: {"category":"reasoning|writing|analysis|coding|research|evaluation|creativity|extraction|other","qualityScore":0}. qualityScore is 0-100.',
+    userPrompt: prompt.content.slice(0, 400),
+    responseFormat: { type: 'json_object' },
+    maxTokens: 60,
+  });
+  try {
+    const meta = JSON.parse(response.content);
+    return {
+      ...prompt,
+      category: meta.category ?? 'other',
+      qualityScore: Math.min(100, Math.max(0, meta.qualityScore ?? 50)),
+    };
+  } catch {
+    return prompt;
+  }
 }

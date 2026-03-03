@@ -14,6 +14,7 @@ const AutomationDashboard = React.lazy(() => import("@/pages/AutomationDashboard
 const QualityDashboard = React.lazy(() => import("@/pages/QualityDashboard"));
 const AnalyticsDashboard = React.lazy(() => import("@/pages/AnalyticsDashboard"));
 const ScoutConfig = React.lazy(() => import("@/pages/features/ScoutConfig"));
+const DevTools = React.lazy(() => import("@/pages/DevToolsDashboard"));
 const NotFound = React.lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
                 <Route path="/quality" element={<QualityDashboard />} />
                 <Route path="/analytics" element={<AnalyticsDashboard />} />
                 <Route path="/features/scout" element={<ScoutConfig />} />
+                <Route path="/dev-tools" element={<DevTools />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -778,7 +778,8 @@ Target Repositories:
   await analyzeMOEPatterns(config);
 }
 
-// Run if called directly
-if (require.main === module) {
+// Run if called directly (ESM-compatible)
+import { fileURLToPath } from 'url';
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   runMOEAnalysis().catch(console.error);
 }

@@ -13,7 +13,8 @@ import {
   Shield,
   Zap,
   Brain,
-  BarChart3
+  BarChart3,
+  Wrench
 } from 'lucide-react';
 import { Button } from '@/components/primitives/button';
 import { Badge } from '@/components/primitives/badge';
@@ -41,6 +42,7 @@ export const Header: React.FC = () => {
     { to: '/features', label: 'Automation', icon: Zap },
     { to: '/quality', label: 'Quality', icon: Shield },
     { to: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { to: '/dev-tools', label: 'Dev Tools', icon: Wrench },
   ];
 
   return (
