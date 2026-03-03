@@ -48,6 +48,15 @@ export const GoldmineDetector: React.FC<GoldmineDetectorProps> = ({ opportunitie
     toast.success('Action plan copied to clipboard');
   };
 
+  // Memoize revenue calculation for performance
+  const totalRevenue = useMemo(() =>
+    goldmines.slice(0, 10).reduce((sum, repo) => {
+      const metrics = calculateGoldmineMetrics(repo);
+      return sum + metrics.estimatedRevenueLow;
+    }, 0),
+    [goldmines]
+  );
+
   if (goldmines.length === 0) {
     return (
       <Card>
@@ -73,15 +82,6 @@ export const GoldmineDetector: React.FC<GoldmineDetectorProps> = ({ opportunitie
       </Card>
     );
   }
-
-  // Memoize revenue calculation for performance
-  const totalRevenue = useMemo(() => 
-    goldmines.slice(0, 10).reduce((sum, repo) => {
-      const metrics = calculateGoldmineMetrics(repo);
-      return sum + metrics.estimatedRevenueLow;
-    }, 0),
-    [goldmines]
-  );
 
   return (
     <div className="space-y-6">

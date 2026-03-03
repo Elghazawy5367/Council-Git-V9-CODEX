@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Cell
 } from 'recharts';
 import { useDashboardStore } from '../store/dashboard-store';
 
@@ -19,7 +20,7 @@ export const CostAnalytics: React.FC = () => {
       .slice(0, 7)
       .reverse()
       .map((decision, index) => ({
-        name: `Decision ${index + 1}`,
+        name: `S#${decision.id?.slice(-4) || index + 1}`,
         cost: decision.cost,
         time: decision.duration,
       }));
@@ -27,31 +28,46 @@ export const CostAnalytics: React.FC = () => {
 
   if (costData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">
-        No cost data yet
+      <div className="flex items-center justify-center h-full text-[10px] font-bold text-text-disabled uppercase tracking-widest italic bg-bg-base/30 rounded-xl border border-dashed border-border-subtle">
+        No cost attribution yet
       </div>
     );
   }
 
   return (
-    <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={costData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={costData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border-subtle))" />
         <XAxis
           dataKey="name"
-          stroke="#9ca3af"
-          style={{ fontSize: '12px' }}
+          stroke="hsl(var(--text-tertiary))"
+          axisLine={false}
+          tickLine={false}
+          style={{ fontSize: '10px', fontWeight: 'bold' }}
         />
-        <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+        <YAxis
+          stroke="hsl(var(--text-tertiary))"
+          axisLine={false}
+          tickLine={false}
+          style={{ fontSize: '10px', fontWeight: 'bold' }}
+        />
         <Tooltip
           contentStyle={{
-            backgroundColor: '#1f2937',
-            border: '1px solid #374151',
-            borderRadius: '8px',
+            backgroundColor: 'hsl(var(--bg-overlay))',
+            border: '1px solid hsl(var(--border-default))',
+            borderRadius: '12px',
+            fontSize: '12px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
           }}
-          formatter={(value: number) => [`$${value.toFixed(4)}`, 'Cost']}
+          itemStyle={{ color: 'hsl(var(--text-primary))' }}
+          formatter={(value: number) => [`$${value.toFixed(4)}`, 'Execution Cost']}
+          cursor={{ fill: 'hsl(var(--bg-elevated))' }}
         />
-        <Bar dataKey="cost" fill="#10b981" radius={[8, 8, 0, 0]} />
+        <Bar dataKey="cost" radius={[6, 6, 0, 0]} barSize={24}>
+           {costData.map((entry, index) => (
+             <Cell key={`cell-${index}`} fill={index === costData.length - 1 ? 'hsl(var(--primary))' : 'hsl(var(--accent-emerald))'} />
+           ))}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );

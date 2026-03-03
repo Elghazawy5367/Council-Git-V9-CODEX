@@ -365,17 +365,14 @@ function generateReport(
 // ============================================================================
 
 export async function runRedditSniper(): Promise<void> {
-  console.log('🎯 Reddit Sniper - Starting...');
-  
+
   const allNiches = await loadNicheConfig();
   const niches = getEnabledNiches(allNiches);
-  console.log(`📂 Found ${niches.length} enabled niches`);
-  
+
   const results = [];
   
   for (const niche of niches) {
-    console.log(`\n🎯 Sniping: ${niche.id}`);
-    
+
     const allSignals: Array<{post: RedditPost, analysis: IntentAnalysis}> = [];
     
     // Get subreddits and keywords from nested monitoring structure
@@ -385,11 +382,9 @@ export async function runRedditSniper(): Promise<void> {
     // Search each subreddit
     for (const subreddit of subreddits) {
       const cleanSubreddit = subreddit.replace(/^r\//, '');
-      console.log(`  → Searching r/${cleanSubreddit}...`);
-      
+
       const posts = await searchReddit(subreddit, keywords);
-      console.log(`  → Found ${posts.length} posts`);
-      
+
       // Analyze each post
       for (const post of posts) {
         const analysis = analyzeIntent(post);
@@ -404,8 +399,7 @@ export async function runRedditSniper(): Promise<void> {
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
     
-    console.log(`  → Found ${allSignals.length} high-intent signals`);
-    
+
     // Generate report
     const report = generateReport(niche.id, niche.name, allSignals);
     
@@ -415,8 +409,7 @@ export async function runRedditSniper(): Promise<void> {
     fs.mkdirSync('data/reports', { recursive: true });
     fs.writeFileSync(filename, report);
     
-    console.log(`  → Report saved: ${filename}`);
-    
+
     const highIntent = allSignals.filter(s => s.analysis.intentScore >= 80).length;
     
     results.push({
@@ -427,11 +420,8 @@ export async function runRedditSniper(): Promise<void> {
     });
   }
   
-  console.log('\n✅ Complete!');
-  console.log(`Generated ${results.length} reports`);
-  
+
   // Summary
   results.forEach(r => {
-    console.log(`  - ${r.niche}: ${r.signals} signals (${r.highIntent} high-intent)`);
-  });
+      });
 }

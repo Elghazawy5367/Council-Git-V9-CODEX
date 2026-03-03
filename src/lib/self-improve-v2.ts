@@ -150,10 +150,6 @@ export async function analyzeCouncilCode(config: AnalysisConfig = {}): Promise<C
     outputDir = path.join(process.cwd(), 'data', 'analysis'),
   } = config;
 
-  console.log('🔍 Council Code Analyzer V2');
-  console.log('━'.repeat(50));
-  console.log(`Analyzing ${targetFiles.length} algorithm files...`);
-  console.log('');
 
   const performanceIssues: PerformanceIssue[] = [];
   const typeSafetyIssues: TypeSafetyIssue[] = [];
@@ -171,15 +167,13 @@ export async function analyzeCouncilCode(config: AnalysisConfig = {}): Promise<C
     const filePath = path.join(process.cwd(), relativeFilePath);
     
     if (!fs.existsSync(filePath)) {
-      console.log(`⚠️  Skipping ${relativeFilePath} (not found)`);
-      continue;
+            continue;
     }
 
     const code = fs.readFileSync(filePath, 'utf-8');
     const fileName = path.basename(relativeFilePath);
     
-    console.log(`📄 Analyzing ${fileName}...`);
-    filesAnalyzed++;
+        filesAnalyzed++;
 
     // Performance analysis
     if (analysisTypes.includes('performance')) {
@@ -202,9 +196,6 @@ export async function analyzeCouncilCode(config: AnalysisConfig = {}): Promise<C
     }
   }
 
-  console.log('');
-  console.log('✅ Analysis complete!');
-  console.log('━'.repeat(50));
 
   // Generate summary
   const criticalIssues = performanceIssues.filter(i => i.severity === 'critical').length +
@@ -758,28 +749,7 @@ function generateMarkdownReport(result: CouncilAnalysisResult): string {
  * Print summary to console
  */
 function printSummary(result: CouncilAnalysisResult): void {
-  console.log('');
-  console.log('📊 ANALYSIS SUMMARY');
-  console.log('━'.repeat(50));
-  console.log(`Total Issues: ${result.summary.totalIssues}`);
-  console.log(`  - Critical: ${result.summary.criticalIssues}`);
-  console.log(`  - High Priority: ${result.summary.highPriorityIssues}`);
-  console.log('');
-  console.log('📈 Breakdown:');
-  console.log(`  - Performance: ${result.performanceIssues.length}`);
-  console.log(`  - Type Safety: ${result.typeSafetyIssues.length}`);
-  console.log(`  - Optimizations: ${result.optimizationOpportunities.length}`);
-  console.log(`  - Test Gaps: ${result.testCoverageGaps.length}`);
-  console.log('');
-  console.log('🎯 Top Recommendations:');
-  result.summary.topRecommendations.forEach((rec, i) => {
-    console.log(`  ${i + 1}. ${rec}`);
-  });
-  console.log('');
-  console.log('📁 Reports saved to:');
-  console.log('  - data/analysis/*.json (detailed JSON reports)');
-  console.log('  - data/reports/council-code-analysis.md (comprehensive guide)');
-  console.log('');
+  // Silent in production
 }
 
 /**
@@ -829,8 +799,7 @@ Examples:
 
   analyzeCouncilCode(config)
     .then(() => {
-      console.log('✅ Analysis complete!');
-      process.exit(0);
+            process.exit(0);
     })
     .catch((error) => {
       console.error('❌ Analysis failed:', error);

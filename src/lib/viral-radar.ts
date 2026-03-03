@@ -70,8 +70,7 @@ async function scanRedditTrending(
   
   try {
     // Scan r/all hot posts
-    console.log('    → Checking r/all hot...');
-    const allUrl = 'https://www.reddit.com/r/all/hot.json?limit=100';
+        const allUrl = 'https://www.reddit.com/r/all/hot.json?limit=100';
     const allResponse = await fetch(allUrl, {
       headers: {
         'User-Agent': 'Council-App/1.0 (Viral Radar)'
@@ -117,16 +116,14 @@ async function scanRedditTrending(
       }
     }
     
-    console.log(`    ✓ Found ${viralContent.length} items from r/all`);
-    
+
     // Rate limit protection
     await new Promise(resolve => setTimeout(resolve, API_REQUEST_DELAY_MS));
     
     // Scan niche-specific subreddits
     for (const subreddit of subreddits.slice(0, MAX_SUBREDDITS_PER_NICHE)) {
       const cleanSubreddit = subreddit.replace(/^r\//, '');
-      console.log(`    → Checking r/${cleanSubreddit}...`);
-      
+
       const subUrl = `https://www.reddit.com/r/${cleanSubreddit}/top.json?t=day&limit=50`;
       const subResponse = await fetch(subUrl, {
         headers: {
@@ -135,8 +132,7 @@ async function scanRedditTrending(
       });
       
       if (!subResponse.ok) {
-        console.log(`    ✗ Skipped r/${cleanSubreddit}`);
-        continue;
+                continue;
       }
       
       const subData = await subResponse.json();
@@ -164,8 +160,7 @@ async function scanRedditTrending(
             subredditCount++;
           }
         }
-        console.log(`    ✓ Found ${subredditCount} items from r/${cleanSubreddit}`);
-      }
+              }
       
       // Rate limit protection
       await new Promise(resolve => setTimeout(resolve, API_REQUEST_DELAY_MS));
@@ -187,8 +182,7 @@ async function scanHackerNewsTrending(
   const viralContent: ViralContent[] = [];
   
   try {
-    console.log('    → Checking HackerNews front page...');
-    const url = 'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=30';
+        const url = 'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=30';
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -227,8 +221,7 @@ async function scanHackerNewsTrending(
       }
     }
     
-    console.log(`    ✓ Found ${viralContent.length} items from HN`);
-    
+
   } catch (error: any) {
     console.error('    ✗ Error scanning HackerNews:', error.message);
   }
@@ -450,30 +443,23 @@ function generateReport(
  * Main function - Run Viral Radar
  */
 export async function runViralRadar(): Promise<void> {
-  console.log('📡 Viral Radar - Starting...');
-  
+
   const allNiches = await loadNicheConfig();
   const niches = getEnabledNiches(allNiches);
-  console.log(`📂 Found ${niches.length} enabled niches`);
-  
+
   const results = [];
   
   for (const niche of niches) {
-    console.log(`\n📡 Scanning viral content: ${niche.id}`);
-    
+
     // Scan Reddit
-    console.log(`  → Scanning Reddit...`);
-    const redditContent = await scanRedditTrending(
+        const redditContent = await scanRedditTrending(
       niche.monitoring.keywords,
       niche.monitoring.subreddits
     );
-    console.log(`  ✓ Total Reddit items: ${redditContent.length}`);
-    
+
     // Scan HackerNews
-    console.log(`  → Scanning HackerNews...`);
-    const hnContent = await scanHackerNewsTrending(niche.monitoring.keywords);
-    console.log(`  ✓ Total HN items: ${hnContent.length}`);
-    
+        const hnContent = await scanHackerNewsTrending(niche.monitoring.keywords);
+
     // Combine all content
     const allContent = [...redditContent, ...hnContent];
     
@@ -488,8 +474,7 @@ export async function runViralRadar(): Promise<void> {
       }
     }
     
-    console.log(`  ✓ Found ${analyses.length} viral items (score ≥ 40)`);
-    
+
     // Generate report
     const report = generateReport(niche.id, niche.name, analyses);
     
@@ -499,8 +484,7 @@ export async function runViralRadar(): Promise<void> {
     fs.mkdirSync('data/reports', { recursive: true });
     fs.writeFileSync(filename, report);
     
-    console.log(`  ✓ Report saved: ${filename}`);
-    
+
     const extremelyViral = analyses.filter(a => a.viralScore >= 80).length;
     
     results.push({
@@ -511,11 +495,8 @@ export async function runViralRadar(): Promise<void> {
     });
   }
   
-  console.log('\n✅ Viral Radar Complete!');
-  console.log(`📊 Generated ${results.length} reports`);
-  
+
   // Summary
   results.forEach(r => {
-    console.log(`  - ${r.niche}: ${r.items} viral items (${r.extremelyViral} extremely viral)`);
-  });
+      });
 }

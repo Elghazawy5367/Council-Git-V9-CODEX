@@ -383,37 +383,30 @@ function generateReport(
  * Main function - Run HackerNews Intelligence
  */
 export async function runHackerNewsIntelligence(): Promise<void> {
-  console.log('🗞️ HackerNews Intelligence - Starting...');
-  
+
   const allNiches = await loadNicheConfig();
   const niches = getEnabledNiches(allNiches);
-  console.log(`📂 Found ${niches.length} enabled niches`);
-  
+
   const results = [];
   
   for (const niche of niches) {
-    console.log(`\n🗞️ Scanning HackerNews: ${niche.id}`);
-    
+
     // Get keywords from monitoring config (with fallback)
     const keywords = niche.monitoring?.keywords || niche.keywords || [];
     
     if (keywords.length === 0) {
-      console.log(`  ⚠️ No keywords configured, skipping niche`);
-      continue;
+            continue;
     }
     
     // Search HN stories
-    console.log(`  → Searching HN with keywords: ${keywords.slice(0, 3).join(', ')}...`);
-    const stories = await searchHackerNews(keywords);
+        const stories = await searchHackerNews(keywords);
     
-    console.log(`  → Found ${stories.length} relevant stories`);
-    
+
     // Analyze top stories
     const analyses: StoryAnalysis[] = [];
     for (const story of stories.slice(0, 25)) {
       try {
-        console.log(`  → Analyzing: "${story.title.substring(0, 50)}..."`);
-        const analysis = await analyzeStory(story);
+                const analysis = await analyzeStory(story);
         
         // Only include if has some signal value
         if (analysis.totalScore >= 30) {
@@ -427,8 +420,7 @@ export async function runHackerNewsIntelligence(): Promise<void> {
       }
     }
     
-    console.log(`  → Analyzed ${analyses.length} high-value stories`);
-    
+
     // Generate report
     const report = generateReport(niche.id, niche.name, analyses);
     
@@ -438,8 +430,7 @@ export async function runHackerNewsIntelligence(): Promise<void> {
     fs.mkdirSync('data/reports', { recursive: true });
     fs.writeFileSync(filename, report);
     
-    console.log(`  → Report saved: ${filename}`);
-    
+
     results.push({
       niche: niche.id,
       stories: analyses.length,
@@ -447,11 +438,8 @@ export async function runHackerNewsIntelligence(): Promise<void> {
     });
   }
   
-  console.log('\n✅ Complete!');
-  console.log(`Generated ${results.length} reports`);
-  
+
   // Summary
   results.forEach(r => {
-    console.log(`  - ${r.niche}: ${r.stories} stories analyzed`);
-  });
+      });
 }

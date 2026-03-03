@@ -50,7 +50,7 @@ interface ExpertCardProps {
   index: number;
 }
 
-export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
+export const ExpertCard: React.FC<ExpertCardProps> = React.memo(({ index }) => {
   const expert = useExpertStore(state => state.experts[index]);
   const updateExpert = useExpertStore(state => state.updateExpert);
   const addKnowledge = useExpertStore(state => state.addKnowledge);
@@ -458,6 +458,4 @@ export const ExpertCard: React.FC<ExpertCardProps> = ({ index }) => {
       </Suspense>
     </>
   );
-};
-
-export default ExpertExpandedModal;
+});

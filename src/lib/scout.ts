@@ -12,10 +12,8 @@
  * NOTE: API calls extracted to src/services/github.service.ts
  */
 
-import * as fs from "fs";
-import * as path from "path";
+import { isNode, getRuntimeRequire } from './env';
 import { pathToFileURL } from "node:url";
-import * as yaml from 'js-yaml';
 import { GITHUB_OWNER, GITHUB_REPO } from './config';
 import type { GitHubRawRepo, ScoutIssue } from './types';
 import { getGitHubService } from '@/services/github.service';
@@ -150,6 +148,11 @@ function getDateXDaysAgo(days: number): string {
  * Load niche configuration from YAML
  */
 function loadNicheConfig(): NicheConfig[] {
+  if (!isNode) return [];
+  const fs = getRuntimeRequire()('fs');
+  const path = getRuntimeRequire()('path');
+  const yaml = getRuntimeRequire()('js-yaml');
+
   try {
     const configPath = path.join(process.cwd(), 'config', 'target-niches.yaml');
     const fileContent = fs.readFileSync(configPath, 'utf8');
@@ -277,6 +280,10 @@ function calculateBlueOceanScore(repo: {
  * Save Blue Ocean report
  */
 async function saveBlueOceanReport(opportunities: Opportunity[], topic: string, nicheId: string = 'default'): Promise<void> {
+  if (!isNode) return;
+  const fs = getRuntimeRequire()('fs');
+  const path = getRuntimeRequire()('path');
+
   const today = new Date().toISOString().split("T")[0];
   const filename = `opportunities-${nicheId}-${today}.json`;
   const filepath = path.join(process.cwd(), "data", filename);
@@ -446,33 +453,50 @@ function getConfig(): ScoutConfig {
  * Find trending repositories in target niche
  */
 async function findTrendingRepos(config: ScoutConfig): Promise<GitHubRawRepo[]> {
-  const cacheFile = path.join(process.cwd(), "data", "cache", "repos.json");
-
-  // Check cache
-  if (await isCacheValid(cacheFile, config.cacheExpiry)) {
-    return JSON.parse(fs.readFileSync(cacheFile, "utf-8"));
-  }
-
   const githubService = getGitHubService();
 
+  if (isNode) {
+    const fs = getRuntimeRequire()('fs');
+    const path = getRuntimeRequire()('path');
+    const cacheFile = path.join(process.cwd(), "data", "cache", "repos.json");
+
+    // Check cache
+    if (await isCacheValid(cacheFile, config.cacheExpiry)) {
+      return JSON.parse(fs.readFileSync(cacheFile, "utf-8"));
+    }
+
+    try {
+      // Search GitHub
+      const query = buildSearchQuery(config.targetNiche);
+      const data = await githubService.searchRepositories(query, {
+        sort: 'stars',
+        order: 'desc',
+        perPage: config.maxRepos,
+      });
+
+      const repos = data.items || [];
+
+      // Cache results
+      fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+      fs.writeFileSync(cacheFile, JSON.stringify(repos, null, 2));
+
+      return repos;
+    } catch (error) {
+      console.error("Failed to fetch repositories:", error);
+      return generateMockRepos(config);
+    }
+  }
+
+  // Browser fallback - no cache
   try {
-    // Search GitHub
     const query = buildSearchQuery(config.targetNiche);
     const data = await githubService.searchRepositories(query, {
       sort: 'stars',
       order: 'desc',
       perPage: config.maxRepos,
     });
-
-    const repos = data.items || [];
-
-    // Cache results
-    fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
-    fs.writeFileSync(cacheFile, JSON.stringify(repos, null, 2));
-
-    return repos;
+    return data.items || [];
   } catch (error) {
-    console.error("Failed to fetch repositories:", error);
     return generateMockRepos(config);
   }
 }
@@ -653,6 +677,10 @@ function generateNextActions(opportunities: ProductOpportunity[], trends: string
  * Save intelligence to files
  */
 async function saveIntelligence(report: ScoutReport, nicheId: string = 'default'): Promise<void> {
+  if (!isNode) return;
+  const fs = getRuntimeRequire()('fs');
+  const path = getRuntimeRequire()('path');
+
   const dataDir = path.join(process.cwd(), "data");
   const today = new Date().toISOString().split("T")[0];
 
@@ -735,6 +763,9 @@ function buildSearchQuery(niche: string): string {
   return `${niche} stars:>100 pushed:>2024-01-01`;
 }
 async function isCacheValid(file: string, expiryHours: number): Promise<boolean> {
+  if (!isNode) return false;
+  const fs = getRuntimeRequire()('fs');
+
   if (!fs.existsSync(file)) return false;
   const stats = fs.statSync(file);
   const age = Date.now() - stats.mtimeMs;
