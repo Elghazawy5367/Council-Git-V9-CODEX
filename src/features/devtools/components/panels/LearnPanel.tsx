@@ -1,180 +1,134 @@
-import React, { useState, useEffect } from 'react';
-import { useDevToolsStore } from '@/features/devtools/store/devtools-store';
-import { db, type LearnedPattern } from '@/lib/db';
-import {
-  BookOpen,
-  Play,
-  Download,
-  ExternalLink,
-  Search,
-  CheckCircle2,
-  TrendingUp,
-  Loader2
-} from 'lucide-react';
-import { Button } from '@/components/primitives/button';
-import { Badge } from '@/components/primitives/badge';
-import { Input } from '@/components/primitives/input';
-import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
-import { analyzeRepoWithLLM, type LearningResult } from '@/lib/self-improve';
-import { getSessionKeys } from '@/features/council/lib/vault';
+import { useState, useEffect } from 'react';
+import { db, LearnedPattern } from '../../../../lib/db';
+import { analyzeRepoWithLLM, synthesizePatterns } from '../../../../lib/self-improve';
+import { useDevToolsStore } from '../../store/devtools-store';
+import { CacheBanner, CACHE_TTLS } from '../CacheBanner';
 
-export const LearnPanel: React.FC = () => {
-  const { startRun, completeRun, failRun, runningTools } = useDevToolsStore();
-  const [patterns, setPatterns] = useState<LearnedPattern[]>([]);
-  const [search, setSearch] = useState('');
-  const [niche, setNiche] = useState('');
-
-  const isRunning = runningTools.has('learn');
+export function LearnPanel() {
+  const [repoInput, setRepoInput] = useState('');
+  const [patterns, setPatterns]   = useState<LearnedPattern[]>([]);
+  const [synthesis, setSynthesis] = useState('');
+  const [isRunning, setRunning]   = useState(false);
+  const [runCost, setRunCost]     = useState(0);
+  const { startRun, completeRun, failRun, lastRuns } = useDevToolsStore();
 
   useEffect(() => {
-    loadPatterns();
+    db.learnedPatterns.orderBy('analyzedAt').reverse().limit(20).toArray()
+      .then(setPatterns)
+      .catch((err) => console.warn('[LearnPanel] Failed to load patterns:', err));
   }, []);
 
-  const loadPatterns = async () => {
-    const data = await db.learnedPatterns.toArray();
-    setPatterns(data);
-  };
+  const lastRun = lastRuns['learn'];
+  const cachedAt = lastRun?.status === 'success' ? lastRun.startedAt : null;
 
-  const filteredPatterns = patterns.filter(p =>
-    p.repoName.toLowerCase().includes(search.toLowerCase()) ||
-    p.architectureTags.some(t => t.toLowerCase().includes(search.toLowerCase()))
-  );
-
-  const handleLearn = async () => {
-    if (!niche) {
-      toast.error('Please enter a niche or repo URL');
-      return;
-    }
-
-    const keys = getSessionKeys();
-    if (!keys?.openRouterKey) {
-      toast.error('Vault must be unlocked for LLM analysis');
-      return;
-    }
-
-    const runId = startRun('learn');
+  async function runLearn() {
+    const repos = repoInput.split('\n').map(r => r.trim()).filter(Boolean);
+    if (repos.length === 0) return;
+    setRunning(true);
+    setRunCost(0);
+    const runId = await startRun('learn');
     try {
-      toast.info(`Fetching repository data for ${niche}...`);
-      // We'll use a mocked fetch since we don't have the full GitHub crawling logic here,
-      // but we will use the REAL analyzeRepoWithLLM
-      const mockReadme = `# ${niche}\nThis is a high-performance codebase using Zod for validation and Zustand for state management.`;
-      const mockFiles = ['src/store.ts', 'src/types.ts', 'package.json'];
-
-      toast.info(`Analyzing ${niche} patterns via LLM...`);
-      const analysis = await analyzeRepoWithLLM(niche, mockReadme, mockFiles, keys.openRouterKey);
-
-      if (analysis) {
-        const learnedPattern: LearnedPattern = {
-          repoName: niche,
-          analyzedAt: Date.now(),
-          architecturePatterns: analysis.architecturePatterns || [],
-          techChoices: analysis.techChoices || [],
-          positioningLanguage: analysis.positioningLanguage || [],
-          innovationSignals: analysis.innovationSignals || [],
-          qualityScore: analysis.qualityIndicators?.score || 80,
-          architectureTags: (analysis.architecturePatterns || []).map((p: any) => p.pattern)
-        };
-
-        await db.learnedPatterns.add(learnedPattern);
-        await completeRun(runId, `Analyzed ${niche} successfully`);
-        loadPatterns();
-      } else {
-        throw new Error('Analysis produced no results');
+      const analyses = [];
+      for (const repo of repos) {
+        const readmeRes = await fetch(
+          `https://api.github.com/repos/${repo}/readme`,
+          { headers: { Accept: 'application/vnd.github.v3.raw' } }
+        );
+        const readme = readmeRes.ok ? await readmeRes.text() : '';
+        const treeRes = await fetch(`https://api.github.com/repos/${repo}/git/trees/HEAD?recursive=1`);
+        const fileList = treeRes.ok
+          ? ((await treeRes.json()).tree as Array<{path: string}>).map((f) => f.path).slice(0, 60)
+          : [];
+        const analysis = await analyzeRepoWithLLM(repo, readme, fileList);
+        analyses.push(analysis);
       }
-    } catch (error) {
-      failRun(runId, String(error));
+      const synth = await synthesizePatterns(analyses);
+      setSynthesis(synth);
+      const fresh = await db.learnedPatterns.orderBy('analyzedAt').reverse().limit(20).toArray();
+      setPatterns(fresh);
+      await completeRun(runId, 'learn', `${analyses.length} repos analyzed`);
+    } catch (e) {
+      await failRun(runId, 'learn', String(e));
+    } finally {
+      setRunning(false);
     }
-  };
+  }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-6 border-b border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10 text-primary">
-            <BookOpen className="h-6 w-6" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold">Self-Improving Loop</h3>
-            <p className="text-sm text-muted-foreground">Learn coding patterns from top GitHub repositories</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Input
-            placeholder="Niche or Repo URL..."
-            className="w-48 sm:w-64"
-            value={niche}
-            onChange={(e) => setNiche(e.target.value)}
-          />
-          <Button
-            onClick={handleLearn}
-            disabled={isRunning || !niche}
-            className="gap-2"
-          >
-            {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            Learn Now
-          </Button>
-        </div>
+    <div className="space-y-4">
+      <div>
+        <h2 className="font-semibold">📚 Self-Improving Loop</h2>
+        <p className="text-xs text-muted-foreground">LLM-powered pattern extraction from elite repos</p>
       </div>
 
-      <div className="flex-1 overflow-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Knowledge Base</h4>
-          <Button variant="ghost" size="sm" className="h-8 gap-2">
-            <Download className="h-3.5 w-3.5" />
-            Export JSON
-          </Button>
-        </div>
+      <CacheBanner cachedAt={cachedAt} ttlMs={CACHE_TTLS.learn} onRunFresh={runLearn} />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredPatterns.length === 0 ? (
-            <div className="col-span-full py-20 flex flex-col items-center justify-center text-muted-foreground opacity-30">
-              <TrendingUp className="h-12 w-12 mb-4" />
-              <p>No learned patterns yet</p>
-            </div>
-          ) : (
-            filteredPatterns.map((pattern) => (
-              <div
-                key={pattern.id}
-                className="p-5 rounded-2xl bg-muted/20 border border-border/50 hover:border-primary/30 transition-all group"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1 min-w-0">
-                    <h5 className="font-bold truncate text-foreground group-hover:text-primary transition-colors">
-                      {pattern.repoName}
-                    </h5>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      Analyzed {new Date(pattern.analyzedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Badge className="bg-council-success/20 text-council-success border-council-success/30">
-                    {pattern.qualityScore}%
-                  </Badge>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex flex-wrap gap-1.5">
-                    {pattern.architectureTags.map((tag, i) => (
-                      <Badge key={i} variant="secondary" className="text-[9px] h-4">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  <div className="pt-3 border-t border-border/30 flex items-center justify-between">
-                    <span className="text-[10px] font-medium text-muted-foreground">
-                      {pattern.architecturePatterns.length} Patterns Found
-                    </span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
-                      <ExternalLink className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))
+      <div className="space-y-2">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          Target Repositories (one per line, format: owner/repo)
+        </label>
+        <textarea
+          value={repoInput}
+          onChange={e => setRepoInput(e.target.value)}
+          placeholder={'microsoft/autogen\ncrewAIInc/crewAI\nlangchain-ai/langgraph'}
+          className="w-full h-28 bg-background border border-border rounded-lg px-3 py-2
+            text-sm font-mono resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        <div className="flex items-center gap-2">
+          <button onClick={runLearn} disabled={isRunning || !repoInput.trim()}
+            className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground
+              disabled:opacity-50 flex items-center gap-2">
+            {isRunning ? <><span className="animate-spin inline-block">⟳</span> Learning…</> : '▶ Run Learning'}
+          </button>
+          {isRunning && runCost > 0 && (
+            <span className="text-xs text-muted-foreground font-mono">${runCost.toFixed(4)} spent</span>
           )}
         </div>
       </div>
+
+      {synthesis && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+          <div className="text-xs font-bold uppercase tracking-wide text-primary mb-2">
+            ◈ Meta-Pattern Synthesis
+          </div>
+          <div className="text-sm text-foreground whitespace-pre-wrap">{synthesis}</div>
+        </div>
+      )}
+
+      {patterns.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Knowledge Base ({patterns.length} repos)
+          </div>
+          {patterns.map(p => (
+            <div key={p.id} className="rounded-lg border border-border p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">{p.repoName}</span>
+                <span className="text-xs text-muted-foreground">
+                  Quality: {p.qualityScore}/100
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {p.architectureTags.map(t => (
+                  <span key={t} className="text-[10px] px-2 py-0.5 rounded-full
+                    bg-accent text-accent-foreground border border-border">{t}</span>
+                ))}
+              </div>
+              <div className="space-y-1">
+                {p.patterns.slice(0, 3).map((pat, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs">
+                    <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full"
+                        style={{ width: `${pat.confidence * 100}%` }} />
+                    </div>
+                    <span className="text-muted-foreground w-32 truncate">{pat.pattern}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
-};
+}

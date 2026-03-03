@@ -7,6 +7,8 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { callDevToolsLLM } from '@/features/devtools/lib/llm-client';
+import { db } from './db';
 export interface GitHubRepo {
   name: string;
   fullName: string;
@@ -116,8 +118,10 @@ async function searchSuccessfulRepos(niche: string, minStars: number, maxRepos: 
       try {
         const repo = await fetchRepoDetails(item.full_name, githubToken);
         repos.push(repo);
-      } catch (error) // eslint-disable-next-line no-empty
-      {}}
+      } catch (error) {
+        console.warn('[SelfImprove] Pattern extraction failed:', error);
+      }
+    }
     return repos;
   } catch (error) {
     console.error("Failed to search GitHub:", error);
@@ -554,75 +558,96 @@ function generateMockRepos(niche: string, count: number): GitHubRepo[] {
   }
   return mockRepos;
 }
-/**
- * Analyze a repository using LLM for deep pattern extraction.
- * Used by the Learn panel in DevTools for interactive analysis.
- */
-export async function analyzeRepoWithLLM(
-  niche: string,
-  readme: string,
-  _files: string[],
-  _apiKey: string
-): Promise<{
-  architecturePatterns: Array<{ pattern: string; evidence: string }>;
-  techChoices: Array<{ tech: string; reason: string }>;
-  positioningLanguage: string[];
+
+// ── LLM-Powered Pattern Intelligence (Phase 2) ──────────────────────────
+
+export interface RepoAnalysis {
+  repoName: string;
+  analyzedAt: number;
+  architectureTags: string[];
+  patterns: Array<{
+    pattern: string;
+    confidence: number;
+    evidence: string;
+  }>;
+  techChoices: Array<{ choice: string; rationale: string }>;
   innovationSignals: string[];
-  qualityIndicators: { score: number; highlights: string[] };
-} | null> {
-  if (!readme || readme.trim().length === 0) {
-    return null;
-  }
+  qualityScore: number;
+}
 
-  // Extract patterns from readme content
-  const architecturePatterns: Array<{ pattern: string; evidence: string }> = [];
-  const techChoices: Array<{ tech: string; reason: string }> = [];
-  const positioningLanguage: string[] = [];
-  const innovationSignals: string[] = [];
+export async function analyzeRepoWithLLM(
+  repoName: string,
+  readmeContent: string,
+  fileList: string[]
+): Promise<RepoAnalysis> {
+  const response = await callDevToolsLLM({
+    model: 'deepseek/deepseek-chat',
+    systemPrompt: `You are an elite code pattern analyst. Extract structured intelligence from repository content.
+    
+    You MUST return ONLY a valid JSON object — no markdown fences, no preamble, no explanation.
+    
+    JSON schema:
+    {
+      "architectureTags": ["string"],
+      "patterns": [{"pattern":"string","confidence":0.0,"evidence":"string"}],
+      "techChoices": [{"choice":"string","rationale":"string"}],
+      "innovationSignals": ["string"],
+      "qualityScore": 0
+    }`,
+    userPrompt: `Repository: ${repoName}
+    
+    README excerpt:
+    ${readmeContent.slice(0, 3000)}
+    
+    File structure sample:
+    ${fileList.slice(0, 40).join('\n')}
+    
+    Extract patterns, architecture tags, tech choices, and quality score.
+    Confidence values must be 0.0–1.0. Quality score must be 0–100.`,
+    responseFormat: { type: 'json_object' },
+    maxTokens: 1200,
+  });
 
-  // Detect common architecture patterns from readme
-  const patternMap: Record<string, string> = {
-    'microservice': 'Microservices architecture detected',
-    'monorepo': 'Monorepo structure detected',
-    'serverless': 'Serverless architecture detected',
-    'event-driven': 'Event-driven architecture detected',
-    'plugin': 'Plugin-based extensibility detected',
+  const parsed = JSON.parse(response.content);
+  const result: RepoAnalysis = {
+    repoName,
+    analyzedAt: Date.now(),
+    architectureTags: parsed.architectureTags ?? [],
+    patterns:         parsed.patterns ?? [],
+    techChoices:      parsed.techChoices ?? [],
+    innovationSignals: parsed.innovationSignals ?? [],
+    qualityScore:     Math.min(100, Math.max(0, parsed.qualityScore ?? 50)),
   };
 
-  for (const [key, desc] of Object.entries(patternMap)) {
-    if (readme.toLowerCase().includes(key)) {
-      architecturePatterns.push({ pattern: desc, evidence: `Found '${key}' in repository documentation` });
-    }
+  // Save to Dexie — upsert by repoName
+  const existing = await db.learnedPatterns.where('repoName').equals(repoName).first();
+  if (existing) {
+    await db.learnedPatterns.update(existing.id!, result);
+  } else {
+    await db.learnedPatterns.add(result);
   }
+  return result;
+}
 
-  // Detect tech choices
-  const techPatterns = ['React', 'TypeScript', 'Next.js', 'Node.js', 'Python', 'Rust', 'Go', 'Docker', 'Kubernetes'];
-  for (const tech of techPatterns) {
-    if (readme.includes(tech)) {
-      techChoices.push({ tech, reason: `Used in ${niche} niche` });
-    }
-  }
+export async function synthesizePatterns(analyses: RepoAnalysis[]): Promise<string> {
+  if (analyses.length === 0) return 'No analyses to synthesize.';
 
-  // Extract positioning language (first sentence patterns)
-  const sentences = readme.split(/[.!?]+/).filter(s => s.trim().length > 10).slice(0, 3);
-  positioningLanguage.push(...sentences.map(s => s.trim()));
+  const response = await callDevToolsLLM({
+    model: 'anthropic/claude-sonnet-4-5',
+    systemPrompt: `You are a meta-pattern synthesizer. Given analyses of multiple elite repositories,
+    identify recurring patterns that appear across 2+ repos. These cross-repo patterns are the most
+    actionable learnings. Be specific and concrete. Format as numbered markdown list.`,
+    userPrompt: `Analyses from ${analyses.length} repositories:
+    
+    ${analyses.map(a =>
+      `## ${a.repoName} (score: ${a.qualityScore})
+      Architecture: ${a.architectureTags.join(', ')}
+      Top patterns: ${a.patterns.slice(0,3).map(p => p.pattern).join('; ')}`
+    ).join('\n\n')}
+    
+    What patterns appear in 2+ repos? What should I adopt first?`,
+    maxTokens: 1000,
+  });
 
-  // Detect innovation signals
-  if (readme.toLowerCase().includes('ai') || readme.toLowerCase().includes('machine learning')) {
-    innovationSignals.push('AI/ML integration');
-  }
-  if (readme.toLowerCase().includes('real-time') || readme.toLowerCase().includes('realtime')) {
-    innovationSignals.push('Real-time capabilities');
-  }
-
-  return {
-    architecturePatterns,
-    techChoices,
-    positioningLanguage,
-    innovationSignals,
-    qualityIndicators: {
-      score: Math.min(100, 60 + architecturePatterns.length * 10 + techChoices.length * 5),
-      highlights: architecturePatterns.map(p => p.pattern),
-    },
-  };
+  return response.content;
 }

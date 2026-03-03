@@ -1,168 +1,130 @@
-import React, { useState } from 'react';
-import { useDevToolsStore } from '@/features/devtools/store/devtools-store';
-import {
-  Users,
-  Play,
-  Target,
-  Zap,
-  ShieldCheck,
-  Radar,
-  Loader2,
-  Plus
-} from 'lucide-react';
-import { Button } from '@/components/primitives/button';
-import { Badge } from '@/components/primitives/badge';
-import { Input } from '@/components/primitives/input';
-import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
-import { analyzeTwinDNA, type TwinProfile } from '../../lib/twin-analyzer';
-import { getSessionKeys } from '@/features/council/lib/vault';
+import { useState } from 'react';
+import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from 'recharts';
+import { analyzeTwinDNA, TwinProfile } from '../../lib/twin-analyzer';
+import { useDevToolsStore } from '../../store/devtools-store';
+import { GITHUB_OWNER, GITHUB_REPO } from '../../../../lib/config';
+import { CacheBanner, CACHE_TTLS } from '../CacheBanner';
 
-export const TwinPanel: React.FC = () => {
-  const { startRun, completeRun, failRun, runningTools, runs } = useDevToolsStore();
-  const [targetRepo, setTargetRepo] = useState('');
+const YOUR_KEY_FILES = [
+  'src/features/council/api/ai-client.ts',
+  'src/stores/council.store.ts',
+  'src/lib/db.ts',
+];
 
-  const isRunning = runningTools.has('twin');
-  const lastTwinRun = runs.find(r => r.tool === 'twin' && r.status === 'success');
-  const profile = lastTwinRun?.result as TwinProfile | null;
+export function TwinPanel() {
+  const [targetRepo, setTargetRepo] = useState('microsoft/autogen');
+  const [profile, setProfile] = useState<TwinProfile | null>(null);
+  const [isRunning, setRunning] = useState(false);
+  const [runCost, setRunCost]   = useState(0);
+  const { startRun, completeRun, failRun, lastRuns } = useDevToolsStore();
 
-  const handleRunAnalysis = async () => {
-    if (!targetRepo) {
-      toast.error('Please enter a target repository URL');
-      return;
-    }
+  const lastRun = lastRuns['twin'];
+  const cachedAt = lastRun?.status === 'success' ? lastRun.startedAt : null;
 
-    const keys = getSessionKeys();
-    if (!keys?.openRouterKey) {
-      toast.error('Vault must be unlocked for LLM analysis');
-      return;
-    }
-
-    const runId = startRun('twin');
+  async function runTwin() {
+    setRunning(true);
+    setRunCost(0);
+    const runId = await startRun('twin');
     try {
-      toast.info(`Fetching sample files for analysis...`);
-      const mockSample = `// src/features/council/lib/vault.ts
-import { AES, enc } from 'crypto-js';
-export function encrypt(data: string, key: string) {
-  return AES.encrypt(data, key).toString();
-}`;
-
-      toast.info(`Analyzing DNA relative to ${targetRepo} via LLM...`);
-      const twinProfile = await analyzeTwinDNA(
-        mockSample,
-        targetRepo,
-        keys.openRouterKey,
-        keys.githubApiKey
+      const yourFiles = await Promise.all(
+        YOUR_KEY_FILES.map(async p => {
+          const res = await fetch(
+            `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${p}`
+          );
+          return { path: p, content: res.ok ? await res.text() : '' };
+        })
       );
-
-      await completeRun(runId, twinProfile);
-    } catch (error) {
-      failRun(runId, String(error));
+      const result = await analyzeTwinDNA(yourFiles, targetRepo);
+      setProfile(result);
+      await completeRun(runId, 'twin', `${result.alignmentScore}/100 alignment with ${targetRepo}`);
+    } catch (e) {
+      await failRun(runId, 'twin', String(e));
+    } finally {
+      setRunning(false);
     }
-  };
+  }
+
+  const radarData = profile?.dimensions.map(d => ({
+    dimension: d.name,
+    You: d.yourScore,
+    Target: d.targetScore,
+  })) ?? [];
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-6 border-b border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10 text-primary">
-            <Users className="h-6 w-6" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold">Twin Mimicry</h3>
-            <p className="text-sm text-muted-foreground">Compare your coding patterns against elite repos</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Input
-            placeholder="Target GitHub Repo (e.g. microsoft/autogen)"
-            className="w-48 sm:w-80"
-            value={targetRepo}
-            onChange={(e) => setTargetRepo(e.target.value)}
-          />
-          <Button
-            onClick={handleRunAnalysis}
-            disabled={isRunning || !targetRepo}
-            className="gap-2"
-          >
-            {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            Run Analysis
-          </Button>
-        </div>
+    <div className="space-y-4">
+      <div>
+        <h2 className="font-semibold">👯 Twin Mimicry</h2>
+        <p className="text-xs text-muted-foreground">LLM code DNA comparison against elite repos</p>
       </div>
 
-      <div className="flex-1 overflow-auto p-8">
-        {!profile ? (
-          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground opacity-30 border-2 border-dashed border-border rounded-3xl">
-            <Radar className="h-16 w-16 mb-4" />
-            <p className="text-xl font-bold">No DNA Profile Generated</p>
-            <p className="text-sm">Run analysis against a target repository</p>
-          </div>
-        ) : (
-          <div className="max-w-4xl mx-auto space-y-12">
-            <div className="flex items-center justify-between">
-              <h4 className="text-2xl font-black text-gradient uppercase tracking-tighter">Your Twin Profile</h4>
-              <Badge className="text-lg px-4 py-1 bg-primary text-primary-foreground font-bold">
-                {profile.alignmentScore}% ALIGNMENT
-              </Badge>
-            </div>
+      <CacheBanner cachedAt={cachedAt} ttlMs={CACHE_TTLS.twin} onRunFresh={runTwin} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* DNA Dimensions */}
-              <div className="space-y-6">
-                <h5 className="text-sm font-bold uppercase text-muted-foreground tracking-widest">DNA Dimensions</h5>
-                <div className="space-y-4">
-                  {Object.entries(profile.dimensions).map(([dim, score]: [string, any]) => (
-                    <div key={dim} className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs font-bold uppercase">
-                        <span>{dim.replace(/([A-Z])/g, ' $1')}</span>
-                        <span className="text-primary">{score}%</span>
-                      </div>
-                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary transition-all duration-1000"
-                          style={{ width: `${score}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Adoption Plan */}
-              <div className="p-6 rounded-3xl bg-primary/5 border border-primary/20 space-y-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Zap className="h-5 w-5 text-primary" />
-                  <h5 className="font-bold">Immediate Adoption Plan</h5>
-                </div>
-                <div className="space-y-3">
-                  {[
-                    { priority: 1, change: 'Implement exhaustive null guarding', effort: 'low' },
-                    { priority: 2, change: 'Adopt feature-sliced architecture', effort: 'med' },
-                    { priority: 3, change: 'Add Zod response validation', effort: 'med' },
-                  ].map((task) => (
-                    <div key={task.priority} className="flex items-start gap-3 p-3 rounded-xl bg-background border border-border/50 group hover:border-primary/50 transition-colors">
-                      <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
-                        {task.priority}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-semibold">{task.change}</div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-[10px] h-4 uppercase">{task.effort} effort</Badge>
-                          <button className="text-[10px] font-bold text-primary hover:underline flex items-center gap-0.5">
-                            <Plus className="h-2.5 w-2.5" />
-                            Apply
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="flex gap-3">
+        <select value={targetRepo} onChange={e => setTargetRepo(e.target.value)}
+          className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm">
+          {['microsoft/autogen','crewAIInc/crewAI','langchain-ai/langgraph',
+            'open-webui/open-webui','Significant-Gravitas/AutoGPT'].map(r => (
+            <option key={r} value={r}>{r}</option>
+          ))}
+        </select>
+        <button onClick={runTwin} disabled={isRunning}
+          className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground disabled:opacity-50">
+          {isRunning ? '⟳ Analyzing…' : '▶ Run'}
+        </button>
       </div>
+      {isRunning && runCost > 0 && (
+        <span className="text-xs text-muted-foreground font-mono">${runCost.toFixed(4)} spent</span>
+      )}
+
+      {profile && (
+        <>
+          <div className="rounded-lg border border-border p-4 text-center">
+            <div className="text-4xl font-bold text-primary">{profile.alignmentScore}</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Alignment score vs {profile.targetRepoName}
+            </div>
+          </div>
+
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarData}>
+                <PolarGrid stroke="hsl(var(--border))" />
+                <PolarAngleAxis dataKey="dimension"
+                  tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                <Radar name="You" dataKey="You" stroke="hsl(var(--primary))"
+                  fill="hsl(var(--primary))" fillOpacity={0.2} />
+                <Radar name="Target" dataKey="Target" stroke="hsl(220 90% 56%)"
+                  fill="hsl(220 90% 56%)" fillOpacity={0.1} />
+                <Tooltip contentStyle={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Adoption Plan
+            </div>
+            {profile.adoptionPlan.map((item, i) => (
+              <div key={i} className="flex items-start gap-3 p-3 rounded-lg border border-border">
+                <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs
+                  flex items-center justify-center font-bold flex-shrink-0">
+                  {item.priority}
+                </span>
+                <div className="flex-1">
+                  <div className="text-sm">{item.change}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{item.estimatedImpact}</div>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full border flex-shrink-0 ${
+                  item.effort === 'low' ? 'text-green-500 border-green-500/30' :
+                  item.effort === 'medium' ? 'text-yellow-500 border-yellow-500/30' :
+                  'text-red-500 border-red-500/30'}`}>
+                  {item.effort}
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
-};
+}

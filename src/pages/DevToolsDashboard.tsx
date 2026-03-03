@@ -1,114 +1,61 @@
-import React, { useEffect } from 'react';
-import { useDevToolsStore, type ToolId } from '@/features/devtools/store/devtools-store';
-import {
-  Wrench,
-  Layout,
-  BookOpen,
-  Users,
-  VenetianMask,
-  Telescope,
-  Play,
-  Activity,
-  ChevronRight,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Loader2
-} from 'lucide-react';
-import { Button } from '@/components/primitives/button';
-import { Badge } from '@/components/primitives/badge';
-import { Separator } from '@/components/primitives/separator';
-import { cn } from '@/lib/utils';
-import { ToolNavSidebar } from '@/features/devtools/components/ToolNavSidebar';
-import { ActivityLog } from '@/features/devtools/components/ActivityLog';
-import { MirrorPanel } from '@/features/devtools/components/panels/MirrorPanel';
-import { LearnPanel } from '@/features/devtools/components/panels/LearnPanel';
-import { TwinPanel } from '@/features/devtools/components/panels/TwinPanel';
-import { HeistPanel } from '@/features/devtools/components/panels/HeistPanel';
-import { ScoutPanel } from '@/features/devtools/components/panels/ScoutPanel';
+import { useEffect } from 'react';
+import { useDevToolsStore } from '../features/devtools/store/devtools-store';
+import { ToolNavSidebar, TOOLS } from '../features/devtools/components/ToolNavSidebar';
+import { MirrorPanel }   from '../features/devtools/components/panels/MirrorPanel';
+import { LearnPanel }    from '../features/devtools/components/panels/LearnPanel';
+import { TwinPanel }     from '../features/devtools/components/panels/TwinPanel';
+import { HeistPanel }    from '../features/devtools/components/panels/HeistPanel';
+import { ScoutPanel }    from '../features/devtools/components/panels/ScoutPanel';
+import { ActivityLog }   from '../features/devtools/components/ActivityLog';
+import { FeatureErrorBoundary } from '../components/ErrorBoundary';
 
-const DevToolsDashboard: React.FC = () => {
-  const { activeTool, runs, loadRuns, runningTools } = useDevToolsStore();
+const PANELS = { mirror: MirrorPanel, learn: LearnPanel, twin: TwinPanel,
+                 heist: HeistPanel, scout: ScoutPanel } as const;
 
-  useEffect(() => {
-    loadRuns();
-  }, [loadRuns]);
-
-  const renderActivePanel = () => {
-    switch (activeTool) {
-      case 'mirror': return <MirrorPanel />;
-      case 'learn': return <LearnPanel />;
-      case 'twin': return <TwinPanel />;
-      case 'heist': return <HeistPanel />;
-      case 'scout': return <ScoutPanel />;
-      default: return <MirrorPanel />;
-    }
-  };
-
-  const lastRun = runs[0];
-  const isRunning = runningTools.size > 0;
+export default function DevToolsDashboard() {
+  const { activeTool, setActiveTool, loadLastRuns } = useDevToolsStore();
+  useEffect(() => { loadLastRuns(); }, [loadLastRuns]);
+  const ActivePanel = PANELS[activeTool];
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="flex flex-col h-full min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-              <Wrench className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">Dev Tools</h1>
-              <p className="text-xs text-muted-foreground">Unified Meta-Feature Dashboard</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            {lastRun && (
-              <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" />
-                <span>Last Run: {new Date(lastRun.startedAt).toLocaleTimeString()}</span>
-              </div>
-            )}
-            <Button size="sm" className="gap-2" disabled={isRunning}>
-              {isRunning ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-              Run All
-            </Button>
-          </div>
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div>
+          <h1 className="text-lg font-bold tracking-tight">🛠 Dev Tools</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Meta-features — tools that improve the app itself
+          </p>
         </div>
-      </header>
+      </div>
 
-      <main className="flex-1 container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
-        {/* Sidebar Nav */}
-        <aside className="w-full lg:w-64 flex-shrink-0">
+      {/* Body */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar collapses to horizontal tab bar on mobile */}
+        <div className="hidden md:block">
           <ToolNavSidebar />
-        </aside>
-
-        {/* Content Area */}
-        <div className="flex-1 space-y-8 min-w-0">
-          <section className="glass-panel border border-border/50 rounded-2xl overflow-hidden min-h-[500px] flex flex-col">
-            {renderActivePanel()}
-          </section>
-
-          {/* Activity Log */}
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold">Activity Log</h2>
-              </div>
-              <Button variant="ghost" size="sm" className="text-xs">Clear</Button>
-            </div>
-            <ActivityLog />
-          </section>
         </div>
-      </main>
+        {/* Mobile: horizontal scrolling tab bar */}
+        <div className="md:hidden flex overflow-x-auto border-b border-border px-4 py-2 gap-2 flex-shrink-0">
+          {TOOLS.map(t => (
+            <button key={t.id} onClick={() => setActiveTool(t.id)}
+              className={`flex-shrink-0 px-3 py-1.5 text-xs rounded-lg transition-colors
+                ${activeTool === t.id ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}>
+              {t.emoji} {t.label}
+            </button>
+          ))}
+        </div>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          <FeatureErrorBoundary featureName="Dev Tools">
+            <ActivePanel />
+          </FeatureErrorBoundary>
+        </main>
+      </div>
+
+      {/* Activity Log */}
+      <div className="border-t border-border">
+        <ActivityLog />
+      </div>
     </div>
   );
-};
-
-export default DevToolsDashboard;
+}

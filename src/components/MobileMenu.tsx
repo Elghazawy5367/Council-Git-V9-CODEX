@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Menu, Brain, Settings, History, Lock, Unlock, BookOpen } from 'lucide-react';
+import { Menu, Brain, Settings, History, Lock, Unlock, BookOpen, Wrench } from 'lucide-react';
 import { Button } from '@/components/primitives/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/primitives/sheet';
 import { Badge } from '@/components/primitives/badge';
 import { Separator } from '@/components/primitives/separator';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface MobileMenuProps {
   vaultStatus: { isLocked: boolean };
@@ -24,6 +25,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   showHistory,
 }) => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   const menuItems = [
     {
@@ -49,6 +51,14 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       label: 'Settings',
       onClick: () => {
         onOpenSettings();
+        setOpen(false);
+      },
+    },
+    {
+      icon: Wrench,
+      label: 'Dev Tools',
+      onClick: () => {
+        navigate('/dev-tools');
         setOpen(false);
       },
     },

@@ -43,7 +43,15 @@ export function calculateCost(modelId: string, promptTokens: number, completionT
 }
 
 // Non-streaming API call
-export async function callExpert(expert: Expert, task: string, mode: ExecutionMode, apiKey: string, additionalContext?: string, previousOutputs?: Record<string, string>): Promise<{
+export async function callExpert(
+  expert: Expert,
+  task: string,
+  mode: ExecutionMode,
+  apiKey: string,
+  additionalContext?: string,
+  previousOutputs?: Record<string, string>,
+  responseFormat?: { type: 'json_object' }
+): Promise<{
   output: string;
   cost: number;
   tokens: {
@@ -114,7 +122,8 @@ export async function callExpert(expert: Expert, task: string, mode: ExecutionMo
       max_tokens: expert.config.maxTokens,
       top_p: expert.config.topP,
       presence_penalty: expert.config.presencePenalty,
-      frequency_penalty: expert.config.frequencyPenalty
+      frequency_penalty: expert.config.frequencyPenalty,
+      response_format: responseFormat
     })
   });
   if (!response.ok) {

@@ -2,7 +2,6 @@ import React from 'react';
 import { useDevToolsStore } from '@/features/devtools/store/devtools-store';
 import {
   Telescope,
-  ExternalLink,
   Zap,
   Clock,
   ChevronRight
@@ -12,11 +11,11 @@ import { Badge } from '@/components/primitives/badge';
 import { Link } from 'react-router-dom';
 
 export const ScoutPanel: React.FC = () => {
-  const { startRun, runningTools, runs } = useDevToolsStore();
+  const { runningTools, lastRuns } = useDevToolsStore();
   const isRunning = runningTools.has('scout');
 
   // Scout runs are managed in its own store, but we can display the last run status from devToolsRuns
-  const lastScoutRun = runs.find(r => r.tool === 'scout');
+  const lastScoutRun = lastRuns['scout'];
 
   return (
     <div className="flex flex-col h-full p-8">
@@ -45,7 +44,7 @@ export const ScoutPanel: React.FC = () => {
             </div>
             <p className="text-xs text-muted-foreground">
               {lastScoutRun
-                ? `Last full intelligence pass completed successfully with ${lastScoutRun.result || '0'} signals detected.`
+                ? `Last full intelligence pass completed successfully with ${lastScoutRun.summary || '0'} signals detected.`
                 : 'No recent scans found. Proactive monitoring is idle.'}
             </p>
           </div>

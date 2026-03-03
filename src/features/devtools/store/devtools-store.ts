@@ -1,94 +1,61 @@
 import { create } from 'zustand';
-import { db, type DevToolsRun } from '@/lib/db';
+import { db, DevToolsRun } from '../../../lib/db';
 
-export type ToolId = 'mirror' | 'learn' | 'twin' | 'heist' | 'scout';
+type ToolId = 'mirror' | 'learn' | 'twin' | 'heist' | 'scout';
 
 interface DevToolsState {
   activeTool: ToolId;
-  runs: DevToolsRun[];
   runningTools: Set<ToolId>;
+  lastRuns: Record<ToolId, DevToolsRun | null>;
   setActiveTool: (id: ToolId) => void;
-  startRun: (tool: ToolId) => string;
-  completeRun: (id: string, result: unknown) => Promise<void>;
-  failRun: (id: string, error: string) => Promise<void>;
-  loadRuns: () => Promise<void>;
+  startRun: (tool: ToolId) => Promise<number>;
+  completeRun: (id: number, tool: ToolId, summary: string) => Promise<void>;
+  failRun: (id: number, tool: ToolId, error: string) => Promise<void>;
+  loadLastRuns: () => Promise<void>;
 }
 
-export const useDevToolsStore = create<DevToolsState>((set, get) => ({
+export const useDevToolsStore = create<DevToolsState>((set) => ({
   activeTool: 'mirror',
-  runs: [],
   runningTools: new Set(),
+  lastRuns: { mirror: null, learn: null, twin: null, heist: null, scout: null },
 
   setActiveTool: (id) => set({ activeTool: id }),
 
-  startRun: (tool) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    const run: DevToolsRun = {
-      id,
-      tool,
-      status: 'running',
-      startedAt: Date.now(),
-    };
-
-    set((state) => ({
-      runs: [run, ...state.runs].slice(0, 50),
-      runningTools: new Set(state.runningTools).add(tool),
-    }));
-
-    db.devToolsRuns.add(run).catch(console.error);
-    return id;
+  startRun: async (tool) => {
+    set(s => ({ runningTools: new Set(s.runningTools).add(tool) }));
+    const id = await db.devToolsRuns.add({ tool, status: 'running', startedAt: Date.now() });
+    return id as number;
   },
 
-  completeRun: async (id, result) => {
-    const run = await db.devToolsRuns.get(id);
-    if (!run) return;
-
-    const completedRun: DevToolsRun = {
-      ...run,
-      status: 'success',
-      completedAt: Date.now(),
-      durationMs: Date.now() - run.startedAt,
-      result,
-    };
-
-    set((state) => {
-      const newRunningTools = new Set(state.runningTools);
-      newRunningTools.delete(run.tool as ToolId);
-      return {
-        runs: state.runs.map((r) => (r.id === id ? completedRun : r)),
-        runningTools: newRunningTools,
-      };
+  completeRun: async (id, tool, summary) => {
+    const completedAt = Date.now();
+    const existing = await db.devToolsRuns.get(id);
+    await db.devToolsRuns.update(id, {
+      status: 'success', completedAt, summary,
+      durationMs: completedAt - (existing?.startedAt ?? completedAt)
     });
-
-    await db.devToolsRuns.put(completedRun);
-  },
-
-  failRun: async (id, error) => {
     const run = await db.devToolsRuns.get(id);
-    if (!run) return;
-
-    const failedRun: DevToolsRun = {
-      ...run,
-      status: 'error',
-      completedAt: Date.now(),
-      durationMs: Date.now() - run.startedAt,
-      error,
-    };
-
-    set((state) => {
-      const newRunningTools = new Set(state.runningTools);
-      newRunningTools.delete(run.tool as ToolId);
-      return {
-        runs: state.runs.map((r) => (r.id === id ? failedRun : r)),
-        runningTools: newRunningTools,
-      };
+    set(s => {
+      const r = new Set(s.runningTools); r.delete(tool);
+      return { runningTools: r, lastRuns: { ...s.lastRuns, [tool]: run ?? null } };
     });
-
-    await db.devToolsRuns.put(failedRun);
   },
 
-  loadRuns: async () => {
-    const runs = await db.devToolsRuns.orderBy('startedAt').reverse().limit(50).toArray();
-    set({ runs });
+  failRun: async (id, tool, error) => {
+    await db.devToolsRuns.update(id, { status: 'error', completedAt: Date.now(), error });
+    set(s => { const r = new Set(s.runningTools); r.delete(tool); return { runningTools: r }; });
+  },
+
+  loadLastRuns: async () => {
+    const tools: ToolId[] = ['mirror', 'learn', 'twin', 'heist', 'scout'];
+    const lastRuns: Record<ToolId, DevToolsRun | null> = {
+      mirror: null, learn: null, twin: null, heist: null, scout: null
+    };
+    for (const tool of tools) {
+      const runs = await db.devToolsRuns.where('tool').equals(tool)
+        .reverse().sortBy('startedAt');
+      lastRuns[tool] = runs[0] ?? null;
+    }
+    set({ lastRuns });
   },
 }));

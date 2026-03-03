@@ -15,6 +15,8 @@ import { LLMResponseCard } from './LLMResponseCard';
 import { JudgeSection } from './JudgeSection';
 import { Card, CardContent } from '@/components/primitives/card';
 import { Loader2, Sparkles } from 'lucide-react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useRef } from 'react';
 
 export function CouncilWorkflow(): JSX.Element {
   const { execution, llmSelection } = useCouncilContext();
@@ -32,6 +34,14 @@ export function CouncilWorkflow(): JSX.Element {
   // Check if we're in loading state
   const isLoading = execution.isRunning && execution.phase === 'parallel';
   const isJudging = execution.isRunning && execution.phase === 'judge';
+
+  const gridRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: Math.ceil(execution.llmResponses.length / 3), // Assuming 3 columns on lg
+    getScrollElement: () => gridRef.current,
+    estimateSize: () => 400,
+    overscan: 2,
+  });
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8 max-w-7xl">
@@ -84,16 +94,51 @@ export function CouncilWorkflow(): JSX.Element {
           </div>
 
           {/* Responsive Grid for LLM Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {execution.llmResponses.map((response) => (
-              <LLMResponseCard
-                key={response.llmId}
-                response={response}
-                onFeedback={(type) => handleProvideFeedback(response.llmId, type)}
-                onRetry={() => handleRetryLLM(response.llmId)}
-              />
-            ))}
-          </div>
+          {execution.llmResponses.length > 5 ? (
+            <div ref={gridRef} className="max-h-[800px] overflow-auto">
+              <div
+                style={{
+                  height: `${virtualizer.getTotalSize()}px`,
+                  width: '100%',
+                  position: 'relative',
+                }}
+              >
+                {virtualizer.getVirtualItems().map((virtualRow) => {
+                  const startIndex = virtualRow.index * 3;
+                  const rowItems = execution.llmResponses.slice(startIndex, startIndex + 3);
+                  return (
+                    <div
+                      key={virtualRow.key}
+                      className="absolute top-0 left-0 w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                      style={{
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      {rowItems.map((response) => (
+                        <LLMResponseCard
+                          key={response.llmId}
+                          response={response}
+                          onFeedback={(type) => handleProvideFeedback(response.llmId, type)}
+                          onRetry={() => handleRetryLLM(response.llmId)}
+                        />
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {execution.llmResponses.map((response) => (
+                <LLMResponseCard
+                  key={response.llmId}
+                  response={response}
+                  onFeedback={(type) => handleProvideFeedback(response.llmId, type)}
+                  onRetry={() => handleRetryLLM(response.llmId)}
+                />
+              ))}
+            </div>
+          )}
         </section>
       )}
 
