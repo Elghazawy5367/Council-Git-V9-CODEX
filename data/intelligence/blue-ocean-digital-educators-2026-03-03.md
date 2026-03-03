@@ -1,6 +1,6 @@
 # Blue Ocean Opportunities: education
 
-**Generated:** 3/3/2026, 8:29:26 AM
+**Generated:** 3/3/2026, 4:35:28 PM
 **Total Found:** 44
 
 ## 🏆 Top 10 Goldmines
@@ -27,7 +27,7 @@
 
 **FCC China open source codebase and curriculum. Learn to code and help nonprofits.**
 
-- ⭐ Stars: 37,638
+- ⭐ Stars: 37,639
 - 🍴 Forks: 1,411 (3.7% ratio)
 - 🐛 Open Issues: 157
 - 📅 Last Update: 3/3/2026 (0 days ago)
@@ -35,7 +35,7 @@
 - 🔗 [View on GitHub](https://github.com/FreeCodeCampChina/freecodecamp.cn)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (37638+ stars)
+- ✅ Proven demand (37639+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
@@ -48,7 +48,7 @@
 - ⭐ Stars: 4,182
 - 🍴 Forks: 311 (7.4% ratio)
 - 🐛 Open Issues: 54
-- 📅 Last Update: 2/15/2026 (15 days ago)
+- 📅 Last Update: 2/15/2026 (16 days ago)
 - 🌊 Blue Ocean Score: **69/100**
 - 🔗 [View on GitHub](https://github.com/berwin/Blog)
 
@@ -64,7 +64,7 @@
 **Learning operating system development using Linux kernel and Raspberry Pi**
 
 - ⭐ Stars: 13,763
-- 🍴 Forks: 1,337 (9.7% ratio)
+- 🍴 Forks: 1,338 (9.7% ratio)
 - 🐛 Open Issues: 65
 - 📅 Last Update: 3/3/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **68/100**
@@ -82,8 +82,8 @@
 **A computer science textbook**
 
 - ⭐ Stars: 4,652
-- 🍴 Forks: 476 (10.2% ratio)
-- 🐛 Open Issues: 185
+- 🍴 Forks: 477 (10.3% ratio)
+- 🐛 Open Issues: 186
 - 📅 Last Update: 3/3/2026 (0 days ago)
 - 🌊 Blue Ocean Score: **68/100**
 - 🔗 [View on GitHub](https://github.com/algorithmica-org/algorithmica)
@@ -120,7 +120,7 @@
 - ⭐ Stars: 1,351
 - 🍴 Forks: 166 (12.3% ratio)
 - 🐛 Open Issues: 116
-- 📅 Last Update: 1/17/2026 (44 days ago)
+- 📅 Last Update: 1/17/2026 (45 days ago)
 - 🌊 Blue Ocean Score: **68/100**
 - 🔗 [View on GitHub](https://github.com/arschles/go-in-5-minutes)
 
@@ -173,7 +173,7 @@
 
 **RARS -- RISC-V Assembler and Runtime Simulator**
 
-- ⭐ Stars: 1,509
+- ⭐ Stars: 1,510
 - 🍴 Forks: 304 (20.1% ratio)
 - 🐛 Open Issues: 72
 - 📅 Last Update: 3/3/2026 (0 days ago)
@@ -181,7 +181,7 @@
 - 🔗 [View on GitHub](https://github.com/TheThirdOne/rars)
 
 **Why it's a goldmine:**
-- ✅ Proven demand (1509+ stars)
+- ✅ Proven demand (1510+ stars)
 
 **Opportunity:** Build a modern alternative or fork with active maintenance.
 
