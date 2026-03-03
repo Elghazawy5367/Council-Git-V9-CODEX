@@ -103,7 +103,8 @@ function detectRepositoryType(repoPath: string): 'autogen' | 'crewai' | 'langgra
     }
 
     return 'unknown';
-  } catch {
+  } catch (e) {
+    console.warn('Failed to detect repo type:', e);
     return 'unknown';
   }
 }
@@ -129,8 +130,8 @@ function findMOEFiles(repoPath: string, repoType: string): string[] {
         { encoding: 'utf-8' }
       );
       files.push(...result.trim().split('\n').filter(Boolean));
-    } catch {
-      // Continue if pattern not found
+    } catch (e) {
+      console.warn(`Pattern search failed for "${pattern}":`, e);
     }
   }
 
@@ -158,7 +159,8 @@ function extractCodeSnippets(repoPath: string, file: string, keywords: string[])
     }
 
     return snippets.slice(0, 3); // Limit to 3 snippets per file
-  } catch {
+  } catch (e) {
+    console.warn(`Failed to extract code snippets from ${file}:`, e);
     return [];
   }
 }
@@ -555,7 +557,7 @@ export async function analyzeMOEPatterns(config: {
   console.log(`Found ${files.length} MOE-relevant files`);
 
   // Extract patterns based on repository type
-  let patterns: MOEPatterns = {
+  const patterns: MOEPatterns = {
     communicationPatterns: [],
     rolePatterns: [],
     workflowPatterns: [],
@@ -778,7 +780,8 @@ Target Repositories:
   await analyzeMOEPatterns(config);
 }
 
-// Run if called directly
-if (require.main === module) {
+// Run if called directly (ESM-compatible)
+import { fileURLToPath } from 'url';
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   runMOEAnalysis().catch(console.error);
 }

@@ -66,12 +66,14 @@ export const useCallExpert = (expert: Expert, task: string, mode: ExecutionMode,
 // Refined 'useExecuteSynthesis' to ensure alignment with 'executeCouncil'
 export const useExecuteSynthesis = () => {
   return useMutation<SynthesisResult, Error, {
+    expertOutputs: ExpertOutput[];
     task: string;
     config: SynthesisConfig;
     apiKey: string;
     onProgress?: (message: string) => void;
   }>({
     mutationFn: async ({
+      expertOutputs,
       task,
       config,
       apiKey,
@@ -79,7 +81,7 @@ export const useExecuteSynthesis = () => {
     }) => {
       const tierConfig = SYNTHESIS_TIERS[config.tier];
       const promptBuilder = getPromptBuilder(config.tier);
-      const prompt = promptBuilder([], task, config.customInstructions || '');
+      const prompt = promptBuilder(expertOutputs, task, config.customInstructions || '');
       onProgress?.(`Running ${tierConfig.name}...`);
       const primaryModel = config.model || 'google/gemini-2.0-flash-001';
       const fallbackModel = config.fallbackModel || 'deepseek/deepseek-chat';

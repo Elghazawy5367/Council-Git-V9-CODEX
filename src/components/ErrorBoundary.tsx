@@ -60,9 +60,8 @@ const logError = (error: Error, info: ErrorInfo) => {
 
   // Check if error is recoverable
   const isRecoverable = !(error.message?.includes('chunk') || error.message?.includes('dynamically imported') || error.message?.includes('Failed to fetch'));
-  // eslint-disable-next-line no-empty
   if (!isRecoverable)
-    {}};
+     { console.warn("Unrecoverable error detected"); }};
 interface CustomErrorBoundaryProps {
   children: React.ReactNode;
 }
@@ -127,8 +126,7 @@ export const FeatureErrorBoundary: React.FC<{
   return <ErrorBoundary FallbackComponent={() => fallback || defaultFallback} onError={(error, info) => {
     console.error(`[${featureName}] Feature Error:`, error);
     logError(error, info);
-    // eslint-disable-next-line no-empty
   }} onReset={() => 
-  {}}>
+  { console.warn("Feature error boundary reset"); }}>
       {children}
     </ErrorBoundary>;};

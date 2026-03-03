@@ -61,8 +61,7 @@ async function searchRepositoriesByTopic(
   
   for (const topic of topics) {
     try {
-      console.log(`    → Searching topic: ${topic}`);
-      const { data } = await octokit.search.repos({
+            const { data } = await octokit.search.repos({
         q: `topic:${topic} stars:>100`,
         sort: 'stars',
         order: 'desc',
@@ -292,8 +291,7 @@ function generateReport(
  * Main function to run Stargazer Analysis across all niches
  */
 export async function runStargazerAnalysis(): Promise<void> {
-  console.log('⭐ Stargazer Analysis - Starting...');
-  
+
   const githubToken = process.env.GITHUB_TOKEN;
   if (!githubToken) {
     console.warn('⚠️  Warning: No GITHUB_TOKEN found. Rate limits will be lower.');
@@ -306,32 +304,27 @@ export async function runStargazerAnalysis(): Promise<void> {
   try {
     const allNiches = await loadNicheConfig();
     const niches = getEnabledNiches(allNiches);
-    console.log(`📂 Found ${niches.length} enabled niches`);
-    
+
     const results = [];
     
     for (const niche of niches) {
-      console.log(`\n⭐ Analyzing: ${niche.id}`);
-      
+
       // Get topics from nested monitoring structure or top-level
       const topics = niche.monitoring?.github_topics || niche.github_topics || [];
       const keywords = niche.monitoring?.keywords || niche.keywords || [];
       
       if (topics.length === 0) {
-        console.log(`  ⚠️ No GitHub topics defined for ${niche.id}, skipping...`);
-        continue;
+                continue;
       }
       
       // Search repositories by topics
-      console.log(`  → Searching GitHub topics: ${topics.join(', ')}`);
-      const repos = await searchRepositoriesByTopic(
+            const repos = await searchRepositoriesByTopic(
         octokit,
         topics,
         keywords
       );
       
-      console.log(`  → Found ${repos.length} unique repositories`);
-      
+
       // Analyze stargazers for each repo (limit to 30 to avoid rate limits)
       const analyzed: Array<{repo: RepoData, analysis: StargazerAnalysis}> = [];
       const reposToAnalyze = repos.slice(0, 30);
@@ -339,8 +332,7 @@ export async function runStargazerAnalysis(): Promise<void> {
       for (let i = 0; i < reposToAnalyze.length; i++) {
         const repo = reposToAnalyze[i];
         try {
-          console.log(`  → Analyzing ${i + 1}/${reposToAnalyze.length}: ${repo.full_name}`);
-          const analysis = await analyzeStargazers(octokit, repo);
+                    const analysis = await analyzeStargazers(octokit, repo);
           analyzed.push({ repo, analysis });
           
           // Rate limit protection: 1 second between repo analyses
@@ -350,8 +342,7 @@ export async function runStargazerAnalysis(): Promise<void> {
         }
       }
       
-      console.log(`  ✅ Analyzed ${analyzed.length} repositories`);
-      
+
       // Generate report
       const report = generateReport(niche.id, niche.name, analyzed);
       
@@ -363,8 +354,7 @@ export async function runStargazerAnalysis(): Promise<void> {
       const filename = path.join(reportsDir, `stargazer-${niche.id}-${date}.md`);
       fs.writeFileSync(filename, report);
       
-      console.log(`  ✅ Report saved: data/reports/stargazer-${niche.id}-${date}.md`);
-      
+
       results.push({ 
         niche: niche.id, 
         repositories: analyzed.length, 
@@ -372,13 +362,10 @@ export async function runStargazerAnalysis(): Promise<void> {
       });
     }
     
-    console.log('\n✅ Complete!');
-    console.log(`Generated ${results.length} reports`);
-    
+
     // Summary
     results.forEach(r => {
-      console.log(`  - ${r.niche}: ${r.repositories} repos analyzed`);
-    });
+          });
   } catch (error) {
     console.error('❌ Stargazer Analysis failed:', error);
     throw error;

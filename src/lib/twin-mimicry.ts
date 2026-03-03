@@ -475,7 +475,8 @@ export async function runTwinMimicry(): Promise<void> {
   await analyzeTwinMimicry(config);
 }
 
-// Run if called directly
-if (require.main === module) {
+// Run if called directly (ESM-compatible)
+import { fileURLToPath } from 'url';
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   runTwinMimicry().catch(console.error);
 }

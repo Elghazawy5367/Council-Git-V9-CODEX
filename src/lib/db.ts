@@ -36,10 +36,46 @@ export interface DecisionRecord {
   success: boolean;
   outputs?: string; // JSON stringified expert outputs
 }
+
+export interface DevToolsRun {
+  id?: number;
+  tool: 'mirror' | 'learn' | 'twin' | 'heist' | 'scout';
+  status: 'running' | 'success' | 'error';
+  startedAt: number;
+  completedAt?: number;
+  durationMs?: number;
+  summary?: string;
+  error?: string;
+}
+
+export interface HeistPrompt {
+  id?: number;
+  slug: string;
+  name: string;
+  content: string;
+  wordCount: number;
+  category: 'reasoning' | 'writing' | 'analysis' | 'coding' |
+            'research' | 'evaluation' | 'creativity' | 'extraction' | 'other';
+  qualityScore: number;
+  lastUpdated: number;
+}
+
+export interface LearnedPattern {
+  id?: number;
+  repoName: string;
+  analyzedAt: number;
+  architectureTags: string[];
+  patterns: Array<{ pattern: string; confidence: number; evidence: string }>;
+  techChoices: Array<{ choice: string; rationale: string }>;
+  qualityScore: number;
+}
 export class CouncilDatabase extends Dexie {
   experts!: Table<Expert>;
   sessions!: Table<Session>;
   decisionRecords!: Table<DecisionRecord>;
+  devToolsRuns!: Table<DevToolsRun>;
+  heistPrompts!: Table<HeistPrompt>;
+  learnedPatterns!: Table<LearnedPattern>;
   constructor() {
     super("CouncilDB");
 
@@ -67,6 +103,16 @@ export class CouncilDatabase extends Dexie {
       experts: "++id, name, role, model, persona",
       sessions: "++id, title, createdAt",
       decisionRecords: "++id, timestamp, mode, task, success" // Add analytics table
+    });
+
+    // VERSION 4: Add dev tools tables
+    this.version(4).stores({
+      experts: "++id, name, role, model, persona",
+      sessions: "++id, title, createdAt",
+      decisionRecords: "++id, timestamp, mode, task, success",
+      devToolsRuns: "++id, tool, status, startedAt",
+      heistPrompts: "++id, &slug, category, qualityScore, lastUpdated",
+      learnedPatterns: "++id, repoName, analyzedAt, *architectureTags"
     });
   }
 }

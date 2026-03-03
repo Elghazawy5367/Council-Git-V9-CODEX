@@ -43,6 +43,10 @@ export interface SynthesisConfig {
   temperature?: number;
   maxTokens?: number;
   customInstructions?: string;
+  structuredOutput?: boolean;
+  useWeighting?: boolean;
+  useCache?: boolean;
+  useStreaming?: boolean;
   options?: Record<string, unknown>;
 }
 

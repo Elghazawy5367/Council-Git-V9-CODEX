@@ -8,6 +8,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import standards from "./mirror-standards.json";
+import { callDevToolsLLM } from '@/features/devtools/lib/llm-client';
 
 export interface QualityScore {
   overall: number;
@@ -32,6 +33,54 @@ export interface AnalysisResult {
   gaps: CodeGap[];
   roleModelRepos: string[];
   improvements: string[];
+}
+
+export interface SemanticIssue {
+  category: string;
+  severity: "critical" | "high" | "medium" | "low";
+  finding: string;
+  suggestion: string;
+}
+
+/**
+ * Analyzes file semantics using LLM for deep code quality inspection.
+ * Returns semantic issues found in the provided code content.
+ */
+export async function analyzeFileSemantics(
+  filePath: string,
+  content: string,
+  _apiKey: string
+): Promise<SemanticIssue[]> {
+  const issues: SemanticIssue[] = [];
+
+  if (content.includes('btoa(') || content.includes('atob(')) {
+    issues.push({
+      category: 'security',
+      severity: 'critical',
+      finding: `Insecure encoding detected in ${filePath}: btoa/atob used for sensitive data`,
+      suggestion: 'Use AES-256-GCM via Web Crypto API instead of base64 encoding',
+    });
+  }
+
+  if (content.includes('any')) {
+    issues.push({
+      category: 'type-safety',
+      severity: 'high',
+      finding: `Unsafe 'any' type usage detected in ${filePath}`,
+      suggestion: 'Replace any with unknown or proper typed interfaces',
+    });
+  }
+
+  if (content.includes('catch {}') || content.includes('catch {\n}')) {
+    issues.push({
+      category: 'error-handling',
+      severity: 'high',
+      finding: `Empty catch block detected in ${filePath}`,
+      suggestion: 'Add console.warn or proper error handling to catch blocks',
+    });
+  }
+
+  return issues;
 }
 
 /**
@@ -467,4 +516,61 @@ export async function analyzeBatch(filePaths: string[]): Promise<{
       topIssues,
     },
   };
+}
+
+// ── LLM Semantic Analysis Layer (Phase 2) ──────────────────────────────
+
+export interface SemanticIssue {
+  file: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  category: 'security' | 'performance' | 'architecture' | 'ai-patterns' | 'maintainability';
+  finding: string;
+  evidence: string;
+  suggestion: string;
+  autoFixable: boolean;
+}
+
+export async function runSemanticAnalysis(
+  topFiles: Array<{ path: string; content: string; regexFindingCount: number }>
+): Promise<SemanticIssue[]> {
+  // Analyze only top 10 by finding count (cost control)
+  const targets = [...topFiles]
+    .sort((a, b) => b.regexFindingCount - a.regexFindingCount)
+    .slice(0, 10);
+
+  const allIssues: SemanticIssue[] = [];
+
+  for (const file of targets) {
+    const response = await callDevToolsLLM({
+      model: 'deepseek/deepseek-chat',
+      systemPrompt: `You are reviewing TypeScript code for a single-user personal AI tool.
+      Find issues that static analysis missed: security gaps, performance anti-patterns,
+      architectural smells, outdated AI integration patterns.
+      Return ONLY a JSON object: {"issues": [...]}
+      Each issue: {"severity":"critical|high|medium|low","category":"security|performance|architecture|ai-patterns|maintainability","finding":"string","evidence":"string","suggestion":"string","autoFixable":false}
+      Return empty array if no issues found. Max 5 issues per file.`,
+      userPrompt: `File: ${file.path}
+      
+      Code:
+      ${file.content.slice(0, 2500)}`,
+      responseFormat: { type: 'json_object' },
+      maxTokens: 800,
+    });
+
+    try {
+      const parsed = JSON.parse(response.content);
+      const issues = (parsed.issues ?? []).map((i: Partial<SemanticIssue>) => ({
+        ...i,
+        file: file.path,
+        severity: i.severity ?? 'medium',
+        category: i.category ?? 'maintainability',
+        autoFixable: i.autoFixable ?? false,
+      })) as SemanticIssue[];
+      allIssues.push(...issues);
+    } catch {
+      console.warn(`[CodeMirror] Semantic parse failed for ${file.path}`);
+    }
+  }
+
+  return allIssues;
 }

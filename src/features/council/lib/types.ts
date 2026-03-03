@@ -33,20 +33,6 @@ export interface ExpertConfig {
   frequencyPenalty: number;
 }
 
-export interface ModeBehavior {
-  parallel: string;
-  consensus: string;
-  adversarial: string;
-  sequential: string;
-  separated: string;
-  synthesis: string;
-  debate: string;
-  pipeline: string;
-  modeName: string;
-  description: string;
-  isEnabled: boolean;
-}
-
 export interface KnowledgeFile {
   id: string;
   name: string;
@@ -54,6 +40,10 @@ export interface KnowledgeFile {
   size: string;
   type: string;
 }
+
+// Re-exporting canonical types for backward compatibility
+import { ModeBehavior, SynthesisConfig, SynthesisTier } from '@/lib/types';
+export type { ModeBehavior, SynthesisConfig, SynthesisTier };
 
 export interface Expert {
   id: string;
@@ -87,19 +77,6 @@ export type ExecutionMode = 'parallel' | 'consensus' | 'adversarial' | 'sequenti
 
 // Phase 2: Judge/synthesis modes for unifying expert outputs
 export type JudgeMode = 'ruthless-judge' | 'consensus-judge' | 'debate-judge' | 'pipeline-judge';
-
-export type SynthesisTier = 'quick' | 'balanced' | 'deep';
-
-export interface SynthesisConfig {
-  tier: SynthesisTier;
-  model?: string;
-  fallbackModel?: string;
-  temperature?: number;
-  maxTokens?: number;
-  customInstructions?: string;
-  options?: Record<string, unknown>;
-  judgeMode?: JudgeMode; // Phase 2: Judge mode selection
-}
 
 export interface SynthesisResult {
   content: string;
