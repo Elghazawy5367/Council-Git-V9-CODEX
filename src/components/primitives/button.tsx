@@ -9,12 +9,24 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  intent?: string; // 2026: AI-generated intent explanation
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, intent, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+
+    // Auto-generate ARIA label if not provided, using intent if available
+    const ariaLabel = props["aria-label"] || (intent ? `Action: ${intent}` : undefined);
+
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        aria-label={ariaLabel}
+        {...props}
+      />
+    );
   },
 );
 Button.displayName = "Button";

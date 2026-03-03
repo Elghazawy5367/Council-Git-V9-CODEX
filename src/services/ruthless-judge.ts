@@ -143,13 +143,6 @@ class RuthlessJudgeService {
       contextQuestion,
     } = options;
 
-    // Log judgment start
-    console.log('[Judge] Running judgment', {
-      responsesCount: responses.length,
-      llms: responses.map(r => r.llmId),
-      iterativeRefinement: enableIterativeRefinement,
-      maxRounds: maxRefinementRounds,
-    });
 
     // Update conversation context
     if (enableConversationTracking && contextQuestion) {
@@ -158,15 +151,10 @@ class RuthlessJudgeService {
 
     // Handle edge cases
     if (responses.length === 0) {
-      console.log('[Judge] No responses to judge');
-      return this.handleNoResponses();
+            return this.handleNoResponses();
     }
 
     const successfulResponses = responses.filter(r => r.status === 'success' && r.response.trim());
-    console.log('[Judge] Successful responses', {
-      count: successfulResponses.length,
-      llms: successfulResponses.map(r => r.llmId)
-    });
     
     if (successfulResponses.length === 0) {
       return this.handleAllFailures(responses);
@@ -191,8 +179,7 @@ class RuthlessJudgeService {
       return await this.judgeSinglePass(successfulResponses, enableConversationTracking);
     } catch (error) {
       console.error('[Judge] Judge error:', error);
-      console.log('[Judge] Using fallback judgment');
-      return this.createFallbackJudgment(successfulResponses);
+            return this.createFallbackJudgment(successfulResponses);
     }
   }
 
@@ -205,8 +192,7 @@ class RuthlessJudgeService {
   ): Promise<JudgmentResult> {
     const judgePrompt = this.createJudgePrompt(successfulResponses);
     
-    console.log('[Judge] Calling GPT-4 judge with prompt length:', judgePrompt.length);
-    const judgeResponse = await this.callJudge(judgePrompt);
+        const judgeResponse = await this.callJudge(judgePrompt);
     
     const parsedResult = this.parseJudgeResponse(judgeResponse, successfulResponses);
     
@@ -214,12 +200,6 @@ class RuthlessJudgeService {
     if (trackConversation && this.conversationContext) {
       this.updateConversationContext(parsedResult, 1, true);
     }
-    
-    console.log('[Judge] Judgment complete', {
-      confidence: parsedResult.confidence,
-      contradictions: parsedResult.contradictions.length,
-      llmsScored: Object.keys(parsedResult.scoreBreakdown).length
-    });
     
     return parsedResult;
   }
@@ -233,10 +213,6 @@ class RuthlessJudgeService {
     convergenceThreshold: number,
     trackConversation: boolean
   ): Promise<JudgmentResult> {
-    console.log('[Judge] Starting iterative refinement', {
-      maxRounds,
-      convergenceThreshold,
-    });
 
     let currentResult: JudgmentResult | null = null;
     let previousConfidence = 0;
@@ -244,7 +220,6 @@ class RuthlessJudgeService {
     let converged = false;
 
     for (roundNumber = 1; roundNumber <= maxRounds; roundNumber++) {
-      console.log(`[Judge] Refinement round ${roundNumber}/${maxRounds}`);
 
       // Create prompt with context from previous rounds
       const prompt = this.createRefinementPrompt(
@@ -267,15 +242,9 @@ class RuthlessJudgeService {
         currentResult.confidence >= convergenceThreshold ||
         (roundNumber > 1 && Math.abs(confidenceImprovement) < 5);
 
-      console.log(`[Judge] Round ${roundNumber} results`, {
-        confidence: currentResult.confidence,
-        confidenceImprovement,
-        converged,
-      });
 
       if (converged) {
-        console.log('[Judge] Convergence achieved');
-        break;
+                break;
       }
 
       previousConfidence = currentResult.confidence;

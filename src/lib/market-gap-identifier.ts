@@ -478,32 +478,23 @@ function formatGapReport(gap: MarketGap, index: number): string {
 // ============================================================================
 
 export async function runMarketGapIdentifier(): Promise<void> {
-  console.log('🎯 Market Gap Identifier - Starting...');
-  
+
   const allNiches = await loadNicheConfig();
   const niches = getEnabledNiches(allNiches);
-  console.log(`📂 Found ${niches.length} enabled niches`);
-  
+
   const gaps: MarketGap[] = [];
   
   for (const niche of niches) {
-    console.log(`\n🎯 Analyzing market gap: ${niche.id}`);
-    console.log(`  → Loading reports from last 7 days...`);
-    
+
     const reports = await loadRecentReports(niche.id, 7);
-    console.log(`  → Found ${reports.length} recent reports`);
-    
+
     if (reports.length === 0) {
-      console.log(`  ⚠️ No reports found - run other features first`);
-      continue;
+            continue;
     }
     
-    console.log(`  → Analyzing demand vs supply...`);
-    const gap = analyzeMarketGap(niche.id, niche.name, reports);
+        const gap = analyzeMarketGap(niche.id, niche.name, reports);
     
-    console.log(`  → Category: ${gap.category}`);
-    console.log(`  → Opportunity Score: ${gap.opportunityScore}/100`);
-    
+
     gaps.push(gap);
     
     const date = new Date().toISOString().split('T')[0];
@@ -512,28 +503,19 @@ export async function runMarketGapIdentifier(): Promise<void> {
     fs.mkdirSync('data/intelligence', { recursive: true });
     fs.writeFileSync(filename, nicheReport);
     
-    console.log(`  → Saved: ${filename}`);
-  }
+      }
   
-  console.log('\n📊 Generating consolidated report...');
-  const consolidatedReport = generateReport(gaps);
+    const consolidatedReport = generateReport(gaps);
   
   const date = new Date().toISOString().split('T')[0];
   const filename = `data/intelligence/market-gaps-consolidated-${date}.md`;
   fs.writeFileSync(filename, consolidatedReport);
   
-  console.log(`✅ Consolidated report: ${filename}`);
-  
+
   const blueOceans = gaps.filter(g => g.category === 'blue_ocean').length;
   const underserved = gaps.filter(g => g.category === 'underserved').length;
   
-  console.log('\n🎯 SUMMARY:');
-  console.log(`  - Blue Ocean Opportunities: ${blueOceans}`);
-  console.log(`  - Underserved Markets: ${underserved}`);
-  console.log(`  - Total Gaps Analyzed: ${gaps.length}`);
-  
+
   if (blueOceans > 0) {
-    console.log('\n🔥 ACTION REQUIRED: Blue Ocean opportunities found!');
-    console.log('   Review consolidated report for top recommendation.');
-  }
+          }
 }

@@ -576,8 +576,9 @@ export async function synthesizeVerdict(expertOutputs: Record<string, {
     const weightAnalysis = calculateWeights(expertOutputs, task);
     const imbalance = detectWeightImbalance(weightAnalysis);
     weightContext = buildWeightedContext(weights, imbalance);
-    if (imbalance.hasImbalance)
-      {}}
+    if (imbalance.hasImbalance) {
+      console.warn('Weight imbalance detected in expert outputs');
+    }}
 
   // Convert expert outputs to array format for synthesis-engine
   const expertArray = Object.entries(expertOutputs).map(([id, data]) => ({

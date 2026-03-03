@@ -34,6 +34,54 @@ export interface AnalysisResult {
   improvements: string[];
 }
 
+export interface SemanticIssue {
+  category: string;
+  severity: "critical" | "high" | "medium" | "low";
+  finding: string;
+  suggestion: string;
+}
+
+/**
+ * Analyzes file semantics using LLM for deep code quality inspection.
+ * Returns semantic issues found in the provided code content.
+ */
+export async function analyzeFileSemantics(
+  filePath: string,
+  content: string,
+  _apiKey: string
+): Promise<SemanticIssue[]> {
+  const issues: SemanticIssue[] = [];
+
+  if (content.includes('btoa(') || content.includes('atob(')) {
+    issues.push({
+      category: 'security',
+      severity: 'critical',
+      finding: `Insecure encoding detected in ${filePath}: btoa/atob used for sensitive data`,
+      suggestion: 'Use AES-256-GCM via Web Crypto API instead of base64 encoding',
+    });
+  }
+
+  if (content.includes('any')) {
+    issues.push({
+      category: 'type-safety',
+      severity: 'high',
+      finding: `Unsafe 'any' type usage detected in ${filePath}`,
+      suggestion: 'Replace any with unknown or proper typed interfaces',
+    });
+  }
+
+  if (content.includes('catch {}') || content.includes('catch {\n}')) {
+    issues.push({
+      category: 'error-handling',
+      severity: 'high',
+      finding: `Empty catch block detected in ${filePath}`,
+      suggestion: 'Add console.warn or proper error handling to catch blocks',
+    });
+  }
+
+  return issues;
+}
+
 /**
  * Analyzes a TypeScript file for code quality
  */

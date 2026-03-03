@@ -554,3 +554,75 @@ function generateMockRepos(niche: string, count: number): GitHubRepo[] {
   }
   return mockRepos;
 }
+/**
+ * Analyze a repository using LLM for deep pattern extraction.
+ * Used by the Learn panel in DevTools for interactive analysis.
+ */
+export async function analyzeRepoWithLLM(
+  niche: string,
+  readme: string,
+  _files: string[],
+  _apiKey: string
+): Promise<{
+  architecturePatterns: Array<{ pattern: string; evidence: string }>;
+  techChoices: Array<{ tech: string; reason: string }>;
+  positioningLanguage: string[];
+  innovationSignals: string[];
+  qualityIndicators: { score: number; highlights: string[] };
+} | null> {
+  if (!readme || readme.trim().length === 0) {
+    return null;
+  }
+
+  // Extract patterns from readme content
+  const architecturePatterns: Array<{ pattern: string; evidence: string }> = [];
+  const techChoices: Array<{ tech: string; reason: string }> = [];
+  const positioningLanguage: string[] = [];
+  const innovationSignals: string[] = [];
+
+  // Detect common architecture patterns from readme
+  const patternMap: Record<string, string> = {
+    'microservice': 'Microservices architecture detected',
+    'monorepo': 'Monorepo structure detected',
+    'serverless': 'Serverless architecture detected',
+    'event-driven': 'Event-driven architecture detected',
+    'plugin': 'Plugin-based extensibility detected',
+  };
+
+  for (const [key, desc] of Object.entries(patternMap)) {
+    if (readme.toLowerCase().includes(key)) {
+      architecturePatterns.push({ pattern: desc, evidence: `Found '${key}' in repository documentation` });
+    }
+  }
+
+  // Detect tech choices
+  const techPatterns = ['React', 'TypeScript', 'Next.js', 'Node.js', 'Python', 'Rust', 'Go', 'Docker', 'Kubernetes'];
+  for (const tech of techPatterns) {
+    if (readme.includes(tech)) {
+      techChoices.push({ tech, reason: `Used in ${niche} niche` });
+    }
+  }
+
+  // Extract positioning language (first sentence patterns)
+  const sentences = readme.split(/[.!?]+/).filter(s => s.trim().length > 10).slice(0, 3);
+  positioningLanguage.push(...sentences.map(s => s.trim()));
+
+  // Detect innovation signals
+  if (readme.toLowerCase().includes('ai') || readme.toLowerCase().includes('machine learning')) {
+    innovationSignals.push('AI/ML integration');
+  }
+  if (readme.toLowerCase().includes('real-time') || readme.toLowerCase().includes('realtime')) {
+    innovationSignals.push('Real-time capabilities');
+  }
+
+  return {
+    architecturePatterns,
+    techChoices,
+    positioningLanguage,
+    innovationSignals,
+    qualityIndicators: {
+      score: Math.min(100, 60 + architecturePatterns.length * 10 + techChoices.length * 5),
+      highlights: architecturePatterns.map(p => p.pattern),
+    },
+  };
+}

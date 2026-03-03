@@ -21,14 +21,12 @@ export function CouncilWorkflow(): JSX.Element {
 
   // Handler for LLM retry - would need implementation in context
   const handleRetryLLM = (llmId: string): void => {
-    console.log('Retry LLM:', llmId);
-    // TODO: Implement retry logic in CouncilContext
+        // TODO: Implement retry logic in CouncilContext
   };
 
   // Handler for feedback
   const handleProvideFeedback = (llmId: string, type: 'up' | 'down'): void => {
-    console.log('Feedback:', llmId, type);
-    // TODO: Implement feedback tracking
+        // TODO: Implement feedback tracking
   };
 
   // Check if we're in loading state
