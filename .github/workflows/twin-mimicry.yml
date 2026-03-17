@@ -12,7 +12,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
       - name: Run Twin Mimicry
-        run: npm install && node scripts/twin-mimicry.js
+        run: npx tsx src/lib/twin-mimicry.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

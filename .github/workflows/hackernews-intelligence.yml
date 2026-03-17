@@ -24,6 +24,8 @@ jobs:
         run: npm ci
       
       - name: Run HackerNews Intelligence
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx tsx scripts/scan-hackernews.ts
       
       - name: Commit reports

@@ -26,6 +26,8 @@ jobs:
         run: npm ci
       
       - name: Run Viral Radar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx tsx scripts/scan-viral.ts
       
       - name: Commit reports

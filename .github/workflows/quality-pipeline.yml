@@ -25,6 +25,8 @@ jobs:
         run: npm ci
       
       - name: Run Quality Pipeline
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run quality-pipeline
       
       - name: Commit intelligence
