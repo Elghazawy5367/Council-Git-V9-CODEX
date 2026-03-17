@@ -1,3 +1,5 @@
+import { createRequire } from 'module';
+
 /**
  * Environment Utilities
  * Handles environment-specific logic and Node.js module loading
@@ -21,8 +23,7 @@ export const isBrowser = !isNode;
  */
 export function getRuntimeRequire() {
   if (isNode) {
-    // @ts-ignore - 'require' is available in Node.js
-    return require;
+    return createRequire(import.meta.url);
   }
   return null;
 }

@@ -5,27 +5,27 @@ This audit was performed to identify broken or legacy workflows in the repositor
 
 ## Workflow Status Summary
 
-| Workflow File | Status | Script/Command | Issues Identified |
-|---------------|--------|----------------|-------------------|
-| `archive-reports.yml` | ✅ Working | `scripts/report-manager.ts` | None |
-| `daily-scout.yml` | ✅ Working | `npm run phantom-scout` | None |
-| `deploy.yml` | ✅ Working | `npm run build` | None |
-| `fork-evolution.yml` | ✅ Working | `scripts/track-forks.ts` | None |
-| `github-trending.yml` | ✅ Working | `scripts/scan-github-trending.ts` | None |
-| `goldmine-detector.yml` | ✅ Working | `scripts/detect-goldmines.ts` | None |
-| `hackernews-intelligence.yml` | ✅ Working | `scripts/scan-hackernews.ts` | None |
-| `hackernews-producthunt.yml` | ❌ Broken | `src/features/automation/lib/features/hackernews-producthunt.ts` | Library file without execution block. |
-| `market-gap-identifier.yml` | ✅ Working | `scripts/analyze-market-gaps.ts` | None |
-| `market-gap.yml` | ❌ Broken | `scripts/analyze-market-gap.js` | File missing. Should use `scripts/analyze-market-gaps.ts`. |
-| `mining-drill.yml` | ✅ Working | `scripts/run-mining-drill.ts` | None |
-| `quality-pipeline.yml` | ✅ Working | `npm run quality-pipeline` | None |
-| `reddit-pain-points.yml` | ✅ Working | `scripts/extract-reddit-pain.ts` | None |
-| `reddit-radar.yml` | ❌ Broken | `src/lib/reddit-sniper.ts` | Library file without execution block. |
-| `reddit-sniper.yml` | ✅ Working | `scripts/snipe-reddit.ts` | None |
-| `self-improve.yml` | ✅ Working | `npm run learn` | None |
-| `stargazer-analysis.yml` | ✅ Working | `scripts/analyze-stargazers.ts` | None |
-| `twin-mimicry.yml` | ❌ Broken | `scripts/twin-mimicry.js` | File missing. |
-| `viral-radar.yml` | ✅ Working | `scripts/scan-viral.ts` | None |
+| Workflow File | Status | Schedule (UTC) | Script/Command | Last Output Location | Issues Identified |
+|---------------|--------|----------------|----------------|----------------------|-------------------|
+| `archive-reports.yml` | ✅ Working | Daily 02:00 | `scripts/report-manager.ts` | `data/archive/`, `data/registry/` | None |
+| `daily-scout.yml` | ✅ Working | Every 8h | `npm run phantom-scout` | `data/reports/phantom-scout-*.md` | Fixed `getRuntimeRequire` issue. |
+| `deploy.yml` | ✅ Working | On Push (Main) | `npm run build` | `dist/` | None |
+| `fork-evolution.yml` | ✅ Working | Tue, Thu 12:00 | `scripts/track-forks.ts` | `data/reports/fork-evolution-*.md` | None |
+| `github-trending.yml` | ✅ Working | Every 12h | `scripts/scan-github-trending.ts` | `data/reports/github-trending-*.md` | None |
+| `goldmine-detector.yml` | ✅ Working | Wed 14:00 | `scripts/detect-goldmines.ts` | `data/reports/goldmine-*.md` | None |
+| `hackernews-intelligence.yml` | ✅ Working | Mon, Thu 16:00 | `scripts/scan-hackernews.ts` | `data/reports/hackernews-*.md` | None |
+| `hackernews-producthunt.yml` | ✅ Fixed | Daily 12:00 | `scripts/scan-hackernews.ts` | `data/reports/hackernews-*.md` | Pointed to runner script instead of library. |
+| `market-gap-identifier.yml` | ✅ Working | Sun 20:00 | `scripts/analyze-market-gaps.ts` | `data/intelligence/market-gaps-*.md` | None |
+| `market-gap.yml` | ✅ Fixed | Sun 12:00 | `scripts/analyze-market-gaps.ts` | `data/intelligence/market-gaps-*.md` | Pointed to correct `.ts` script. |
+| `mining-drill.yml` | ✅ Working | Daily 08:00 | `scripts/run-mining-drill.ts` | `data/reports/mining-drill-*.md` | None |
+| `quality-pipeline.yml` | ✅ Working | Daily 22:00 | `npm run quality-pipeline` | `data/intelligence/quality-pipeline-*.md` | None |
+| `reddit-pain-points.yml` | ✅ Working | Sun 18:00 | `scripts/extract-reddit-pain.ts` | `data/reports/reddit-pain-points-*.md` | None |
+| `reddit-radar.yml` | ✅ Fixed | Daily 08:00 | `scripts/snipe-reddit.ts` | `data/reports/reddit-sniper-*.md` | Pointed to runner script instead of library. |
+| `reddit-sniper.yml` | ✅ Working | Every 6h | `scripts/snipe-reddit.ts` | `data/reports/reddit-sniper-*.md` | None |
+| `self-improve.yml` | ✅ Working | Sun 02:00 | `npm run learn` | `data/reports/` | None |
+| `stargazer-analysis.yml` | ✅ Working | M, W, F 10:00 | `scripts/analyze-stargazers.ts` | `data/reports/stargazer-*.md` | None |
+| `twin-mimicry.yml` | ✅ Fixed | Sun 00:00 | `src/lib/twin-mimicry.ts` | `data/reports/twin-mimicry.md` | Pointed to correct script and added `npm ci`. |
+| `viral-radar.yml` | ✅ Working | Every 4h | `scripts/scan-viral.ts` | `data/reports/viral-radar-*.md` | None |
 
 ## Key Findings
 

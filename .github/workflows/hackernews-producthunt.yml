@@ -24,4 +24,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "chore: daily hn/ph intelligence update [skip ci]"
-          file_pattern: 'data/intelligence/*.md'
+          file_pattern: 'data/reports/hackernews-*.md'
