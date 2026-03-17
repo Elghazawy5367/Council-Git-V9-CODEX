@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Run Intelligence Gathering
-        run: npx tsx src/features/automation/lib/features/hackernews-producthunt.ts
+        run: npx tsx scripts/scan-hackernews.ts
       - name: Commit results
         uses: stefanzweifel/git-auto-commit-action@v4
         with:

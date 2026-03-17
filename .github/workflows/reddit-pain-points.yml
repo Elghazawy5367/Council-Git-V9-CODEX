@@ -25,6 +25,8 @@ jobs:
         run: npm ci
       
       - name: Run Reddit Pain Points
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx tsx scripts/extract-reddit-pain.ts
       
       - name: Commit reports

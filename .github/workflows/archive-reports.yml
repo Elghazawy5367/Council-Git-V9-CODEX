@@ -24,12 +24,18 @@ jobs:
         run: npm ci
 
       - name: Organize reports
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx tsx scripts/report-manager.ts organize
 
       - name: Archive old reports (60+ days)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx tsx scripts/report-manager.ts archive
 
       - name: Update symlinks and registry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx tsx scripts/report-manager.ts registry
 
       - name: Commit changes
