@@ -35,7 +35,11 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        run: npm run build:github
+        # FIXED: was "npm run build"
+        # build:github sets GITHUB_ACTIONS=true so vite.config.ts
+        # uses base = '/Council-Git-V9/' (required for GitHub Pages)
+        # Plain "npm run build" leaves base = '/' which breaks asset paths
         env:
           NODE_ENV: production
 
