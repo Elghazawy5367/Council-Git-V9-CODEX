@@ -1,4 +1,5 @@
 name: HackerNews & ProductHunt Radar
+
 on:
   schedule:
     - cron: '0 12 * * *'
@@ -11,17 +12,23 @@ jobs:
   intelligence:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4        # FIXED: was @v3
+
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4      # FIXED: was @v3
         with:
-          node-version: 18
+          node-version: '20'             # FIXED: was 18
+          cache: 'npm'                   # ADDED: speeds up install
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci                      # FIXED: was "npm install" (non-reproducible)
+
       - name: Run Intelligence Gathering
         run: npx tsx src/features/automation/lib/features/hackernews-producthunt.ts
+        # PRESERVED: non-standard path kept exactly as original
+
       - name: Commit results
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5   # FIXED: was @v4
         with:
           commit_message: "chore: daily hn/ph intelligence update [skip ci]"
           file_pattern: 'data/intelligence/*.md'
