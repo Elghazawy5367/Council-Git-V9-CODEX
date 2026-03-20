@@ -1,32 +1,40 @@
-name: Reddit Radar
+name: Reddit Radar - Buying Intent Signals
+
 on:
   schedule:
-    - cron: '0 8 * * *'
-  workflow_dispatch:
+    - cron: '0 */6 * * *'  # Every 6 hours (4x daily)
+  workflow_dispatch:        # Manual trigger from GitHub UI
 
 permissions:
   contents: write
 
 jobs:
-  radar:
+  reddit-radar:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      
+      - name: Checkout repository
+        uses: actions/checkout@v4          # FIXED: upgraded from @v3
+
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4        # FIXED: upgraded from @v3
         with:
-          node-version: 18
+          node-version: '20'               # FIXED: upgraded from 18
           cache: 'npm'
-          
+
       - name: Install dependencies
-        run: npm install
-        
-      - name: Run Reddit Sniper
-        run: npx tsx src/lib/reddit-sniper.ts
-        
-      - name: Commit results
-        uses: stefanzweifel/git-auto-commit-action@v4
+        run: npm ci                        # FIXED: was "npm install" (non-reproducible)
+
+      - name: Run Reddit Sniper (all niches)
+        run: npx tsx scripts/snipe-reddit.ts
+        # FIXED: was "npx tsx src/lib/reddit-sniper.ts" (wrong path — direct lib call)
+        # CORRECT: CLI runner at scripts/snipe-reddit.ts handles all niches internally
+        # DO NOT add --niche arg — script does not accept it yet (Phase 1 work)
+
+      - name: Commit reports
+        uses: stefanzweifel/git-auto-commit-action@v5
+        # FIXED: upgraded from @v4 to @v5
+        # FIXED: file_pattern was "data/sniper-leads.json" (wrong output location)
         with:
-          commit_message: "chore: reddit radar update [skip ci]"
-          file_pattern: 'data/sniper-leads.json'
+          commit_message: "🎯 Reddit Radar: Buying intent signals update"
+          file_pattern: "data/reports/reddit-sniper-*.md"
