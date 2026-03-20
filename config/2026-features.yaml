@@ -1,0 +1,28 @@
+# config/2026-features.yaml
+# Feature flags for 2026 upgrade — all start FALSE for safety
+# Enable one at a time after testing each phase
+#
+# HOW TO ENABLE: Change false → true for the feature you've implemented
+# HOW TO ROLLBACK: Change true → false — existing features are unaffected
+
+features:
+  # Phase 1 flags (Month 1 — Data Amplification)
+  github_graphql_v4: false      # Replace REST calls with GraphQL for 60x efficiency
+  github_discussions: false     # Mine developer conversations (richer than Issues)
+  github_sponsors_signal: false # Add payment validation to Goldmine scoring
+  github_models_api: false      # Free LLM inference via GITHUB_TOKEN
+
+  # Phase 2 flags (Month 2 — Memory Layer)
+  vector_search: false          # Semantic search across all reports (needs QDRANT_API_KEY)
+
+  # Phase 3 flags (Month 3 — MCP Layer)
+  mcp_tools: false              # Standardized tool execution for AI models
+
+  # Phase 4 flags (Month 4 — Autonomous Swarm)
+  autonomous_swarm: false       # Full pipeline: scout → quality → gap → council MOE
+
+  # Phase 5 flags (Month 5 — Self-Improvement)
+  feedback_loop: false          # Track outcomes, improve scoring weights
+
+# Current active phase: Phase 0 (fixing broken foundations)
+# Next phase to enable: Phase 1 (set github_graphql_v4: true first)
