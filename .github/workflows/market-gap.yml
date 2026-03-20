@@ -1,18 +1,29 @@
 name: Market Gap Identifier
+
 on:
   schedule:
     - cron: '0 12 * * 0'
   workflow_dispatch:
+
+permissions:
+  contents: read   # ADDED: read-only since this job has no git commit step
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4          # already correct
+
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4        # already correct
         with:
-          node-version: 20
+          node-version: 20                 # already correct
+
+      - name: Install dependencies         # ADDED: separate install step
+        run: npm ci                        # FIXED: was "npm install && node ..." in single step
+
       - name: Run Market Gap Analysis
-        run: npm install && node scripts/analyze-market-gap.js
+        run: node scripts/analyze-market-gap.js
+        # PRESERVED: .js extension (different file from analyze-market-gaps.ts)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
