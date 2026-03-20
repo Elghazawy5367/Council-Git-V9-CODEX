@@ -2,8 +2,8 @@ name: Viral Radar - Trending Content
 
 on:
   schedule:
-    - cron: '0 */4 * * *'  # Every 4 hours
-  workflow_dispatch:  # Manual trigger
+    - cron: '0 */4 * * *'  # Every 4 hours (6x daily)
+  workflow_dispatch:        # Manual trigger from GitHub UI
 
 permissions:
   contents: write
@@ -11,26 +11,29 @@ permissions:
 jobs:
   viral-radar:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
+      - name: Checkout repository
+        uses: actions/checkout@v4          # FIXED: upgraded from @v3
+
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4        # FIXED: upgraded from @v3
         with:
-          node-version: '18'
+          node-version: '20'               # FIXED: upgraded from 18
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
-      - name: Run Viral Radar
-        run: npx tsx scripts/scan-viral.ts
-      
-      - name: Commit reports
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "📡 Viral Radar: Trending content update [skip ci]"
-          file_pattern: 'data/reports/viral-radar-*.md'
 
+      - name: Run Viral Radar (all niches)
+        run: npx tsx scripts/scan-viral.ts
+        # PRESERVED: correct script path — was already right in original
+        # DO NOT add --niche arg — script does not accept it yet (Phase 1 work)
+
+      - name: Commit reports
+        uses: stefanzweifel/git-auto-commit-action@v5
+        # FIXED: upgraded from @v4 to @v5
+        # PRESERVED: correct file_pattern — was already right in original
+        with:
+          commit_message: "📡 Viral Radar: Trending content update"
+          file_pattern: "data/reports/viral-radar-*.md"
