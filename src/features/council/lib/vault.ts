@@ -1,169 +1,277 @@
-// Vault service for secure API key storage
-// Uses AES-256-GCM via Web Crypto API (PBKDF2 key derivation)
+// src/features/council/lib/vault.ts
+// Encrypted API key storage using Web Crypto API (browser-native, zero dependencies)
+// Keys are encrypted with AES-GCM using a password-derived key (PBKDF2)
 
-const VAULT_KEY = 'council_vault_v20';
-const OLD_VAULT_KEYS = ['council_vault_v18', 'council_vault_v19'];
-const PBKDF2_ITERATIONS = 600_000; // OWASP 2024 recommendation
+const VAULT_STORAGE_KEY = 'council_vault_v2';
+const PBKDF2_ITERATIONS = 310_000;
+const SALT_LENGTH = 32;
+const IV_LENGTH = 12;
+const KEY_LENGTH = 256;
 
-export interface VaultStatus {
-  hasVault: boolean;
-  isLocked: boolean;
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+export interface VaultParams {
+  password: string;
+  openRouterKey: string;
+  githubApiKey?: string;
 }
 
-// In-memory session store — never written to sessionStorage
-const sessionKeys = new Map<string, string>();
+export interface VaultKeys {
+  openRouterKey: string;
+  githubApiKey?: string;
+}
 
-async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
-  const enc = new TextEncoder();
-  const raw = await crypto.subtle.importKey(
-    'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+export interface VaultResult {
+  success: boolean;
+  error?: string;
+}
+
+export interface VaultStatus {
+  isCreated: boolean;
+  isUnlocked: boolean;
+}
+
+interface EncryptedVaultData {
+  version: 2;
+  salt: string;
+  iv: string;
+  ciphertext: string;
+}
+
+// ── In-memory session cache (cleared on page unload) ──────────────────────────
+
+let _sessionKeys: VaultKeys | null = null;
+
+// ── Utility: encode / decode ──────────────────────────────────────────────────
+
+function toBase64(buffer: ArrayBuffer): string {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+
+function fromBase64(b64: string): Uint8Array {
+  return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+}
+
+// ── Key derivation ────────────────────────────────────────────────────────────
+
+async function deriveKey(
+  password: string,
+  salt: Uint8Array
+): Promise<CryptoKey> {
+  const encoded = new TextEncoder().encode(password);
+
+  const baseKey = await crypto.subtle.importKey(
+    'raw',
+    encoded,
+    'PBKDF2',
+    false,
+    ['deriveKey']
   );
+
   return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
-    raw,
-    { name: 'AES-GCM', length: 256 },
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: PBKDF2_ITERATIONS,
+      hash: 'SHA-256',
+    },
+    baseKey,
+    { name: 'AES-GCM', length: KEY_LENGTH },
     false,
     ['encrypt', 'decrypt']
   );
 }
 
-async function encryptData(password: string, plaintext: string): Promise<string> {
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  const iv   = crypto.getRandomValues(new Uint8Array(12));
-  const key  = await deriveKey(password, salt);
-  const enc  = new TextEncoder();
-  const ct   = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(plaintext));
-  const out  = new Uint8Array(16 + 12 + ct.byteLength);
-  out.set(salt, 0); out.set(iv, 16); out.set(new Uint8Array(ct), 28);
-  return btoa(String.fromCharCode(...out)); // btoa here = encoding a CIPHERTEXT blob, safe
-}
+// ── Core encrypt / decrypt ────────────────────────────────────────────────────
 
-async function decryptData(password: string, blob: string): Promise<string> {
-  const buf  = Uint8Array.from(atob(blob), c => c.charCodeAt(0));
-  const salt = buf.slice(0, 16);
-  const iv   = buf.slice(16, 28);
-  const data = buf.slice(28);
-  const key  = await deriveKey(password, salt);
-  const pt   = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
-  return new TextDecoder().decode(pt);
-}
+async function encrypt(
+  plaintext: string,
+  password: string
+): Promise<EncryptedVaultData> {
+  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+  const key = await deriveKey(password, salt);
 
-// ── Public API (same signatures as before) ─────────────────────────────────
+  const encoded = new TextEncoder().encode(plaintext);
 
-// Initialize vault status (synchronous — checks localStorage + in-memory session)
-export function initializeVault(): VaultStatus {
-  // Clean up old insecure vault versions
-  for (const oldKey of OLD_VAULT_KEYS) {
-    localStorage.removeItem(oldKey);
-  }
-  const hasVault = localStorage.getItem(VAULT_KEY) !== null;
-  const isLocked = sessionKeys.size === 0;
-  return { hasVault, isLocked };
-}
-
-// Get vault status
-export function getVaultStatus(): VaultStatus {
-  return initializeVault();
-}
-
-// Create new vault
-export async function createVault(data: {
-  password: string;
-  openRouterKey: string;
-  serperKey?: string;
-  githubApiKey?: string;
-  redditApiKey?: string;
-}): Promise<{ success: boolean; error?: string }> {
-  try {
-    const keys = {
-      openRouterKey: data.openRouterKey,
-      serperKey: data.serperKey || '',
-      githubApiKey: data.githubApiKey || '',
-      redditApiKey: data.redditApiKey || '',
-    };
-
-    const encrypted = await encryptData(data.password, JSON.stringify(keys));
-    localStorage.setItem(VAULT_KEY, encrypted);
-
-    // Remove old insecure vaults
-    for (const oldKey of OLD_VAULT_KEYS) {
-      localStorage.removeItem(oldKey);
-    }
-
-    // Auto-unlock after creation (store in memory, not sessionStorage)
-    sessionKeys.set('openRouterKey', keys.openRouterKey);
-    sessionKeys.set('serperKey', keys.serperKey);
-    sessionKeys.set('githubApiKey', keys.githubApiKey);
-    sessionKeys.set('redditApiKey', keys.redditApiKey);
-
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to create vault:', error);
-    return { success: false, error: 'Failed to create vault' };
-  }
-}
-
-// Unlock vault
-export async function unlockVault(password: string): Promise<{ success: boolean; error?: string; keys?: { openRouterKey: string; serperKey?: string; githubApiKey?: string; redditApiKey?: string } }> {
-  try {
-    const blob = localStorage.getItem(VAULT_KEY);
-    if (!blob) {
-      return { success: false, error: 'No vault found' };
-    }
-
-    const decrypted = await decryptData(password, blob); // throws DOMException if wrong password
-    const keys = JSON.parse(decrypted) as Record<string, string>;
-
-    // Store in-memory session
-    Object.entries(keys).forEach(([k, v]) => sessionKeys.set(k, v));
-
-    return {
-      success: true,
-      keys: {
-        openRouterKey: keys.openRouterKey,
-        serperKey: keys.serperKey,
-        githubApiKey: keys.githubApiKey,
-        redditApiKey: keys.redditApiKey,
-      }
-    };
-  } catch (error) {
-    console.error('Failed to unlock vault:', error);
-    return { success: false, error: 'Invalid password' };
-  }
-}
-
-// Lock vault
-export function lockVault(): void {
-  sessionKeys.clear();
-}
-
-// Get session keys
-export function getSessionKeys(): { openRouterKey: string; serperKey?: string; githubApiKey?: string; redditApiKey?: string } | null {
-  if (sessionKeys.size === 0) return null;
+  const cipherBuffer = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    encoded
+  );
 
   return {
-    openRouterKey: sessionKeys.get('openRouterKey') || '',
-    serperKey: sessionKeys.get('serperKey'),
-    githubApiKey: sessionKeys.get('githubApiKey'),
-    redditApiKey: sessionKeys.get('redditApiKey'),
+    version: 2,
+    salt: toBase64(salt.buffer),
+    iv: toBase64(iv.buffer),
+    ciphertext: toBase64(cipherBuffer),
   };
 }
 
-// Delete vault
-export function deleteVault(): void {
-  localStorage.removeItem(VAULT_KEY);
-  for (const oldKey of OLD_VAULT_KEYS) {
-    localStorage.removeItem(oldKey);
+async function decrypt(
+  data: EncryptedVaultData,
+  password: string
+): Promise<string> {
+  const salt = fromBase64(data.salt);
+  const iv = fromBase64(data.iv);
+  const ciphertext = fromBase64(data.ciphertext);
+  const key = await deriveKey(password, salt);
+
+  const plaintextBuffer = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    ciphertext
+  );
+
+  return new TextDecoder().decode(plaintextBuffer);
+}
+
+// ── Storage helpers ───────────────────────────────────────────────────────────
+
+function readStorage(): EncryptedVaultData | null {
+  try {
+    const raw = localStorage.getItem(VAULT_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as EncryptedVaultData;
+  } catch {
+    return null;
   }
-  sessionKeys.clear();
 }
 
-// Clear vault (alias for deleteVault)
+function writeStorage(data: EncryptedVaultData): void {
+  localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(data));
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+
+/**
+ * Check if a vault has been created in localStorage.
+ */
+export function isVaultCreated(): boolean {
+  return readStorage() !== null;
+}
+
+/**
+ * Get current vault status — whether it exists and whether it's unlocked
+ * in the current browser session.
+ */
+export function getVaultStatus(): VaultStatus {
+  return {
+    isCreated: isVaultCreated(),
+    isUnlocked: _sessionKeys !== null,
+  };
+}
+
+/**
+ * Create a new vault (or overwrite an existing one) with the given
+ * password and API keys. Returns the encrypted data to localStorage.
+ */
+export async function createVault(params: VaultParams): Promise<VaultResult> {
+  try {
+    if (!params.password || params.password.length < 8) {
+      return { success: false, error: 'Password must be at least 8 characters.' };
+    }
+    if (!params.openRouterKey || params.openRouterKey.trim().length === 0) {
+      return { success: false, error: 'OpenRouter API key is required.' };
+    }
+
+    const keys: VaultKeys = {
+      openRouterKey: params.openRouterKey.trim(),
+      ...(params.githubApiKey?.trim()
+        ? { githubApiKey: params.githubApiKey.trim() }
+        : {}),
+    };
+
+    const plaintext = JSON.stringify(keys);
+    const encrypted = await encrypt(plaintext, params.password);
+    writeStorage(encrypted);
+
+    // Cache in session so UI doesn't need to re-enter password
+    _sessionKeys = keys;
+
+    return { success: true };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Unknown encryption error.';
+    return { success: false, error: msg };
+  }
+}
+
+/**
+ * Unlock the vault with the given password and return the stored keys.
+ * Also caches them in the browser session.
+ * Returns null if the password is wrong or the vault doesn't exist.
+ */
+export async function unlockVault(password: string): Promise<VaultKeys | null> {
+  try {
+    const stored = readStorage();
+    if (!stored) return null;
+
+    const plaintext = await decrypt(stored, password);
+    const keys = JSON.parse(plaintext) as VaultKeys;
+
+    _sessionKeys = keys;
+    return keys;
+  } catch {
+    // Wrong password causes AES-GCM to throw — return null
+    return null;
+  }
+}
+
+/**
+ * Update API keys in an existing vault. Requires the current password.
+ * Re-encrypts with a fresh salt and IV (best practice on every write).
+ */
+export async function updateVault(
+  password: string,
+  updates: Partial<VaultKeys>
+): Promise<VaultResult> {
+  try {
+    // Verify password first
+    const current = await unlockVault(password);
+    if (!current) {
+      return { success: false, error: 'Incorrect password.' };
+    }
+
+    const merged: VaultKeys = {
+      ...current,
+      ...Object.fromEntries(
+        Object.entries(updates).filter(([, v]) => v !== undefined && v !== '')
+      ),
+    };
+
+    const plaintext = JSON.stringify(merged);
+    const encrypted = await encrypt(plaintext, password);
+    writeStorage(encrypted);
+
+    _sessionKeys = merged;
+    return { success: true };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Unknown error.';
+    return { success: false, error: msg };
+  }
+}
+
+/**
+ * Return keys cached in the current browser session without re-entering
+ * the password. Returns null if the vault has not been unlocked this session.
+ */
+export function getSessionKeys(): VaultKeys | null {
+  return _sessionKeys;
+}
+
+/**
+ * Lock the vault — clears the in-memory session cache only.
+ * The encrypted data in localStorage is preserved.
+ */
+export function lockVault(): void {
+  _sessionKeys = null;
+}
+
+/**
+ * Permanently delete the vault from localStorage and clear the session cache.
+ * The user will need to re-create the vault and re-enter their API keys.
+ */
 export function clearVault(): void {
-  deleteVault();
-}
-
-// Check if the vault is currently locked
-export function isLocked(): boolean {
-  return sessionKeys.size === 0;
-}
+  _sessionKeys = null;
+  localStorage.removeItem(VAULT_STORAGE_KEY);
+    }
