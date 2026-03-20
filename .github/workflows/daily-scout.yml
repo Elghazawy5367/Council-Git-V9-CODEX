@@ -1,8 +1,9 @@
 name: Phantom Scout - Multi-Niche Intelligence
+
 on:
   schedule:
-    - cron: '0 */8 * * *'  # Every 8 hours
-  workflow_dispatch:  # Manual trigger
+    - cron: '0 */8 * * *'  # Every 8 hours (3x daily)
+  workflow_dispatch:        # Manual trigger from GitHub UI
 
 permissions:
   contents: write
@@ -10,26 +11,36 @@ permissions:
 jobs:
   phantom-scout:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      
+      - name: Checkout repository
+        uses: actions/checkout@v4          # FIXED: upgraded from @v3
+
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4        # FIXED: upgraded from @v3
         with:
-          node-version: 18
+          node-version: '20'               # FIXED: upgraded from 18
           cache: 'npm'
-          
+
       - name: Install dependencies
         run: npm ci
-        
-      - name: Run Phantom Scout (Multi-Niche)
+
+      - name: Run Phantom Scout (all niches)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: npm run phantom-scout
-        
-      - name: Commit intelligence reports
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "👻 Phantom Scout: Multi-niche intelligence update"
-          file_pattern: 'data/reports/phantom-scout-*.md data/reports/phantom-scout-*.json data/opportunities/*.json data/intelligence/blue-ocean-*.md'
+        # PRESERVED: script reads config/target-niches.yaml and loops all niches itself
+        # DO NOT add --niche arg here — script does not accept it yet (Phase 1 work)
 
+      - name: Commit intelligence reports
+        uses: stefanzweifel/git-auto-commit-action@v5
+        # FIXED: upgraded from @v4 to @v5 (current stable)
+        # PRESERVED: keeping stefanzweifel — handles concurrent push safely
+        with:
+          commit_message: "🔭 Phantom Scout: Multi-niche intelligence update"
+          file_pattern: >-
+            data/reports/phantom-scout-*.md
+            data/reports/phantom-scout-*.json
+            data/opportunities/*.json
+            data/intelligence/blue-ocean-*.md
