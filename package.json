@@ -40,6 +40,8 @@
     "twin:v2": "tsx src/lib/twin-mimicry-v2.ts",
     "viral": "tsx src/lib/viral-radar.ts",
     "viral-radar": "tsx scripts/scan-viral.ts",
+    "github-discussions": "tsx scripts/run-github-discussions.ts",
+    "github-models-test": "tsx -e \"import('./src/lib/github-models-client.ts').then(m => m.checkGitHubModelsHealth()).then(ok => { console.log(ok ? 'GitHub Models: OK' : 'FAIL'); process.exit(ok ? 0 : 1); })\"",
     "mining-drill": "tsx scripts/run-mining-drill.ts",
     "stargazer": "tsx scripts/analyze-stargazers.ts",
     "goldmine": "tsx scripts/detect-goldmines.ts",
