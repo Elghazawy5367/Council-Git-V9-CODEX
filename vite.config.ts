@@ -4,13 +4,18 @@ import react from "@vitejs/plugin-react-swc";
 import checker from "vite-plugin-checker";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode, command }) => {
-  // Use base path for all builds (GitHub Pages)
-  // In development, use root path for easier local testing
-  const base = command === 'build' ? '/Council-Git-V9/' : '/';
-  
+export default defineConfig(({ mode }) => {
+  // Base path logic:
+  //   GitHub Pages build  → GITHUB_ACTIONS=true (set by build:github script) → /Council-Git-V9/
+  //   Vercel build        → GITHUB_ACTIONS not set → /  (serves from root)
+  //   Local dev           → GITHUB_ACTIONS not set → /  (dev server at localhost)
+  //
+  // deploy.yml must use: npm run build:github  (sets GITHUB_ACTIONS=true)
+  // Vercel uses:         npm run build          (GITHUB_ACTIONS not set)
+  const isGitHubPages = process.env.GITHUB_ACTIONS === 'true';
+  const base = isGitHubPages ? '/Council-Git-V9/' : '/';
+
   return {
-    // GitHub Pages base path (for production builds)
     base,
     server: {
       host: "0.0.0.0",
@@ -24,59 +29,80 @@ export default defineConfig(({ mode, command }) => {
         timeout: 30000,
       },
       watch: {
-        // Reduce file watching overhead
         ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
       },
     },
-  plugins: [
-    react(),
-    // Check TypeScript errors in real-time during dev
-    // ESLint checker disabled due to configuration incompatibility
-    mode === 'development' && checker({
-      typescript: true,
-      overlay: {
-        initialIsOpen: false,
+    plugins: [
+      react(),
+      // TypeScript checking only in dev — disabled in all production builds
+      mode === 'development' && checker({
+        typescript: true,
+        overlay: {
+          initialIsOpen: false,
+        },
+      }),
+    ].filter(Boolean),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
       },
-    }),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
     },
-  },
-  build: {
-    sourcemap: mode === 'development',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'vendor-mermaid': ['mermaid'],
-          'vendor-charts': ['recharts'],
-          'vendor-ui': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-select',
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-avatar'
-          ],
-          'vendor-react': ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
-          'vendor-utils': ['zustand', 'lucide-react', 'date-fns', 'clsx', 'tailwind-merge'],
+    build: {
+      sourcemap: mode === 'development',
+      rollupOptions: {
+        // Prevent CJS-only packages from entering the browser bundle.
+        // ts-morph, @babel/* are used by CLI scripts in scripts/ (Node.js)
+        // and must never be bundled for the browser — they cause
+        // CJS/ESM conflicts and OOM on CI with "type":"module" in package.json.
+        external: (id: string) => {
+          const cliOnlyPackages = [
+            'ts-morph',
+            '@babel/generator',
+            '@babel/parser',
+            '@babel/traverse',
+          ];
+          return cliOnlyPackages.some(
+            pkg => id === pkg || id.startsWith(`${pkg}/`)
+          );
+        },
+        output: {
+          manualChunks: {
+            'vendor-mermaid': ['mermaid'],
+            'vendor-charts': ['recharts'],
+            'vendor-ui': [
+              '@radix-ui/react-dialog',
+              '@radix-ui/react-tabs',
+              '@radix-ui/react-select',
+              '@radix-ui/react-tooltip',
+              '@radix-ui/react-avatar'
+            ],
+            'vendor-react': ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
+            'vendor-utils': ['zustand', 'lucide-react', 'date-fns', 'clsx', 'tailwind-merge'],
+          },
+        },
+        onwarn(warning, warn) {
+          if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return;
+          if (warning.code === 'MISSING_EXPORT' && warning.exporter?.includes('ts-morph')) return;
+          warn(warning);
         },
       },
-      onwarn(warning, warn) {
-        if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return;
-        warn(warning);
-      },
+      minify: 'esbuild',
     },
-    minify: 'esbuild',
-  },
-  esbuild: {
-    drop: mode === 'production' ? ['debugger'] : [],
-    pure: mode === 'production' ? ['console.log', 'console.debug'] : [],
-  },
-  // Optimize dependency pre-bundling
+    esbuild: {
+      drop: mode === 'production' ? ['debugger'] : [],
+      pure: mode === 'production' ? ['console.log', 'console.debug'] : [],
+    },
     optimizeDeps: {
       include: ['react', 'react-dom', 'zustand', 'react-error-boundary'],
-      exclude: ['@vite/client', '@vite/env'],
+      exclude: [
+        '@vite/client',
+        '@vite/env',
+        // Exclude CJS-heavy CLI packages from dep pre-bundling
+        'ts-morph',
+        '@babel/generator',
+        '@babel/parser',
+        '@babel/traverse',
+      ],
     },
   };
 });
