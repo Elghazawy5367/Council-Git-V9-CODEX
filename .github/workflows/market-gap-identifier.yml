@@ -10,23 +10,29 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write  # Needed to push reports to repository
-    
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout code                # ADDED: step name for clarity
+        uses: actions/checkout@v4          # FIXED: was @v3
+
+      - name: Setup Node.js                # ADDED: step name for clarity
+        uses: actions/setup-node@v4        # FIXED: was @v3
         with:
-          node-version: '18'
-      - run: npm ci
-      
+          node-version: '20'               # FIXED: was '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Run Market Gap Analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx tsx scripts/analyze-market-gaps.ts
-      
+
       - name: Commit reports
         run: |
           git config user.name "Market Gap Bot"
           git config user.email "bot@council-app.com"
           git add data/intelligence/market-gaps-*.md
-          git commit -m "🎯 Market Gap: Cross-platform intelligence" || echo "No changes"
+          git commit -m "🔭 Market Gap: Cross-platform intelligence" || echo "No changes"
           git push
