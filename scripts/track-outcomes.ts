@@ -1,0 +1,285 @@
+// scripts/track-outcomes.ts
+// Outcome Tracking — the feedback signal that closes the self-improvement loop
+//
+// PURPOSE: Record what actually happened with each Council verdict.
+// The system currently generates verdicts but has no way to know if they were correct.
+// This script is the missing link: you tell it what you acted on, validated, or rejected,
+// and it writes that signal to data/learning/outcomes.json for the analyser to read.
+//
+// USAGE (run from command line or GitHub Actions):
+//
+//   Mark a verdict as acted on (you built something):
+//   npx tsx scripts/track-outcomes.ts --niche=etsy-sellers --date=2026-03-20 --outcome=acted_on
+//
+//   Mark as validated (you confirmed the pain is real but haven't built yet):
+//   npx tsx scripts/track-outcomes.ts --niche=neurodivergent-digital-products --outcome=validated
+//
+//   Mark as rejected (the verdict was wrong):
+//   npx tsx scripts/track-outcomes.ts --niche=freelancers-consultants --outcome=rejected --reason="market too small"
+//
+//   List all tracked outcomes:
+//   npx tsx scripts/track-outcomes.ts --list
+//
+//   Or: npm run track -- --niche=etsy-sellers --outcome=acted_on
+
+import fs from 'fs';
+import path from 'path';
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+export type Outcome = 'acted_on' | 'validated' | 'rejected' | 'investigating';
+
+export interface OutcomeRecord {
+  id: string;
+  niche: string;
+  verdictDate: string;
+  trackedDate: string;
+  outcome: Outcome;
+  confidenceScore: number;
+  topOpportunity: string;
+  reason?: string;
+  expertVerdicts: string[];
+}
+
+interface OutcomeStore {
+  version: 2;
+  records: OutcomeRecord[];
+  lastUpdated: string;
+}
+
+interface SynthesisVerdictJSON {
+  niche: string;
+  date: string;
+  topOpportunity: string;
+  confidenceScore: number;
+  expertAnalyses: Array<{ expertName: string; analysis: string }>;
+}
+
+// ── Storage ───────────────────────────────────────────────────────────────────
+
+const OUTCOMES_FILE = path.join(process.cwd(), 'data', 'learning', 'outcomes.json');
+
+function readStore(): OutcomeStore {
+  try {
+    if (fs.existsSync(OUTCOMES_FILE)) {
+      return JSON.parse(fs.readFileSync(OUTCOMES_FILE, 'utf8')) as OutcomeStore;
+    }
+  } catch {
+    // corrupt — start fresh
+  }
+  return { version: 2, records: [], lastUpdated: new Date().toISOString() };
+}
+
+function writeStore(store: OutcomeStore): void {
+  fs.mkdirSync(path.dirname(OUTCOMES_FILE), { recursive: true });
+  store.lastUpdated = new Date().toISOString();
+  fs.writeFileSync(OUTCOMES_FILE, JSON.stringify(store, null, 2));
+}
+
+function generateId(niche: string, date: string): string {
+  return `${niche}::${date}`;
+}
+
+// ── Verdict Loader ────────────────────────────────────────────────────────────
+
+function findVerdictFile(niche: string, date?: string): SynthesisVerdictJSON | null {
+  const verdictsDir = path.join(process.cwd(), 'data', 'verdicts');
+  if (!fs.existsSync(verdictsDir)) return null;
+
+  const targetFile = date
+    ? path.join(verdictsDir, `${niche}-${date}.json`)
+    : null;
+
+  // Exact date match
+  if (targetFile && fs.existsSync(targetFile)) {
+    try { return JSON.parse(fs.readFileSync(targetFile, 'utf8')) as SynthesisVerdictJSON; }
+    catch { return null; }
+  }
+
+  // Latest verdict for niche
+  const files = fs.readdirSync(verdictsDir)
+    .filter(f => f.startsWith(`${niche}-`) && f.endsWith('.json'))
+    .sort()
+    .reverse();
+
+  if (files.length === 0) return null;
+
+  try {
+    const filePath = path.join(verdictsDir, files[0]);
+    return JSON.parse(fs.readFileSync(filePath, 'utf8')) as SynthesisVerdictJSON;
+  } catch {
+    return null;
+  }
+}
+
+// ── Core Operations ────────────────────────────────────────────────────────────
+
+export function trackOutcome(
+  niche: string,
+  outcome: Outcome,
+  date?: string,
+  reason?: string
+): OutcomeRecord | null {
+  const verdict = findVerdictFile(niche, date);
+
+  if (!verdict) {
+    console.error(
+      `[TrackOutcomes] No verdict found for niche "${niche}"` +
+      (date ? ` date "${date}"` : ' (latest)') +
+      `.\n  Run the Autonomous Council first: npm run synthesise`
+    );
+    return null;
+  }
+
+  const store = readStore();
+  const id = generateId(verdict.niche, verdict.date);
+
+  // Extract expert verdict signals
+  const expertVerdicts = verdict.expertAnalyses.map(e => {
+    const match = e.analysis.match(/VERDICT:\s*(pursue|investigate|skip)/i);
+    return `${e.expertName}: ${match ? match[1] : 'unknown'}`;
+  });
+
+  const record: OutcomeRecord = {
+    id,
+    niche: verdict.niche,
+    verdictDate: verdict.date,
+    trackedDate: new Date().toISOString().split('T')[0],
+    outcome,
+    confidenceScore: verdict.confidenceScore,
+    topOpportunity: verdict.topOpportunity,
+    reason,
+    expertVerdicts,
+  };
+
+  // Upsert — replace existing record for same niche+date
+  const existingIdx = store.records.findIndex(r => r.id === id);
+  if (existingIdx >= 0) {
+    store.records[existingIdx] = record;
+    console.log(`[TrackOutcomes] Updated: ${niche} (${verdict.date}) → ${outcome}`);
+  } else {
+    store.records.push(record);
+    console.log(`[TrackOutcomes] Added: ${niche} (${verdict.date}) → ${outcome}`);
+  }
+
+  writeStore(store);
+  return record;
+}
+
+export function listOutcomes(): OutcomeRecord[] {
+  return readStore().records;
+}
+
+export function getOutcomeStats(): {
+  total: number;
+  byOutcome: Record<Outcome, number>;
+  accuracyRate: number;
+  avgConfidenceActedOn: number;
+} {
+  const records = readStore().records;
+  const total = records.length;
+
+  const byOutcome: Record<Outcome, number> = {
+    acted_on: 0,
+    validated: 0,
+    rejected: 0,
+    investigating: 0,
+  };
+
+  for (const r of records) {
+    byOutcome[r.outcome] = (byOutcome[r.outcome] ?? 0) + 1;
+  }
+
+  // Accuracy: verdicts where we acted/validated vs total decided (not investigating)
+  const decided = byOutcome.acted_on + byOutcome.validated + byOutcome.rejected;
+  const correct = byOutcome.acted_on + byOutcome.validated;
+  const accuracyRate = decided > 0 ? Math.round((correct / decided) * 100) : 0;
+
+  // Average confidence score for acted_on verdicts
+  const actedOn = records.filter(r => r.outcome === 'acted_on');
+  const avgConfidenceActedOn = actedOn.length > 0
+    ? Math.round(actedOn.reduce((s, r) => s + r.confidenceScore, 0) / actedOn.length)
+    : 0;
+
+  return { total, byOutcome, accuracyRate, avgConfidenceActedOn };
+}
+
+// ── CLI ───────────────────────────────────────────────────────────────────────
+
+async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+
+  const getArg = (name: string): string | undefined =>
+    args.find(a => a.startsWith(`--${name}=`))?.split('=').slice(1).join('=');
+
+  const listFlag = args.includes('--list');
+  const statsFlag = args.includes('--stats');
+
+  if (listFlag) {
+    const records = listOutcomes();
+    if (records.length === 0) {
+      console.log('[TrackOutcomes] No outcomes tracked yet.');
+      return;
+    }
+    console.log(`\n[TrackOutcomes] ${records.length} tracked outcomes:\n`);
+    for (const r of records.sort((a, b) => b.verdictDate.localeCompare(a.verdictDate))) {
+      const icon = r.outcome === 'acted_on' ? '✅' :
+                   r.outcome === 'validated' ? '🔍' :
+                   r.outcome === 'rejected' ? '❌' : '⏳';
+      console.log(`${icon} ${r.niche} (${r.verdictDate}) → ${r.outcome} [${r.confidenceScore}% confidence]`);
+      if (r.reason) console.log(`   Reason: ${r.reason}`);
+    }
+    return;
+  }
+
+  if (statsFlag) {
+    const stats = getOutcomeStats();
+    console.log('\n[TrackOutcomes] Outcome statistics:');
+    console.log(`  Total tracked: ${stats.total}`);
+    console.log(`  Acted on:      ${stats.byOutcome.acted_on}`);
+    console.log(`  Validated:     ${stats.byOutcome.validated}`);
+    console.log(`  Rejected:      ${stats.byOutcome.rejected}`);
+    console.log(`  Investigating: ${stats.byOutcome.investigating}`);
+    console.log(`  Accuracy rate: ${stats.accuracyRate}%`);
+    console.log(`  Avg confidence (acted_on): ${stats.avgConfidenceActedOn}%`);
+    return;
+  }
+
+  const niche = getArg('niche');
+  const outcomeRaw = getArg('outcome') as Outcome | undefined;
+  const date = getArg('date');
+  const reason = getArg('reason');
+
+  if (!niche || !outcomeRaw) {
+    console.error(
+      'Usage:\n' +
+      '  --niche=<niche-id> --outcome=<acted_on|validated|rejected|investigating>\n' +
+      '  --date=YYYY-MM-DD (optional, defaults to latest)\n' +
+      '  --reason="why" (optional)\n' +
+      '  --list   (show all tracked outcomes)\n' +
+      '  --stats  (show summary statistics)'
+    );
+    process.exit(1);
+  }
+
+  const validOutcomes: Outcome[] = ['acted_on', 'validated', 'rejected', 'investigating'];
+  if (!validOutcomes.includes(outcomeRaw)) {
+    console.error(`Invalid outcome "${outcomeRaw}". Must be one of: ${validOutcomes.join(', ')}`);
+    process.exit(1);
+  }
+
+  const record = trackOutcome(niche, outcomeRaw, date, reason);
+  if (!record) process.exit(1);
+
+  console.log(`\n[TrackOutcomes] ✅ Outcome recorded`);
+  console.log(`  Niche:      ${record.niche}`);
+  console.log(`  Date:       ${record.verdictDate}`);
+  console.log(`  Outcome:    ${record.outcome}`);
+  console.log(`  Confidence: ${record.confidenceScore}%`);
+  if (record.reason) console.log(`  Reason:     ${record.reason}`);
+}
+
+main().catch(err => {
+  console.error('[TrackOutcomes] Fatal:', err instanceof Error ? err.message : err);
+  process.exit(1);
+});
