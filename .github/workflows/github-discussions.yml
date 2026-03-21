@@ -2,40 +2,53 @@ name: GitHub Discussions - Developer Pain Intelligence
 
 on:
   schedule:
-    - cron: '0 14 * * 1,4'  # Monday, Thursday at 2 PM UTC (twice weekly)
-  workflow_dispatch:          # Manual trigger from GitHub UI
+      - cron: '0 14 * * 1,4'  # Monday, Thursday at 2 PM UTC (twice weekly)
+        workflow_dispatch:          # Manual trigger from GitHub UI
 
-permissions:
-  contents: write
+        permissions:
+          contents: write
 
-jobs:
-  github-discussions:
-    runs-on: ubuntu-latest
+          jobs:
+            github-discussions:
+                runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+                    steps:
+                          - name: Checkout repository
+                                  uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
+                                        - name: Setup Node.js
+                                                uses: actions/setup-node@v4
+                                                        with:
+                                                                  node-version: '20'
+                                                                            cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+                                                                                  - name: Install dependencies
+                                                                                          run: npm ci
 
-      - name: Run GitHub Discussions Intelligence (all niches)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # No additional API key needed — GitHub token covers GraphQL Discussions API
-        run: npx tsx scripts/run-github-discussions.ts
+                                                                                                - name: Check feature flag
+                                                                                                        id: flag
+                                                                                                                run: |
+                                                                                                                          FLAG=$(node -e "
+                                                                                                                                      const yaml=require('js-yaml'),fs=require('fs');
+                                                                                                                                                  try{
+                                                                                                                                                                const c=yaml.load(fs.readFileSync('config/2026-features.yaml','utf8'));
+                                                                                                                                                                              console.log(c.features.github_discussions===true?'true':'false');
+                                                                                                                                                                                          }catch(e){console.log('false');}
+                                                                                                                                                                                                    ")
+                                                                                                                                                                                                              echo "enabled=$FLAG" >> $GITHUB_OUTPUT
 
-      - name: Commit intelligence reports
-        run: |
-          git config user.name "Council Intelligence Bot"
-          git config user.email "bot@council-app.com"
-          git add data/reports/github-discussions-*.md
-          git add data/opportunities/github-discussions-*.json
-          git diff --staged --quiet || git commit -m "💬 GitHub Discussions: Developer pain intelligence update"
-          git push
+                                                                                                                                                                                                                    - name: Run GitHub Discussions Intelligence (all niches)
+                                                                                                                                                                                                                            if: steps.flag.outputs.enabled == 'true'
+                                                                                                                                                                                                                                    env:
+                                                                                                                                                                                                                                              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                                                                                                                                                                                                                                                      run: npx tsx scripts/run-github-discussions.ts
+
+                                                                                                                                                                                                                                                            - name: Commit intelligence reports
+                                                                                                                                                                                                                                                                    if: steps.flag.outputs.enabled == 'true'
+                                                                                                                                                                                                                                                                            run: |
+                                                                                                                                                                                                                                                                                      git config user.name "Council Intelligence Bot"
+                                                                                                                                                                                                                                                                                                git config user.email "bot@council-app.com"
+                                                                                                                                                                                                                                                                                                          git add data/reports/github-discussions-*.md
+                                                                                                                                                                                                                                                                                                                    git add data/opportunities/github-discussions-*.json
+                                                                                                                                                                                                                                                                                                                              git diff --staged --quiet || git commit -m "💬 GitHub Discussions: Developer pain intelligence update"
+                                                                                                                                                                                                                                                                                                                                        git push
