@@ -1,0 +1,63 @@
+name: Vector Indexer - Semantic Memory Update
+
+on:
+  schedule:
+    - cron: '0 23 * * *'  # Daily at 11 PM UTC (1 hour after quality-pipeline at 10 PM)
+  workflow_dispatch:        # Manual trigger for testing
+
+permissions:
+  contents: write           # Writes .vector-index-state.json to track last run
+
+jobs:
+  vector-indexer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check vector_search feature flag
+        id: check_flag
+        run: |
+          FLAG=$(node -e "
+            const yaml = require('js-yaml');
+            const fs = require('fs');
+            try {
+              const cfg = yaml.load(fs.readFileSync('config/2026-features.yaml','utf8'));
+              console.log(cfg.features.vector_search === true ? 'true' : 'false');
+            } catch(e) { console.log('false'); }
+          ")
+          echo "enabled=$FLAG" >> $GITHUB_OUTPUT
+          echo "vector_search flag: $FLAG"
+
+      - name: Run Vector Indexer
+        if: steps.check_flag.outputs.enabled == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          QDRANT_URL: ${{ secrets.QDRANT_URL }}
+          QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+        run: npx tsx scripts/run-vector-indexer.ts
+
+      - name: Skip (feature flag disabled)
+        if: steps.check_flag.outputs.enabled != 'true'
+        run: |
+          echo "Vector indexer skipped — vector_search is false in config/2026-features.yaml"
+          echo "To enable: set vector_search: true in config/2026-features.yaml"
+
+      - name: Commit index state
+        if: steps.check_flag.outputs.enabled == 'true'
+        run: |
+          git config user.name "Council Intelligence Bot"
+          git config user.email "bot@council-app.com"
+          git add data/.vector-index-state.json || true
+          git diff --staged --quiet || git commit -m "🧠 Vector Indexer: Semantic memory updated"
+          git push
