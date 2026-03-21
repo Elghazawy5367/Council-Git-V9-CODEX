@@ -1,0 +1,85 @@
+name: Self-Learning Loop - Weekly Outcome Analysis
+
+on:
+  schedule:
+    - cron: '0 6 * * 0'   # Every Sunday at 6 AM UTC
+  workflow_dispatch:        # Manual trigger for testing
+
+permissions:
+  contents: write
+
+jobs:
+  self-learning:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check feature flag
+        id: flag
+        run: |
+          FLAG=$(node -e "
+            const yaml = require('js-yaml');
+            const fs = require('fs');
+            try {
+              const cfg = yaml.load(fs.readFileSync('config/2026-features.yaml','utf8'));
+              console.log(cfg.features.feedback_loop === true ? 'true' : 'false');
+            } catch(e) { console.log('false'); }
+          ")
+          echo "enabled=$FLAG" >> $GITHUB_OUTPUT
+          echo "feedback_loop flag: $FLAG"
+
+      - name: Run outcome pattern analysis
+        if: steps.flag.outputs.enabled == 'true'
+        run: npx tsx scripts/analyse-outcome-patterns.ts
+        # Reads: data/learning/outcomes.json
+        # Writes: data/learning/outcome-patterns.json
+        #         data/learning/calibration.json
+
+      - name: Generate weekly learning report
+        if: steps.flag.outputs.enabled == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx tsx scripts/generate-learning-report.ts
+        # Reads: data/learning/outcome-patterns.json
+        # Writes: data/learning/weekly-report-{date}.md
+        #         data/learning/latest-report.md
+
+      - name: Skip (feature flag disabled)
+        if: steps.flag.outputs.enabled != 'true'
+        run: |
+          echo "Self-learning skipped — feedback_loop is false in config/2026-features.yaml"
+          echo "To enable:"
+          echo "  1. Track at least 3 outcomes: npm run track -- --niche=X --outcome=acted_on"
+          echo "  2. Set feedback_loop: true in config/2026-features.yaml"
+
+      - name: Commit learning outputs
+        if: steps.flag.outputs.enabled == 'true'
+        run: |
+          git config user.name "Council Intelligence Bot"
+          git config user.email "bot@council-app.com"
+          git add data/learning/ || true
+          git diff --staged --quiet || git commit -m "🧠 Self-Learning: Weekly analysis — $(date +%Y-%m-%d)"
+          git push
+
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## 🧠 Self-Learning Weekly Run" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f "data/learning/latest-report.md" ]; then
+            echo "### Report Preview" >> $GITHUB_STEP_SUMMARY
+            head -30 data/learning/latest-report.md >> $GITHUB_STEP_SUMMARY
+          fi
