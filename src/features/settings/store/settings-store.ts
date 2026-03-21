@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { toast } from 'sonner';
 import { SynthesisConfig } from '@/lib/types';
 import { DEFAULT_SYNTHESIS_CONFIG } from '@/lib/synthesis-engine';
-import { initializeVault, getVaultStatus, createVault, unlockVault, lockVault, VaultStatus } from '@/features/council/lib/vault';
+import { getVaultStatus, createVault, unlockVault, lockVault, VaultStatus } from '@/features/council/lib/vault';
 
 interface VaultCreationResult {
   success: boolean;
@@ -68,7 +68,7 @@ export const useSettingsStore = create<SettingsState>(
       setShowHistory: (show: boolean) => set({ showHistory: show }),
       showMemory: false,
       setShowMemory: (show: boolean) => set({ showMemory: show }),
-      vaultStatus: initializeVault(),
+      vaultStatus: getVaultStatus(),
       handleCreateVault: async (data: { password: string; openRouterKey: string; serperKey?: string; githubApiKey?: string; redditApiKey?: string }) => {
         const result = await createVault(data);
         if (result.success) {

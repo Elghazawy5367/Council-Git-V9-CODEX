@@ -5,8 +5,6 @@
  * Extracts patterns in positioning, pricing, features, and architecture.
  */
 
-import * as fs from "fs";
-import * as path from "path";
 import { callDevToolsLLM } from '@/features/devtools/lib/llm-client';
 import { db } from './db';
 export interface GitHubRepo {
@@ -85,8 +83,6 @@ export async function learnFromSuccess(niche: string, options: {
     recommendations
   };
 
-  // Update knowledge base
-  await updateKnowledgeBase(result);
   return result;
 }
 
@@ -475,64 +471,6 @@ function generateRecommendations(patterns: SuccessPattern[], niche: string): str
     recommendations.push(`Continue researching ${niche} patterns with more repositories`);
   }
   return recommendations;
-}
-
-/**
- * Update knowledge base with learned patterns
- */
-async function updateKnowledgeBase(result: LearningResult): Promise<void> {
-  const knowledgeDir = path.join(process.cwd(), "src", "lib", "knowledge-base");
-  fs.mkdirSync(knowledgeDir, {
-    recursive: true
-  });
-
-  // Update positioning.md
-  const positioningPatterns = result.patternsFound.filter((p) => p.category === "positioning");
-  if (positioningPatterns.length > 0) {
-    await updateMarkdownFile(path.join(knowledgeDir, "positioning.md"), "Positioning Patterns", positioningPatterns, result);
-  }
-
-  // Update pricing.md
-  const pricingPatterns = result.patternsFound.filter((p) => p.category === "pricing");
-  if (pricingPatterns.length > 0) {
-    await updateMarkdownFile(path.join(knowledgeDir, "pricing.md"), "Pricing & Monetization", pricingPatterns, result);
-  }
-
-  // Update features.md
-  const featurePatterns = result.patternsFound.filter((p) => p.category === "features");
-  if (featurePatterns.length > 0) {
-    await updateMarkdownFile(path.join(knowledgeDir, "features.md"), "Feature Priorities", featurePatterns, result);
-  }
-
-  // Update architecture.md
-  const archPatterns = result.patternsFound.filter((p) => p.category === "architecture");
-  if (archPatterns.length > 0) {
-    await updateMarkdownFile(path.join(knowledgeDir, "architecture.md"), "Architecture Patterns", archPatterns, result);
-  }
-}
-
-/**
- * Update or create markdown knowledge file
- */
-async function updateMarkdownFile(filePath: string, title: string, patterns: SuccessPattern[], result: LearningResult): Promise<void> {
-  let content = `# ${title}\n\n`;
-  content += `*Last updated: ${new Date(result.timestamp).toLocaleString()}*\n`;
-  content += `*Learned from: ${result.niche} (${result.reposAnalyzed} repositories)*\n\n`;
-  content += `## Key Patterns\n\n`;
-  patterns.forEach((pattern, idx) => {
-    content += `### ${idx + 1}. ${pattern.pattern}\n\n`;
-    content += `**Confidence:** ${Math.round(pattern.confidence)}%\n\n`;
-    content += `**Evidence:**\n`;
-    pattern.evidence.forEach((ev) => {
-      content += `- ${ev}\n`;
-    });
-    content += `\n**Learned from:**\n`;
-    pattern.learnedFrom.forEach((repo) => {
-      content += `- [${repo}](https://github.com/${repo})\n`;
-    });
-    content += `\n`;
-  });
-  fs.writeFileSync(filePath, content);
 }
 
 /**

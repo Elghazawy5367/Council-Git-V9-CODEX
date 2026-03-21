@@ -5,8 +5,6 @@
  * Provides scoring, gap detection, and actionable improvement suggestions.
  */
 
-import * as fs from "fs";
-import * as path from "path";
 import standards from "./mirror-standards.json";
 import { callDevToolsLLM } from '@/features/devtools/lib/llm-client';
 
@@ -86,9 +84,7 @@ export async function analyzeFileSemantics(
 /**
  * Analyzes a TypeScript file for code quality
  */
-export async function analyzeCodeQuality(filePath: string): Promise<AnalysisResult> {
-  const content = fs.readFileSync(filePath, "utf-8");
-  
+export async function analyzeCodeQuality(filePath: string, content: string): Promise<AnalysisResult> {
   const gaps: CodeGap[] = [];
   const roleModelRepos: string[] = [];
   
@@ -116,7 +112,7 @@ export async function analyzeCodeQuality(filePath: string): Promise<AnalysisResu
   const improvements = generateImprovements(gaps);
   
   return {
-    filePath: path.relative(process.cwd(), filePath),
+    filePath: filePath,
     score: {
       overall,
       errorHandling: errorHandlingScore,
@@ -379,7 +375,11 @@ function analyzeArchitecture(filePath: string, content: string, gaps: CodeGap[])
   }
   
   // Check for consistent naming
-  const fileName = path.basename(filePath, path.extname(filePath));
+  const lastSlash = filePath.lastIndexOf('/');
+  const fileNameWithExt = lastSlash === -1 ? filePath : filePath.substring(lastSlash + 1);
+  const lastDot = fileNameWithExt.lastIndexOf('.');
+  const fileName = lastDot === -1 ? fileNameWithExt : fileNameWithExt.substring(0, lastDot);
+
   const hasDefaultExport = /export default/.test(content);
   
   if (hasDefaultExport) {
@@ -475,7 +475,7 @@ function generateImprovements(gaps: CodeGap[]): string[] {
 /**
  * Analyzes multiple files and generates aggregate report
  */
-export async function analyzeBatch(filePaths: string[]): Promise<{
+export async function analyzeBatch(files: Array<{path: string, content: string}>): Promise<{
   results: AnalysisResult[];
   summary: {
     averageScore: number;
@@ -485,7 +485,7 @@ export async function analyzeBatch(filePaths: string[]): Promise<{
   };
 }> {
   const results = await Promise.all(
-    filePaths.map(fp => analyzeCodeQuality(fp))
+    files.map(file => analyzeCodeQuality(file.path, file.content))
   );
   
   const averageScore = Math.round(
