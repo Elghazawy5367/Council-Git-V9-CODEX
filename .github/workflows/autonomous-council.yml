@@ -1,0 +1,149 @@
+name: Autonomous Council - Daily Intelligence + Synthesis
+
+on:
+  # Runs daily at midnight UTC — after all intelligence features have completed
+  # Feature schedule reference:
+  #   quality-pipeline: 10 PM UTC (last daily feature)
+  #   vector-indexer:   11 PM UTC
+  #   This workflow: midnight UTC = all data fresh
+  schedule:
+    - cron: '0 0 * * *'
+
+  # Triggered externally via repository_dispatch
+  # Fire with: npm run dispatch-swarm
+  # Or: npx tsx scripts/dispatch-swarm.ts --event=intelligence-trigger
+  repository_dispatch:
+    types:
+      - intelligence-trigger    # Full: run all features + synthesise
+      - synthesis-trigger       # Synthesise only (features already ran)
+      - niche-trigger           # Single niche deep-dive
+
+  # Manual trigger with optional niche override
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        required: false
+        default: 'synthesis-only'
+        type: choice
+        options:
+          - synthesis-only
+          - full-pipeline
+      niche:
+        description: 'Target niche (leave empty for all 5)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: write
+  issues: write    # For opportunity tracking DB (Phase 5)
+
+jobs:
+  # ── JOB 1: Determine run mode ────────────────────────────────────────────────
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      run_mode: ${{ steps.mode.outputs.mode }}
+      target_niche: ${{ steps.mode.outputs.niche }}
+
+    steps:
+      - name: Determine run mode
+        id: mode
+        run: |
+          # Default: synthesis-only (features run on their own schedules)
+          MODE="synthesis-only"
+          NICHE=""
+
+          # repository_dispatch overrides
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            PAYLOAD_EVENT="${{ github.event.action }}"
+            NICHE="${{ github.event.client_payload.niche }}"
+            if [ "$PAYLOAD_EVENT" = "intelligence-trigger" ]; then
+              MODE="full-pipeline"
+            fi
+          fi
+
+          # workflow_dispatch overrides
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MODE="${{ inputs.mode }}"
+            NICHE="${{ inputs.niche }}"
+          fi
+
+          echo "mode=$MODE" >> $GITHUB_OUTPUT
+          echo "niche=$NICHE" >> $GITHUB_OUTPUT
+          echo "Run mode: $MODE | Niche: ${NICHE:-all}"
+
+  # ── JOB 2: Synthesis (always runs) ──────────────────────────────────────────
+  synthesis:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check feature flag
+        id: flag
+        run: |
+          FLAG=$(node -e "
+            const yaml = require('js-yaml');
+            const fs = require('fs');
+            try {
+              const cfg = yaml.load(fs.readFileSync('config/2026-features.yaml','utf8'));
+              console.log(cfg.features.autonomous_swarm === true ? 'true' : 'false');
+            } catch(e) { console.log('false'); }
+          ")
+          echo "enabled=$FLAG" >> $GITHUB_OUTPUT
+          echo "autonomous_swarm flag: $FLAG"
+
+      - name: Run Council Synthesis
+        if: steps.flag.outputs.enabled == 'true'
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          QDRANT_URL: ${{ secrets.QDRANT_URL }}
+          QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+        run: npx tsx scripts/council-synthesis.ts
+
+      - name: Skip (feature flag disabled)
+        if: steps.flag.outputs.enabled != 'true'
+        run: |
+          echo "Autonomous swarm skipped — autonomous_swarm is false in config/2026-features.yaml"
+          echo "To enable: set autonomous_swarm: true after Phase 4 deployment is verified"
+
+      - name: Commit verdicts
+        if: steps.flag.outputs.enabled == 'true'
+        run: |
+          git config user.name "Council Intelligence Bot"
+          git config user.email "bot@council-app.com"
+          git add data/verdicts/ || true
+          git diff --staged --quiet || git commit -m "🤖 Autonomous Council: Daily verdicts — $(date +%Y-%m-%d)"
+          git push
+
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## 🤖 Autonomous Council Run" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Item | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Date | $(date -u '+%Y-%m-%d %H:%M UTC') |" >> $GITHUB_STEP_SUMMARY
+          echo "| Trigger | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mode | ${{ needs.setup.outputs.run_mode }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -d "data/verdicts" ]; then
+            COUNT=$(ls data/verdicts/*.md 2>/dev/null | wc -l | tr -d ' ')
+            echo "Verdict files generated: **$COUNT**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_View verdicts: \`data/verdicts/\` directory_" >> $GITHUB_STEP_SUMMARY
