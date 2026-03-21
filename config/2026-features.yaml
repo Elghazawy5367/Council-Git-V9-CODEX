@@ -1,28 +1,44 @@
 # config/2026-features.yaml
-# Feature flags for 2026 upgrade — all start FALSE for safety
-# Enable one at a time after testing each phase
+# Council-Git-V9 — 2026 Feature Flags
+# All 5 upgrade phases gate-controlled here
 #
-# HOW TO ENABLE: Change false → true for the feature you've implemented
-# HOW TO ROLLBACK: Change true → false — existing features are unaffected
+# HOW TO ENABLE: Change false → true after deploying the corresponding files
+# HOW TO ROLLBACK: Change true → false at any time — zero downtime, zero data loss
+# RULE: Never enable a phase until its predecessor is stable
 
 features:
-  # Phase 1 flags (Month 1 — Data Amplification)
-  github_graphql_v4: false      # Replace REST calls with GraphQL for 60x efficiency
-  github_discussions: false     # Mine developer conversations (richer than Issues)
-  github_sponsors_signal: false # Add payment validation to Goldmine scoring
-  github_models_api: false      # Free LLM inference via GITHUB_TOKEN
 
-  # Phase 2 flags (Month 2 — Memory Layer)
-  vector_search: false          # Semantic search across all reports (needs QDRANT_API_KEY)
+  # ── PHASE 1: Data Amplification ─────────────────────────────────────────────
+  # Files: src/lib/github-graphql.ts, github-discussions.ts, github-models-client.ts
+  # Benefit: 60x more data per API call + new Discussions intelligence source
+  github_graphql_v4: true       # Replace REST calls with GraphQL v4
+  github_discussions: true      # Mine GitHub Discussions (richer than Issues)
+  github_sponsors_signal: true  # Payment validation in Goldmine scoring
+  github_models_api: true       # Free LLM via GITHUB_TOKEN for Actions tasks
 
-  # Phase 3 flags (Month 3 — MCP Layer)
-  mcp_tools: false              # Standardized tool execution for AI models
+  # ── PHASE 2: Memory Layer ───────────────────────────────────────────────────
+  # Files: src/lib/memory/vector-store.ts, scripts/run-vector-indexer.ts
+  # Prerequisite: Add QDRANT_URL + QDRANT_API_KEY to GitHub repository secrets
+  # Activation: Run npm run index-reports ONCE to seed, then flip to true
+  # Benefit: Semantic cross-feature search — find the same pain across all sources
+  vector_search: false          # Set true AFTER Qdrant secrets + index-reports run
 
-  # Phase 4 flags (Month 4 — Autonomous Swarm)
-  autonomous_swarm: false       # Full pipeline: scout → quality → gap → council MOE
+  # ── PHASE 3: MCP Tool Layer ─────────────────────────────────────────────────
+  # Files: src/lib/mcp-servers/ directory, scripts/run-mcp-server.ts
+  # Prerequisite: Phase 2 active (memory tools need vector_search)
+  # Benefit: Any MCP client (Claude Desktop, Cursor) gets 8 intelligence tools
+  mcp_tools: false              # Set true after mcp-server runs successfully
 
-  # Phase 5 flags (Month 5 — Self-Improvement)
-  feedback_loop: false          # Track outcomes, improve scoring weights
+  # ── PHASE 4: Autonomous Swarm ───────────────────────────────────────────────
+  # Files: scripts/council-synthesis.ts, autonomous-council.yml
+  # Prerequisite: Phase 1 active + quality-pipeline generating reports
+  # Activation: Run manually ONCE via workflow_dispatch, verify output, then flip
+  # Benefit: Daily Council verdicts with 3-expert synthesis, zero manual effort
+  autonomous_swarm: false       # Set true after first manual test run succeeds
 
-# Current active phase: Phase 0 (fixing broken foundations)
-# Next phase to enable: Phase 1 (set github_graphql_v4: true first)
+  # ── PHASE 5: Self-Improvement Loop ──────────────────────────────────────────
+  # Files: scripts/track-outcomes.ts, analyse-outcome-patterns.ts, self-learning.yml
+  # Prerequisite: Phase 4 active for at least 2 weeks + track ≥3 outcomes
+  # Activation: Track 3+ outcomes manually, then flip to true
+  # Benefit: System learns which verdicts were correct, improves scoring over time
+  feedback_loop: false          # Set true after tracking ≥3 outcomes manually
