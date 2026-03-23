@@ -3,6 +3,9 @@ on:
   schedule:
     - cron: '0 12 * * 0'
   workflow_dispatch:
+permissions:
+  contents: write
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
@@ -19,3 +22,11 @@ jobs:
         run: npx tsx scripts/analyze-market-gaps.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit reports
+        run: |
+          git config user.name "Market Gap Bot"
+          git config user.email "bot@council-app.com"
+          git add data/intelligence/market-gaps-*.md
+          git commit -m "🎯 Market Gap: Cross-platform intelligence" || echo "No changes"
+          git push
