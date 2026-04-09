@@ -68,6 +68,15 @@ Additional reference materials already in this directory:
 
 ---
 
+
+## 🤖 AI System Canonical Docs
+
+For repository intelligence and conflict-safe AI execution rules, start here:
+
+- [AI System Index](./AI_SYSTEM_INDEX.md)
+- [Documentation Coverage Map](./DOCUMENTATION_COVERAGE_MAP.md)
+- [Architecture v5 Spec (Merged Outline)](./ARCHITECTURE_V5_SPEC.md)
+
 ## 📂 Archive Directory
 
 Historical documentation and superseded guides are stored in `./archive/`:
