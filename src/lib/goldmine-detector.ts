@@ -351,7 +351,7 @@ async function searchAbandonedRepos(
   // Search by topics
   for (const topic of topics.slice(0, 3)) { // Limit to 3 topics to avoid rate limits
     try {
-      console.log(`    → Searching topic: ${topic}`);
+      console.info(`    → Searching topic: ${topic}`);
       const { data } = await octokit.search.repos({
         q: `topic:${topic} stars:>1000 pushed:<${dateStr}`,
         sort: 'stars',
@@ -365,7 +365,7 @@ async function searchAbandonedRepos(
     } catch (error: any) {
       console.error(`    ⚠️ Error searching topic ${topic}:`, error.message);
       if (error.status === 403) {
-        console.log('    Rate limited. Waiting 60 seconds...');
+        console.warn('    Rate limited. Waiting 60 seconds...');
         await new Promise(resolve => setTimeout(resolve, 60000));
       }
     }
@@ -692,7 +692,7 @@ function generateReport(
  * Main function to run Goldmine Detector across all niches
  */
 export async function runGoldmineDetector(): Promise<void> {
-  console.log('💎 Goldmine Detector - Starting...');
+  console.info('💎 Goldmine Detector - Starting...');
   
   if (!isNode) return;
   const fs = getRuntimeRequire()('fs');
@@ -701,7 +701,7 @@ export async function runGoldmineDetector(): Promise<void> {
   try {
     const allNiches = await loadNicheConfig();
     const niches = getEnabledNiches(allNiches);
-    console.log(`📂 Found ${niches.length} enabled niches`);
+    console.info(`📂 Found ${niches.length} enabled niches`);
     
     const githubToken = process.env.GITHUB_TOKEN;
     if (!githubToken) {
@@ -712,27 +712,27 @@ export async function runGoldmineDetector(): Promise<void> {
     const results = [];
 
     for (const niche of niches) {
-      console.log(`\n💎 Processing: ${niche.id}`);
+      console.info(`\n💎 Processing: ${niche.id}`);
       
       // Get topics and keywords from nested monitoring structure or fallback
       const topics = niche.monitoring?.github_topics || niche.github_topics || [];
       const keywords = niche.monitoring?.keywords || niche.keywords || [];
       
       if (topics.length === 0) {
-        console.log(`  ⚠️ No GitHub topics configured for ${niche.id}, skipping...`);
+        console.warn(`  ⚠️ No GitHub topics configured for ${niche.id}, skipping...`);
         continue;
       }
 
       // Search for abandoned repositories
       const repos = await searchAbandonedRepos(octokit, topics, keywords);
-      console.log(`  → Found ${repos.length} potentially abandoned repos`);
+      console.info(`  → Found ${repos.length} potentially abandoned repos`);
 
       // Analyze each repository
       const goldmines: Goldmine[] = [];
       const unmetNeeds = new Map<string, string[]>();
 
       for (const repo of repos.slice(0, 30)) { // Limit to 30 to avoid rate limits
-        console.log(`    Analyzing: ${repo.full_name}`);
+        console.info(`    Analyzing: ${repo.full_name}`);
         const goldmine = await analyzeGoldmine(octokit, repo);
         
         if (goldmine && goldmine.goldmineScore >= 50) {
@@ -747,7 +747,7 @@ export async function runGoldmineDetector(): Promise<void> {
       // Sort by goldmine score
       goldmines.sort((a, b) => b.goldmineScore - a.goldmineScore);
 
-      console.log(`  ✅ Found ${goldmines.length} goldmines (score >= 50)`);
+      console.info(`  ✅ Found ${goldmines.length} goldmines (score >= 50)`);
 
       // Generate report
       const report = generateReport(niche.id, niche.name, goldmines, unmetNeeds);
@@ -760,7 +760,7 @@ export async function runGoldmineDetector(): Promise<void> {
       const filename = path.join(reportsDir, `goldmine-${niche.id}-${date}.md`);
       fs.writeFileSync(filename, report);
 
-      console.log(`  📄 Report saved: data/reports/goldmine-${niche.id}-${date}.md`);
+      console.info(`  📄 Report saved: data/reports/goldmine-${niche.id}-${date}.md`);
 
       results.push({
         niche: niche.id,
@@ -769,10 +769,9 @@ export async function runGoldmineDetector(): Promise<void> {
       });
     }
 
-    console.log('\n✅ Goldmine Detector Complete!');
-    console.log(`Generated ${results.length} reports:`);
+    console.info(`✅ Goldmine Detector Complete — ${results.length} reports generated:`);
     results.forEach(r => {
-      console.log(`  - ${r.niche}: ${r.goldmines} goldmines`);
+      console.info(`  - ${r.niche}: ${r.goldmines} goldmines`);
     });
   } catch (error) {
     console.error('❌ Goldmine Detector failed:', error);

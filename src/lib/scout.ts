@@ -750,10 +750,10 @@ function generateMarkdownSummary(report: ScoutReport): string {
  */
 function printSummary(report: ScoutReport): void {
   report.topOpportunities.slice(0, 3).forEach((opp, idx) => {
-    console.log(`${idx + 1}. ${opp.solution} (${opp.confidence * 100}% confidence)`);
+    console.info(`${idx + 1}. ${opp.solution} (${opp.confidence * 100}% confidence)`);
   });
   report.trendsDetected.slice(0, 3).forEach((trend) => {
-    console.log(`Trend: ${trend}`);
+    console.info(`Trend: ${trend}`);
   });
 }
 
@@ -914,18 +914,15 @@ function generateMockPainPoints(): PainPoint[] {
  * Main multi-niche execution function
  */
 export async function runPhantomScout(): Promise<void> {
-  console.log('👻 Phantom Scout - Starting Multi-Niche Scan...');
-  console.log('=' .repeat(60));
+  console.info('👻 Phantom Scout - Starting Multi-Niche Scan...');
   
   const niches = loadNicheConfig();
-  console.log(`📂 Found ${niches.length} enabled niches\n`);
+  console.info(`📂 Found ${niches.length} enabled niches`);
   
   const results = [];
   
   for (const niche of niches) {
-    console.log(`\n👻 Scouting: ${niche.name}`);
-    console.log(`   Niche ID: ${niche.id}`);
-    console.log('-'.repeat(60));
+    console.info(`\n👻 Scouting: ${niche.name} (${niche.id})`);
     
     try {
       // Build search topics from niche config
@@ -936,7 +933,7 @@ export async function runPhantomScout(): Promise<void> {
       const searchTopic = topics[0] || searchQueries[0] || niche.name;
       
       // Run Blue Ocean scan for this niche
-      console.log(`   🔍 Scanning Blue Ocean opportunities for: ${searchTopic}`);
+      console.info(`   🔍 Scanning Blue Ocean opportunities for: ${searchTopic}`);
       const opportunities = await scanBlueOcean(searchTopic, niche.id);
       
       // Run full scout analysis (reusing existing logic)
@@ -971,8 +968,7 @@ export async function runPhantomScout(): Promise<void> {
       // Save with niche-specific filename
       await saveIntelligence(report, niche.id);
       
-      console.log(`   ✅ Scan complete!`);
-      console.log(`   📊 Repos: ${repos.length} | Pain Points: ${clusteredPainPoints.length} | Opportunities: ${productOpportunities.length}`);
+      console.info(`   ✅ Scan complete — Repos: ${repos.length} | Pain Points: ${clusteredPainPoints.length} | Opportunities: ${productOpportunities.length}`);
       
       const today = new Date().toISOString().split('T')[0];
       results.push({
@@ -994,24 +990,17 @@ export async function runPhantomScout(): Promise<void> {
   }
   
   // Print final summary
-  console.log('\n' + '='.repeat(60));
-  console.log('👻 Phantom Scout - Mission Complete!');
-  console.log('='.repeat(60));
-  console.log(`\n📁 Generated ${results.filter(r => !r.error).length} intelligence reports:\n`);
+  console.info(`\n✅ Phantom Scout complete — ${results.filter(r => !r.error).length} reports generated`);
   
   results.forEach(r => {
     if (r.error) {
-      console.log(`❌ ${r.niche}: Failed - ${r.error}`);
+      console.error(`❌ ${r.niche}: Failed - ${r.error}`);
     } else {
-      console.log(`✅ ${r.niche}:`);
-      console.log(`   Blue Ocean: ${r.blueOceanOpps} goldmines`);
-      console.log(`   Pain Points: ${r.painPoints} patterns`);
-      console.log(`   Opportunities: ${r.opportunities} products`);
-      console.log(`   Report: ${r.reportFile}`);
+      console.info(`✅ ${r.niche}: ${r.blueOceanOpps} goldmines, ${r.painPoints} pain points, ${r.opportunities} opportunities → ${r.reportFile}`);
     }
   });
   
-  console.log(`\n👻 Phantom Scout signing off. Happy hunting! 🎯\n`);
+  console.info(`\n👻 Phantom Scout signing off. Happy hunting! 🎯`);
 }
 
 // Main execution - only run when invoked directly (not when imported as a module)

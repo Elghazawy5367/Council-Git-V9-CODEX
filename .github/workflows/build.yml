@@ -1,0 +1,55 @@
+name: Continuous Integration & Build Verification
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  validate-and-build:
+    name: Build & Test Integrity
+    runs-on: ubuntu-latest
+
+    strategy:
+      # Phase 3: Fail-fast mechanism. Stops all matrix/related jobs if one fails immediately.
+      fail-fast: true
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        # Using ci for strict lockfile enforcement
+        run: npm ci
+
+      - name: Dependency Integrity Check
+        run: npx tsx validation/dependency.validation.ts
+
+      - name: Import & Circular Map Verification
+        run: npx tsx validation/import.validation.ts
+
+      - name: TypeScript Static Type Check
+        run: npm run type-check || npx tsc --noEmit
+
+      - name: Automated Unit & Integration Tests (Vitest)
+        # Using npx vitest fallback in case npm run test isn't set yet
+        run: npm run test || npx vitest run
+
+      - name: Build Application (Vite bundle)
+        run: npm run build
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-bundle-${{ matrix.node-version }}
+          path: dist/
+          retention-days: 7

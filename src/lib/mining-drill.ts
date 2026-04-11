@@ -344,7 +344,7 @@ async function searchGitHubIssues(query: string, githubToken?: string): Promise<
       auth: githubToken || process.env.GITHUB_TOKEN,
     });
 
-    console.log(`    Searching: ${query.substring(0, 60)}...`);
+    console.info(`    Searching: ${query.substring(0, 60)}...`);
     
     const response = await octokit.rest.search.issuesAndPullRequests({
       q: query,
@@ -356,7 +356,7 @@ async function searchGitHubIssues(query: string, githubToken?: string): Promise<
     // Filter out pull requests
     const issues = response.data.items.filter((item: any) => !item.pull_request);
     
-    console.log(`    Found: ${issues.length} issues`);
+    console.info(`    Found: ${issues.length} issues`);
     
     // Rate limiting: wait 1 second between API calls
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -367,7 +367,7 @@ async function searchGitHubIssues(query: string, githubToken?: string): Promise<
     
     // Handle rate limiting
     if (error.status === 403) {
-      console.log('    Rate limited. Waiting 60 seconds...');
+      console.warn('    Rate limited. Waiting 60 seconds...');
       await new Promise(resolve => setTimeout(resolve, 60000));
       return [];
     }
@@ -488,7 +488,7 @@ function generateReport(
  * Main function to run Mining Drill across all niches (Node.js only)
  */
 export async function runMiningDrill(): Promise<void> {
-  console.log('🔨 Mining Drill - Starting...');
+  console.info('🔨 Mining Drill - Starting...');
   
   if (!isNode) return;
   const fs = getRuntimeRequire()('fs');
@@ -497,7 +497,7 @@ export async function runMiningDrill(): Promise<void> {
   try {
     const allNiches = await loadNicheConfig();
     const niches = getEnabledNiches(allNiches);
-    console.log(`📂 Found ${niches.length} enabled niches`);
+    console.info(`📂 Found ${niches.length} enabled niches`);
     
     const results = [];
     const githubToken = process.env.GITHUB_TOKEN;
@@ -507,7 +507,7 @@ export async function runMiningDrill(): Promise<void> {
     }
     
     for (const niche of niches) {
-      console.log(`\n⛏️  Processing: ${niche.id}`);
+      console.info(`\n⛏️  Processing: ${niche.id}`);
       
       const allIssues: any[] = [];
       
@@ -554,7 +554,7 @@ export async function runMiningDrill(): Promise<void> {
         .sort((a, b) => b.score - a.score)
         .slice(0, 30); // top 30
       
-      console.log(`  → Found ${painPoints.length} pain points`);
+      console.info(`  → Found ${painPoints.length} pain points`);
       
       // Generate report
       const report = generateReport(niche.id, niche.name, painPoints);
@@ -567,7 +567,7 @@ export async function runMiningDrill(): Promise<void> {
       const filename = path.join(reportsDir, `mining-drill-${niche.id}-${date}.md`);
       fs.writeFileSync(filename, report);
       
-      console.log(`  ✅ Report saved: data/reports/mining-drill-${niche.id}-${date}.md`);
+      console.info(`  ✅ Report saved: data/reports/mining-drill-${niche.id}-${date}.md`);
       
       results.push({ 
         niche: niche.id, 
@@ -576,10 +576,9 @@ export async function runMiningDrill(): Promise<void> {
       });
     }
     
-    console.log('\n✅ Complete!');
-    console.log(`Generated ${results.length} reports:`);
+    console.info(`✅ Complete — ${results.length} reports generated:`);
     results.forEach(r => {
-      console.log(`  - ${r.niche}: ${r.painPoints} pain points`);
+      console.info(`  - ${r.niche}: ${r.painPoints} pain points`);
     });
   } catch (error) {
     console.error('❌ Mining Drill failed:', error);
