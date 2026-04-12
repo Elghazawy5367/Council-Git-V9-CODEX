@@ -2,6 +2,8 @@
 
 **The Council** is a React + TypeScript AI orchestration app that queries multiple AI models via OpenRouter and synthesizes their outputs. Built for a solo founder with zero infrastructure costs and includes advanced intelligence/research capabilities.
 
+> Use this file to understand the repo's architecture, coding conventions, key files, and high-level workflows. For detailed developer guides, consult `README.md` and the `docs/` folder.
+
 ## Architecture Overview
 
 ### Tech Stack
@@ -149,12 +151,26 @@ pluginManager.registerExpertPlugin(myPlugin);
 
 ## Development Workflow
 
+### Prerequisites
+- Node.js 18+ and npm
+- `OpenRouter` API key for Council features
+- Optional GitHub token for better GitHub API rate limits
+
+### Install
+```bash
+npm install
+```
+
 ### Commands
 ```bash
-npm run dev        # Dev server on port 5000
-npm run typecheck  # TypeScript validation (strict mode enabled)
-npm run lint       # ESLint
-npm run build      # Production build
+npm run dev               # Start Vite dev server
+npm run typecheck         # TypeScript validation (strict mode enabled)
+npm run lint              # ESLint
+npm run build             # Production build
+npm run mirror            # Code quality analysis
+npm run quality           # Mirror + self-improve pipeline
+npm run scout             # GitHub intelligence scan
+npm run scout:blue-ocean  # Blue Ocean opportunity discovery
 ```
 
 ### TypeScript Strict Mode
