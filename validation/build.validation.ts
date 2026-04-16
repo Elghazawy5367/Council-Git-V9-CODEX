@@ -34,7 +34,5 @@ async function validateBuild() {
   }
 }
 
-// Execute if run directly
-if (require.main === module) {
-  validateBuild();
-}
+// Execute
+validateBuild();

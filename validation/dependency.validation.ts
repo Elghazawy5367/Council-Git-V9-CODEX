@@ -45,6 +45,4 @@ async function validateDependencies() {
   }
 }
 
-if (require.main === module) {
-  validateDependencies();
-}
+validateDependencies();

@@ -47,6 +47,4 @@ async function validateRuntime() {
   }
 }
 
-if (require.main === module) {
-  validateRuntime();
-}
+validateRuntime();

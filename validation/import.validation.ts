@@ -56,6 +56,4 @@ async function validateImports() {
   }
 }
 
-if (require.main === module) {
-  validateImports();
-}
+validateImports();
