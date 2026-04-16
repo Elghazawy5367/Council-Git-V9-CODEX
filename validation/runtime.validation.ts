@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { pathToFileURL } from 'url';
 
 /**
  * Validates runtime initialization configurations.
@@ -7,7 +8,7 @@ import path from 'path';
  * 1. Ensure required environment variables (templates) exist.
  * 2. Verify static assets or required configuration JSONs are not missing.
  */
-async function validateRuntime() {
+export async function validateRuntime() {
   console.info('⚡ Starting Runtime Initialization Validation...');
 
   const requiredFiles = [
@@ -47,4 +48,7 @@ async function validateRuntime() {
   }
 }
 
-validateRuntime();
+const isDirectExecution = !!process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isDirectExecution) {
+  validateRuntime();
+}

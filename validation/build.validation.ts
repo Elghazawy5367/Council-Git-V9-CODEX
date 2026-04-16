@@ -1,6 +1,7 @@
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
+import { pathToFileURL } from 'url';
 
 const execAsync = promisify(execFile);
 
@@ -10,7 +11,7 @@ const execAsync = promisify(execFile);
  * 1. Type-checking must pass (`tsc --noEmit`).
  * 2. Vite build must succeed (`vite build`).
  */
-async function validateBuild() {
+export async function validateBuild() {
   console.info('🚀 Starting Build Validation Pipeline...');
   
   try {
@@ -35,4 +36,7 @@ async function validateBuild() {
 }
 
 // Execute
-validateBuild();
+const isDirectExecution = !!process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isDirectExecution) {
+  validateBuild();
+}

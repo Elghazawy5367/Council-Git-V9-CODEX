@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { pathToFileURL } from 'url';
 
 /**
  * Validates dependencies across the project.
@@ -7,7 +8,7 @@ import path from 'path';
  * 1. Checks for peer dependency issues via npm ls
  * 2. Checks if critical packages are present in package.json
  */
-async function validateDependencies() {
+export async function validateDependencies() {
   console.info('📦 Starting Dependency Validation...');
 
   const packageJsonPath = path.join(process.cwd(), 'package.json');
@@ -45,4 +46,7 @@ async function validateDependencies() {
   }
 }
 
-validateDependencies();
+const isDirectExecution = !!process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isDirectExecution) {
+  validateDependencies();
+}
