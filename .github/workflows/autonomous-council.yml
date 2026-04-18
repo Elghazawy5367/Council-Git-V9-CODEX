@@ -92,6 +92,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate feature config exists
+        run: |
+          if [ ! -f "config/2026-features.yaml" ]; then
+            echo "ERROR: config/2026-features.yaml not found!"
+            echo "Required for feature flag detection."
+            exit 1
+          fi
+          echo "✓ Feature configuration file found"
+
       - name: Check feature flag
         id: flag
         run: |
