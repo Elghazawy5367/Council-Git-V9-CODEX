@@ -1,4 +1,5 @@
 import { Project } from 'ts-morph';
+import { pathToFileURL } from 'url';
 
 /**
  * Validates import relationships across the repository.
@@ -6,7 +7,7 @@ import { Project } from 'ts-morph';
  * 1. Checks for non-existent imports.
  * 2. Scans for circular dependency potential.
  */
-async function validateImports() {
+export async function validateImports() {
   console.info('🔗 Starting Import Compatibility Validation...');
   console.info('Loading ts-morph project...');
 
@@ -56,6 +57,7 @@ async function validateImports() {
   }
 }
 
-if (require.main === module) {
+const isDirectExecution = !!process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isDirectExecution) {
   validateImports();
 }
